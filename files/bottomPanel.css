@@ -1,0 +1,28 @@
+.hop-left {
+    animation: hop-left 0.5s ease;
+    animation-fill-mode: forwards; /* Add this line */
+}
+
+.hop-right {
+    animation: hop-right 0.5s ease;
+    animation-fill-mode: forwards; /* Add this line */
+}
+
+/*@keyframes floatAndFade {*/
+/*    0% {*/
+/*        opacity: 1;*/
+/*        transform: translateY(30px);*/
+/*    }*/
+/*    100% {*/
+/*        opacity: 0;*/
+/*        transform: translateY(10px);*/
+/*    }*/
+/*}*/
+
+.floatingText {
+    position: absolute;
+    overflow: visible !important;
+    animation: floatAndFade 10s ease-out forwards;
+    color: #ff0; /* Yellow color, change as needed */
+    pointer-events: none; /* Ensures the text doesn't interfere with clicking */
+}
