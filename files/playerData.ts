@@ -1,4 +1,6 @@
 import fs from "fs";
+import {ChatUserstate, Client} from "tmi.js";
+import {broadcast} from "./bot";
 
 export interface Player {
     Username: string;
@@ -165,6 +167,27 @@ export function TakeObjectFromPlayer(playerName: string, object: string) {
     SavePlayer(player);
 }
 
-export function ChangePlayerHealth(amount: number) {
+export function ChangePlayerHealth(client: Client, playerName: string, amount: number) {
+    let player = LoadPlayer(playerName);
+    let maxHealth = calculateMaxHealth(player);
+    
+    player.CurrentHealth += amount;
+    if(player.CurrentHealth <= 0) {
+        player.CurrentHealth = 0;
+        
+        //Handle death
 
+        client.say(process.env.CHANNEL!, `@${playerName} has DIED! Luckily Cory hasn't made any consequences for this yet.`);
+        player.CurrentHealth = maxHealth;
+    }
+    else if(player.CurrentHealth > maxHealth) {
+        player.CurrentHealth = maxHealth;
+        client.say(process.env.CHANNEL!, `@${playerName} has healed to full.`);
+    }
+    else {
+        client.say(process.env.CHANNEL!, `@${playerName} has ${amount > 0 ? `healed by ${amount}!` : `taken ${Math.abs(amount)} damage!`}!`);
+    }
+    
+    broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: playerName, display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`, }));
+    SavePlayer(player);
 }

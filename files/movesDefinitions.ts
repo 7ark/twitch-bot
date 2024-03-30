@@ -20,6 +20,7 @@ export interface ClassMove {
     //Attacking
     ChanceToMiss?: number;
     Damage?: { min: number, max: number };
+    StunChance?: number;
 
     //Play Sound
     SoundFile?: string;
@@ -89,6 +90,7 @@ export const attackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 5,
         Type: MoveType.Attack,
+        StunChance: 10,
 
         ChanceToMiss: 50,
         Damage: { min: 7, max: 12 },

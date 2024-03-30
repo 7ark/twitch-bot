@@ -1,12 +1,11 @@
 import fs from "fs";
 import {broadcast, DragonInfo} from "./bot";
-import {ClassType, LoadPlayer, SavePlayer} from "./playerData";
+import {calculateMaxHealth, ChangePlayerHealth, ClassType, LoadPlayer, SavePlayer} from "./playerData";
 import {exec} from "child_process";
 import {rotateOBSSource, setFilterEnabled} from "./obsutils";
-import play from "audio-play";
+import play, { AudioPlayHandle } from "audio-play";
 import {Client} from "tmi.js";
 import exp from "constants";
-import {put} from "axios";
 // import {Howl} from 'howler';
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
@@ -22,6 +21,7 @@ export interface PlayerSessionData {
 
 let allPlayerSessionData: Map<string, PlayerSessionData> = new Map<string, PlayerSessionData>();
 let timestamp: Date;
+let audioPlayers: Array<{playHandle: AudioPlayHandle, duration: number}> = [];
 
 export function LoadPlayerSession(displayName: string) {
     let fullDisplayName = displayName;
@@ -45,7 +45,7 @@ export function LoadPlayerSession(displayName: string) {
     }
 
     if(allPlayerSessionData.has(displayName)) {
-        session = allPlayerSessionData.get(displayName);
+        session = allPlayerSessionData.get(displayName)!;
     }
 
     return session;
@@ -103,7 +103,7 @@ export function LoadDragonData(): DragonInfo {
     let dragonInfo: DragonInfo = {
         Health: 500,
         MaxHealth: 500,
-        HitsBeforeAttack: 5
+        HitsBeforeAttack: 10
     }
 
     if(fs.existsSync('boss.json')) {
@@ -111,14 +111,50 @@ export function LoadDragonData(): DragonInfo {
     }
 
     if(dragonInfo.HitsBeforeAttack === undefined || dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = getRandomIntI(5, 10);
+        dragonInfo.HitsBeforeAttack = getRandomIntI(10, 15);
     }
 
     return dragonInfo;
 }
 
-export function TriggerDragonAttack() {
+export function TriggerDragonAttack(client: Client) {
+    let playerData = allPlayerSessionData.entries();
+    
+    let highestNumberOfAttacks = 0;
+    for (const playerName in playerData) {
+        let player = allPlayerSessionData.get(playerName)!;
+        if(player.TimesAttackedEnemy > highestNumberOfAttacks) {
+            highestNumberOfAttacks = player.TimesAttackedEnemy;
+        }
+    }
+    
+    client.say(process.env.CHANNEL!, `Bytefire is attacking!`);
 
+    for (const playerName in playerData) {
+        let player = allPlayerSessionData.get(playerName)!;
+        if(player.TimesAttackedEnemy === 0 || (player.TimesAttackedEnemy === 1 && getRandomIntI(0, 1) === 0)) {
+            continue;
+        }
+        let playerClassInfo = LoadPlayer(playerName);
+        
+        //Try to hit
+        let roll = getRandomIntI(1, 20) + 5;
+        let ac = 10 + Math.floor(playerClassInfo.Classes[ClassType.Rogue].Level / 3) + Math.floor(playerClassInfo.Classes[ClassType.Warrior].Level / 5);
+        if(roll < ac) {
+            client.say(process.env.CHANNEL!, `Bytefire missed ${playerName} after rolling a ${roll}!`);
+            continue;
+        } 
+        
+        let damagePercentage = player.TimesAttackedEnemy / highestNumberOfAttacks;
+        
+        let maxDamage = Math.floor(calculateMaxHealth(playerClassInfo) * (roll === 25 ? 0.6 : 0.3));
+        
+        let damage = Math.floor(maxDamage * damagePercentage);
+        
+        if(damage > 0) {
+            ChangePlayerHealth(client, playerName, -damage);
+        }
+    }
 }
 
 export function SaveDragonData(dragon: DragonInfo) {
@@ -234,8 +270,31 @@ export function playSound(soundName: string, extension: string = "wav") {
         // convertMp3ToWav(mp3FilePath, wavFilePath)
         //     .then(() => console.log('Successfully converted MP3 to WAV.'))
         //     .catch(err => console.error('Conversion failed: ', err));
+        
+        let audioBuffer = load(`files/extras/${soundName}.${extension}`);
+        
+        audioBuffer.then(() => {
+            audioBuffer.duration
+            let playHandle: AudioPlayHandle = play(audioBuffer, {
+                
+            }, onEnd);
+            
+            audioPlayers.push({
+                playHandle: playHandle,
+                duration: audioBuffer.duration
+            });
+        })
+        
+        function onEnd() {
+            for (let i = audioPlayers.length - 1; i >= 0; i--) {
+                const audioPlayer = audioPlayers[i];
+                if(audioPlayer.playHandle.currentTime >= audioPlayer.duration) {
+                    audioPlayers.splice(i, 1);
+                }
+            }
+        }
 
-        load(`files/extras/${soundName}.${extension}`).then(play);
+        // .then(play);
 
         // playAudioFile(`files/extras/${soundName}.${extension}`);
 

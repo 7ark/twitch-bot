@@ -495,8 +495,10 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
     if(chanceToMiss < 0) {
         chanceToMiss = 0;
     }
+    
+    let rollToHit = getRandomIntI(0, 100);
 
-    if(getRandomIntI(0, 100) <= chanceToMiss) {
+    if(rollToHit <= chanceToMiss) {
         client.say(process.env.CHANNEL!, `@${username} missed!`);
     }
     else {
@@ -524,7 +526,7 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
                 finalSuccessText = finalSuccessText.replace("{object}", objectThrown);
             }
             else {
-                let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectThrown);
+                let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectThrown)!;
 
                 if(inventoryObject === undefined || inventoryObject.ObjectName === "" || !DoesPlayerHaveObject(username, inventoryObject.ObjectName)) {
                     client.say(process.env.CHANNEL!, `@${username}, you don't have that object!`);
@@ -554,6 +556,12 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
 
         // Calculate scaled damage
         let scaledDamage = Math.floor(baseDamage * scale);
+        
+        let wasCrit = rollToHit >= 95;
+        //CRIT!
+        if(wasCrit) {
+            scaledDamage *= 2;
+        }
 
         // const MAX_DAMAGE = 50;
         // scaledDamage = Math.min(scaledDamage, MAX_DAMAGE);
@@ -564,9 +572,21 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
         if(scaledDamage < 0) {
             finalSuccessText = finalSuccessText.replace("{0} damage", "{0} healing");
         }
+        
+        finalSuccessText = finalSuccessText.replace('{0}', Math.abs(scaledDamage).toString()).replace('{name}', username);
+        
+        if(wasCrit) {
+            finalSuccessText = `It's a critical hit! ${finalSuccessText}`;
+        }
 
-        client.say(process.env.CHANNEL!, finalSuccessText.replace('{0}', Math.abs(scaledDamage).toString()).replace('{name}', username));
+        client.say(process.env.CHANNEL!, finalSuccessText);
         handleTimeout(command);
+        
+        if(moveAttempted.StunChance !== undefined) {
+            if(getRandomIntI(1, 100) <= moveAttempted.StunChance) {
+                stunBytefire(client);
+            }
+        }
     }
 }
 
@@ -639,6 +659,16 @@ async function handleMoveMonitorDarken(client: Client, moveAttempted: ClassMove,
     handleTimeout(command);
 }
 
+function stunBytefire(client: Client) {
+    let dragonInfo = LoadDragonData();
+    let stunTime = getRandomIntI(3, 10);
+    
+    dragonInfo.HitsBeforeAttack += stunTime;
+    client.say(process.env.CHANNEL!, `Bytefire was temporarily stunned and it will take longer for them to attack again!`);
+
+    SaveDragonData(dragonInfo);
+}
+
 function doDamage(client: Client, username: string, damage: number) {
     let dragonInfo = LoadDragonData();
     dragonInfo.Health -= damage;
@@ -654,9 +684,9 @@ function doDamage(client: Client, username: string, damage: number) {
 
     dragonInfo.HitsBeforeAttack--;
     if(dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = getRandomIntI(5, 10);
+        dragonInfo.HitsBeforeAttack = getRandomIntI(10, 15);
 
-        TriggerDragonAttack();
+        TriggerDragonAttack(client);
     }
 
     GiveExp(client, username, 1);
