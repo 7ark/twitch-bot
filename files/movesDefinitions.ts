@@ -221,7 +221,7 @@ export const attackDefinitions: Array<ClassMove> = [
 
         ChanceToMiss: 30,
         Damage: { min: 3, max: 13 },
-        SuccessText: [`@{name} shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next 10 seconds!`],
+        SuccessText: [`@{name} shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next 10 seconds! (Extra damage still wip)`],
     },
     {
         Command: 'cancel',

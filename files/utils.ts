@@ -155,6 +155,12 @@ export function TriggerDragonAttack(client: Client) {
             ChangePlayerHealth(client, playerName, -damage);
         }
     }
+    for (const playerName in playerData) {
+        let player = allPlayerSessionData.get(playerName)!;
+        
+        player.TimesAttackedEnemy = 0;
+        SavePlayerSession(playerName, player);
+    }
 }
 
 export function SaveDragonData(dragon: DragonInfo) {
