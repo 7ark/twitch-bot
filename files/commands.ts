@@ -336,8 +336,19 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, final);
         }
     }
-    else if(isCommand(command, 'info')) {
-        await client.say(process.env.CHANNEL!, `Today we're celebrating World Water Day. Cory is attempting to defeat the Ender dragon, but every time you say water, water will spawn. The more chat says it, the bigger the water. The sea level also rises every 3 minutes.`);
+    else if (isCommand(command, 'use')) {
+        let player = LoadPlayer(userState['display-name']!);
+
+        let objectThrown = command.replace("!use", "").trim();
+        let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectThrown)!;
+        
+        if(inventoryObject === undefined || inventoryObject === null) {
+            await client.say(process.env.CHANNEL!, `${player.Username}, you don't have that!`);
+        }
+        else {
+            inventoryObject.UseAction(client, player);
+        }
+        
     }
     else {
         await handleMoves(client, userState, command);

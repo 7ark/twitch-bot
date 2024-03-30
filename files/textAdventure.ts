@@ -2079,8 +2079,13 @@ const modules: Array<AdventureModule> = [
                                                                                                 ChoiceName: `Go to bed`,
                                                                                                 Result: [
                                                                                                     {
-                                                                                                        Dialogue: ``,
+                                                                                                        Dialogue: `You head to bed, though have trouble falling asleep. After a while of tossing and turning, you eventually fade. In the morning, all remnant of the dark forest are gone. It's a bright and lovely forest, the path you were on is only a few paces away. You're able to continue on your way.`,
                                                                                                         Choices: []
+                                                                                                    },
+                                                                                                    {
+                                                                                                        Dialogue: `You fall asleep to frightful nightmares, a horrific creature is stalking you, chasing you down. You wake in a cold sweat, just to see the creature of your nightmares standing before you.`,
+                                                                                                        Choices: [],
+                                                                                                        EndingCallback: () => startFight(`blackmass`)
                                                                                                     },
                                                                                                 ],
                                                                                             },
@@ -2088,8 +2093,9 @@ const modules: Array<AdventureModule> = [
                                                                                                 ChoiceName: `Cook food`,
                                                                                                 Result: [
                                                                                                     {
-                                                                                                        Dialogue: ``,
-                                                                                                        Choices: []
+                                                                                                        Dialogue: `You cook some food, your stomach growling at the smell. A wonderful, delicious smell. You bite into the cooked meat even as its too hot, and burn your tongue, but the taste is so good. It's one of the best meals you've ever had. When you open your eyes, a man is standing before you, licking his lips. You see fangs shine in the fire light. You're his next meal.`,
+                                                                                                        Choices: [],
+                                                                                                        EndingCallback: () => startFight(`vampire`)
                                                                                                     },
                                                                                                 ],
                                                                                             },
@@ -2107,7 +2113,11 @@ const modules: Array<AdventureModule> = [
                                                                                                 ChoiceName: `Sleep on ground`,
                                                                                                 Result: [
                                                                                                     {
-                                                                                                        Dialogue: ``,
+                                                                                                        Dialogue: `You sleep on the rough and dirty ground, finding it difficult to get comfortable. Your eyes grow heavy despite that and you fall into a deep sleep. Perhaps too deep. You lose yourself in the sleep, you feel it's been eons since you've awakened. You continue to sleep. You never wake.`,
+                                                                                                        Choices: []
+                                                                                                    },
+                                                                                                    {
+                                                                                                        Dialogue: `You sleep quickly, despite the unpleasant circumstances, but find yourself soon waking the next morning. Everything is normal and fine. You find you're able to continue on without issue.`,
                                                                                                         Choices: []
                                                                                                     },
                                                                                                 ],
@@ -2116,7 +2126,7 @@ const modules: Array<AdventureModule> = [
                                                                                                 ChoiceName: `Pitch tent`,
                                                                                                 Result: [
                                                                                                     {
-                                                                                                        Dialogue: ``,
+                                                                                                        Dialogue: `You start pitching your tent, every sound you make echoing in the darkness. At first you just think you're being loud, but as you pause you find it literally is echoing in the darkness. The echos cause more echos, you step back, a snapping branch echoing infinitely. Your ears fill with noise that can't be drowned out. You fall to the floor, the sound of which rattles your skull. It reverberates infinitely, your ears bleeding, as you lose consciousness. The next morning, you can't tell if it was a dream or not, but you find yourself hard of hearing, but are able to continue on your way.`,
                                                                                                         Choices: []
                                                                                                     },
                                                                                                 ],
@@ -2130,7 +2140,8 @@ const modules: Array<AdventureModule> = [
                                                                                 Result: [
                                                                                     {
                                                                                         Dialogue: `You settle down, trying to find a patch of dirt thats comfortable enough. You settle in for restless sleep. You have dreams of fire and darkness, battling against one another. The fire pushes against you, warming you, until it feels burning. Hot, so hot. Too hot. You awaken, you've rolled into your fire, you're burning. You scream and yell, trying to put it out, but it's too late. Your vision is fading as you burn. You see a shadow looming over you. You can't see it's face, but you know it's smiling.`,
-                                                                                        Choices: []
+                                                                                        Choices: [],
+                                                                                        EndingCallback: () => startFight(`vampire`)
                                                                                     },
                                                                                 ],
                                                                             },
@@ -2320,20 +2331,11 @@ const modules: Array<AdventureModule> = [
                             },
                         ]
                     },
-                    {
-                        Dialogue: `Knock knock, its a big giant scary skeleton! Who knew skeletons like to hang out in bushes? What was this guy even doing? Doesn't he have like, 
-                        a dungeon to go infest or anything. Anyway, it does look like he's attacking you. Good luck!`,
-                        Choices: []
-                    },
                 ]
             },
             {
                 ChoiceName: `Make scary noises`,
                 Result: [
-                    {
-                        Dialogue: `Something takes off into the woods. It appears that whatever strange sounds that you made scared it off. `,
-                        Choices: []
-                    },
                     {
                         Dialogue: `You make some strange sounds. I'm really not sure how, they're REALLY weird. Please see a doctor. Anyway, you make them and somehow you hear them 
                         echoed back at you, almost like a recording. It sounds EXACTLY the same. Just as horrific as you did`,
@@ -2342,12 +2344,48 @@ const modules: Array<AdventureModule> = [
                                 ChoiceName: `Make more sounds`,
                                 Result: [
                                     {
-                                        Dialogue: `You make sound`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You make sound`,
-                                        Choices: []
+                                        Dialogue: `Your noises had the opposite effect. A horrific looking creature lurches out of the wood. Apparently whatever sounds you made were it's mating calls. It now appears to be seeking you as it's mate.\n\nWhat do you do?`,
+                                        Choices: [
+                                            {
+                                                ChoiceName: `Pretend to be its mate`,
+                                                Result: [
+                                                    {
+                                                        Dialogue: `You pretend`,
+                                                        Choices: []
+                                                    },
+                                                    {
+                                                        Dialogue: `You pretend`,
+                                                        Choices: []
+                                                    },
+                                                ]
+                                            },
+                                            {
+                                                ChoiceName: `Run away`,
+                                                Result: [
+                                                    {
+                                                        Dialogue: `You run`,
+                                                        Choices: []
+                                                    },
+                                                    {
+                                                        Dialogue: `You run`,
+                                                        Choices: []
+                                                    },
+                                                ]
+                                            },
+                                            {
+                                                ChoiceName: `Try to act scary`,
+                                                Result: [
+                                                    {
+                                                        Dialogue: `You act scary`,
+                                                        Choices: []
+                                                    },
+                                                    {
+                                                        Dialogue: `You act scary`,
+                                                        Choices: []
+                                                    },
+                                                ]
+                                            },
+                                        ]
                                     },
                                 ]
                             },
@@ -2373,51 +2411,6 @@ const modules: Array<AdventureModule> = [
                                     },
                                     {
                                         Dialogue: `You keep walking`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        Dialogue: `Your noises had the opposite effect. A horrific looking creature lurches out of the wood. Apparently whatever sounds you made were it's mating calls. 
-                        It now appears to be seeking you as it's mate.\n\nWhat do you do?`,
-                        Choices: [
-                            {
-                                ChoiceName: `Pretend to be its mate`,
-                                Result: [
-                                    {
-                                        Dialogue: `You pretend`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You pretend`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Run away`,
-                                Result: [
-                                    {
-                                        Dialogue: `You run`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You run`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Try to act scary`,
-                                Result: [
-                                    {
-                                        Dialogue: `You act scary`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You act scary`,
                                         Choices: []
                                     },
                                 ]
