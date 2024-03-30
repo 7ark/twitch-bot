@@ -6,7 +6,7 @@ export interface InventoryObject {
     ObjectName: string;
     ContextualName: string;
     ThrownDamage: { min: number, max: number },
-    UseAction: (client: Client, player: Player) => void;
+    UseAction: (client: Client, player: Player) => Promise<void>;
     Consumable: boolean;
     Rewardable: boolean;
 }
@@ -16,8 +16,8 @@ export const allInventoryObjects: Array<InventoryObject> = [
         ObjectName: "dagger",
         ContextualName: "a dagger",
         ThrownDamage: { min: 3, max: 12 },
-        UseAction: (client, player) => {
-            client.say(process.env.CHANNEL!, `@${player.Username} you twirl your dagger in your hand.`);
+        UseAction: async (client, player) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you twirl your dagger in your hand.`);
         },
         Consumable: false,
         Rewardable: false,
@@ -26,7 +26,7 @@ export const allInventoryObjects: Array<InventoryObject> = [
         ObjectName: "healing potion",
         ContextualName: "a healing potion",
         ThrownDamage: { min: -8, max: -2 },
-        UseAction: (client, player) => {
+        UseAction: async (client, player) => {
             ChangePlayerHealth(client, player.Username, getRandomIntI(5, 15))
         },
         Consumable: true,
@@ -36,8 +36,8 @@ export const allInventoryObjects: Array<InventoryObject> = [
         ObjectName: "sword",
         ContextualName: "a sword",
         ThrownDamage: { min: 3, max: 8 },
-        UseAction: (client, player) => {
-            client.say(process.env.CHANNEL!, `@${player.Username} you swing through the air a few times, practicing your skills.`);
+        UseAction: async (client, player) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you swing through the air a few times, practicing your skills.`);
         },
         Consumable: false,
         Rewardable: false,
@@ -46,8 +46,8 @@ export const allInventoryObjects: Array<InventoryObject> = [
         ObjectName: "hammer",
         ContextualName: "a hammer",
         ThrownDamage: { min: 5, max: 8 },
-        UseAction: (client, player) => {
-            client.say(process.env.CHANNEL!, `@${player.Username} you smash a nearby rock. Nice.`);
+        UseAction: async (client, player) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you smash a nearby rock. Nice.`);
         },
         Consumable: false,
         Rewardable: false,
@@ -56,8 +56,8 @@ export const allInventoryObjects: Array<InventoryObject> = [
         ObjectName: "wand",
         ContextualName: "a wand",
         ThrownDamage: { min: 1, max: 2 },
-        UseAction: (client, player) => {
-            client.say(process.env.CHANNEL!, `@${player.Username} you make some sparkles appear.`);
+        UseAction: async (client, player) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you make some sparkles appear.`);
         },
         Consumable: false,
         Rewardable: false,

@@ -339,16 +339,15 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
     else if (isCommand(command, 'use')) {
         let player = LoadPlayer(userState['display-name']!);
 
-        let objectThrown = command.replace("!use", "").trim();
-        let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectThrown)!;
+        let objectUsed = command.replace("!use", "").trim();
+        let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectUsed)!;
         
         if(inventoryObject === undefined || inventoryObject === null) {
             await client.say(process.env.CHANNEL!, `${player.Username}, you don't have that!`);
         }
         else {
-            inventoryObject.UseAction(client, player);
+            await inventoryObject.UseAction(client, player);
         }
-        
     }
     else {
         await handleMoves(client, userState, command);
@@ -356,31 +355,6 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
 }
 
 async function handleMoves(client: Client, userState: ChatUserstate, command: string) {
-    //todo - fix to do this better cause now anyone can get
-    // if((userState['display-name']!).toLowerCase() === 'one_1egged_duck') {
-    //     attackDefinitions.push({
-    //         Command: 'duckhunt',
-    //         Description: '',
-    //         ClassRequired: ClassType.Rogue,
-    //         Type: MoveType.Attack,
-    //
-    //         ChanceToMiss: 50,
-    //         Damage: { min: 3, max: 10 },
-    //         SuccessText: `@${userState['display-name']!} whips out duck hunt, and shoots Bytefire for {0} damage!`,
-    //     });
-    //     attackDefinitions.push({
-    //         Command: ' one1egHaha',
-    //         Description: '',
-    //         ClassRequired: ClassType.Rogue,
-    //         Type: MoveType.Attack,
-    //
-    //         ChanceToMiss: 50,
-    //         Damage: { min: 3, max: 10 },
-    //         SuccessText: `@${userState['display-name']!} whips out duck hunt, and shoots Bytefire for {0} damage!`,
-    //     });
-    // }
-
-
     let player = LoadPlayer(userState['display-name']!);
 
     if(isCommand(command, 'punch') && isDragonActive) {
