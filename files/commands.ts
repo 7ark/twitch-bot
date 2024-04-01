@@ -663,22 +663,31 @@ function doDamage(client: Client, username: string, damage: number) {
         //Handle dragon death somehow?
     }
 
-    let playerSession: PlayerSessionData = LoadPlayerSession(username);
-    playerSession.TimesAttackedEnemy++;
-    SavePlayerSession(username, playerSession);
-
-    dragonInfo.HitsBeforeAttack--;
-    if(dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = getRandomIntI(10, 15);
-
-        TriggerDragonAttack(client);
-    }
+    setTimeout(() => {
+        let playerSession: PlayerSessionData = LoadPlayerSession(username);
+        playerSession.TimesAttackedEnemy++;
+        SavePlayerSession(username, playerSession);
+    }, 100);
 
     GiveExp(client, username, 1);
 
     SaveDragonData(dragonInfo);
 
     broadcast(JSON.stringify({ type: 'attack', info: dragonInfo }));
+
+    dragonInfo.HitsBeforeAttack--;
+    if(dragonInfo.HitsBeforeAttack <= 0) {
+        dragonInfo.HitsBeforeAttack = getRandomIntI(10, 15);
+
+        setTimeout(() => {
+            TriggerDragonAttack(client);
+        }, 200);
+    }
+    else {
+        setTimeout(() => {
+            TriggerDragonAttack(client);
+        }, 200);
+    }
 }
 
 function getPlayerStatsDisplay(username: string, player: Player): string {

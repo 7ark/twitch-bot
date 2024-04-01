@@ -177,7 +177,7 @@ export function ChangePlayerHealth(client: Client, playerName: string, amount: n
         
         //Handle death
 
-        client.say(process.env.CHANNEL!, `@${playerName} has DIED! Luckily Cory hasn't made any consequences for this yet.`);
+        client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} damage and DIED! Luckily Cory hasn't made any consequences for this yet.`);
         player.CurrentHealth = maxHealth;
     }
     else if(player.CurrentHealth > maxHealth) {
