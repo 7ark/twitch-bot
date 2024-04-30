@@ -47,7 +47,7 @@ function createDragon(data: { type: string; info: DragonInfo; }) {
 
     dragonHtml.id = 'dragon';
     dragonHtml.textContent = dragon;
-    dragonHtml.style.color = '#a473cc';
+    dragonHtml.style.color = '#f59342';
     dragonContainer?.appendChild(dragonHtml);
 
     dragonInfo = {
@@ -64,7 +64,7 @@ function constructHealthBar() {
 
     let healthBarSize = 50;
     let ratio = dragonInfo.Health / dragonInfo.MaxHealth;
-    let posVal = Math.floor(healthBarSize * ratio);
+    let posVal = Math.max(1, Math.floor(healthBarSize * ratio));
     healthBarPositive.textContent = '█'.repeat(posVal);
     healthBarNegative.textContent = '█'.repeat(healthBarSize - posVal);
 

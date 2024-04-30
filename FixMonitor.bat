@@ -1,3 +1,3 @@
-display.exe /device 3 /rotate:0
-display.exe /device 3 /brightness:87
-display.exe /device 3 /contrast:56
+display.exe /device 1 /rotate:0
+display.exe /device 1 /brightness:87
+display.exe /device 1 /contrast:56

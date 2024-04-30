@@ -1,4 +1,5 @@
 // const tts = require('text-to-speech-js');
+
 const taWS: WebSocket = new WebSocket('ws://localhost:3000');
 
 taWS.onopen = () => console.log("Text Adventure Connected to WS server");
@@ -81,14 +82,14 @@ interface AdventureChoice {
 
 const modules: Array<AdventureModule> = [
     {
-        Dialogue: `You're travelling through the forest. It's a bright, sunny day! The forest is full of life, the birds are flying through the air, you just really feel alive you know?\n\n
-            In the forest beyond, you can hear rustling noises. How would you like to proceed?`,
-        Choices: [
-            {
-                ChoiceName: `Keep Walkin'`,
-                Result: [
-                    {
-                        Dialogue: `You keep walking and feel a sense of dread fall over you. You look back, but see nothing there. As you turn back to the path, you realize that suddenly the path is gone.`,
+        // Dialogue: `You're travelling through the forest. It's a bright, sunny day! The forest is full of life, the birds are flying through the air, you just really feel alive you know?\n\n
+        //     In the forest beyond, you can hear rustling noises. How would you like to proceed?`,
+        // Choices: [
+        //     {
+        //         ChoiceName: `Keep Walkin'`,
+        //         Result: [
+        //             {
+                        Dialogue: `You're travelling through the forest, a wonderful day ahead of you, lot's of travel when suddenly a deep unsettling feeling of dread settles over you. You instinctively check over your shoulder, but see the path has disappeared, and suddenly you're alone and lost.`,//`You keep walking and feel a sense of dread fall over you. You look back, but see nothing there. As you turn back to the path, you realize that suddenly the path is gone.`,
                         Choices: [
                             {
                                 ChoiceName: `Run?? Anywhere?`,
@@ -410,7 +411,7 @@ const modules: Array<AdventureModule> = [
                                                                                                 ],
                                                                                             },
                                                                                             {
-                                                                                                ChoiceName: `"Fuck off"`,
+                                                                                                ChoiceName: `"F off"`,
                                                                                                 Result: [
                                                                                                     {
                                                                                                         Dialogue: `You explode to dust. Who knows how. Doesn't matter now, you're dead.`,
@@ -1731,7 +1732,7 @@ const modules: Array<AdventureModule> = [
                                                                                                         Dialogue: `You try and leave, but as you take the first step you feel unsteady. You instinctively clutch your stomach and fall over. A terrible pain has entered your body. Then. A voice.\n\n"Giving up so easily, are you? Pathetic."`,
                                                                                                         Choices: [
                                                                                                             {
-                                                                                                                ChoiceName: `"Fuck you"`,
+                                                                                                                ChoiceName: `"F you"`,
                                                                                                                 Result: [
                                                                                                                     {
                                                                                                                         Dialogue: ``,
@@ -1826,7 +1827,7 @@ const modules: Array<AdventureModule> = [
                                                                                 ChoiceName: `Look for journal`,
                                                                                 Result: [
                                                                                     {
-                                                                                        Dialogue: `You search around for your journal, wondering where it could've gone. After going through the surrounding area, you find a trail of blood that leads to tree. Inspecting it reveals a nook within the tree, inside is your journal, it's cover coated in blood.`,
+                                                                                        Dialogue: `You search around for your journal, wondering where it could've gone. After going through the surrounding area, you find a trail of blood that leads to a tree. Inspecting it reveals a nook within the tree, inside is your journal, it's cover coated in blood.`,
                                                                                         Choices: [
                                                                                             {
                                                                                                 ChoiceName: `Look inside`,
@@ -2194,233 +2195,233 @@ const modules: Array<AdventureModule> = [
                             // },
                         ]
                     },
-                    {
-                        Dialogue: `Uh oh, apparently there WAS something in that bush nearby. Plus, it sounds kinda hungry. Bursting out from the bush is a huge Minotaur, with big fat muscles. And a bit axe. Oooo, he's so scary.\n\nWhat now?`,
-                        Choices: [
-                            {
-                                ChoiceName: 'Face the Minotaur',
-                                Result: [
-                                    {
-                                        Dialogue: `Fight start`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `Fight start`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: 'Scream and shout',
-                                Result: [
-                                    {
-                                        Dialogue: `You scream and shout`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You scream and shout`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: 'Run away',
-                                Result: [
-                                    {
-                                        Dialogue: `You run away`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You run away`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                        ]
-                    },
-                ]
-            },
-            {
-                ChoiceName: `Investigate sound`,
-                Result: [
-                    {
-                        Dialogue: `Turns out it was just a bird. Who knew right? Though, as you look, this is a very rare species of bird, perhaps it has something to offer?`,
-                        Choices: [
-                            {
-                                ChoiceName: `Try to pluck a feather`,
-                                Result: [
-                                    {
-                                        Dialogue: `You pluck a feather`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You pluck a feather`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Let the bird go`,
-                                Result: [
-                                    {
-                                        Dialogue: `You let the bird go`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You let the bird go`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `See if its worth money`,
-                                Result: [
-                                    {
-                                        Dialogue: `You check, and it is worth money`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You check, and it is worth money`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        Dialogue: `Someone left a strange magical object here, making strange sounds. You're not quite sure what it does, but it seems like it's been here for a long time`,
-                        Choices: [
-                            {
-                                ChoiceName: `See if its worth money`,
-                                Result: [
-                                    {
-                                        Dialogue: `Its not`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `Its not`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Throw it into the forest`,
-                                Result: [
-                                    {
-                                        Dialogue: `You toss it`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You toss it`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Pocket it`,
-                                Result: [
-                                    {
-                                        Dialogue: `You pocket it`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You pocket it`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                        ]
-                    },
-                ]
-            },
-            {
-                ChoiceName: `Make scary noises`,
-                Result: [
-                    {
-                        Dialogue: `You make some strange sounds. I'm really not sure how, they're REALLY weird. Please see a doctor. Anyway, you make them and somehow you hear them 
-                        echoed back at you, almost like a recording. It sounds EXACTLY the same. Just as horrific as you did`,
-                        Choices: [
-                            {
-                                ChoiceName: `Make more sounds`,
-                                Result: [
-                                    {
-                                        Dialogue: `Your noises had the opposite effect. A horrific looking creature lurches out of the wood. Apparently whatever sounds you made were it's mating calls. It now appears to be seeking you as it's mate.\n\nWhat do you do?`,
-                                        Choices: [
-                                            {
-                                                ChoiceName: `Pretend to be its mate`,
-                                                Result: [
-                                                    {
-                                                        Dialogue: `You pretend`,
-                                                        Choices: []
-                                                    },
-                                                    {
-                                                        Dialogue: `You pretend`,
-                                                        Choices: []
-                                                    },
-                                                ]
-                                            },
-                                            {
-                                                ChoiceName: `Run away`,
-                                                Result: [
-                                                    {
-                                                        Dialogue: `You run`,
-                                                        Choices: []
-                                                    },
-                                                    {
-                                                        Dialogue: `You run`,
-                                                        Choices: []
-                                                    },
-                                                ]
-                                            },
-                                            {
-                                                ChoiceName: `Try to act scary`,
-                                                Result: [
-                                                    {
-                                                        Dialogue: `You act scary`,
-                                                        Choices: []
-                                                    },
-                                                    {
-                                                        Dialogue: `You act scary`,
-                                                        Choices: []
-                                                    },
-                                                ]
-                                            },
-                                        ]
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Follow the noise`,
-                                Result: [
-                                    {
-                                        Dialogue: `You follow`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You follow`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                            {
-                                ChoiceName: `Keep walking`,
-                                Result: [
-                                    {
-                                        Dialogue: `You keep walking`,
-                                        Choices: []
-                                    },
-                                    {
-                                        Dialogue: `You keep walking`,
-                                        Choices: []
-                                    },
-                                ]
-                            },
-                        ]
-                    },
-                ]
-            }
-        ]
-    }
+        //             {
+        //                 Dialogue: `Uh oh, apparently there WAS something in that bush nearby. Plus, it sounds kinda hungry. Bursting out from the bush is a huge Minotaur, with big fat muscles. And a bit axe. Oooo, he's so scary.\n\nWhat now?`,
+        //                 Choices: [
+        //                     {
+        //                         ChoiceName: 'Face the Minotaur',
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `Fight start`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `Fight start`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: 'Scream and shout',
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You scream and shout`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You scream and shout`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: 'Run away',
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You run away`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You run away`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                 ]
+        //             },
+        //         ]
+        //     },
+        //     {
+        //         ChoiceName: `Investigate sound`,
+        //         Result: [
+        //             {
+        //                 Dialogue: `Turns out it was just a bird. Who knew right? Though, as you look, this is a very rare species of bird, perhaps it has something to offer?`,
+        //                 Choices: [
+        //                     {
+        //                         ChoiceName: `Try to pluck a feather`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You pluck a feather`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You pluck a feather`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: `Let the bird go`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You let the bird go`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You let the bird go`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: `See if its worth money`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You check, and it is worth money`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You check, and it is worth money`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                 ]
+        //             },
+        //             {
+        //                 Dialogue: `Someone left a strange magical object here, making strange sounds. You're not quite sure what it does, but it seems like it's been here for a long time`,
+        //                 Choices: [
+        //                     {
+        //                         ChoiceName: `See if its worth money`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `Its not`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `Its not`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: `Throw it into the forest`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You toss it`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You toss it`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: `Pocket it`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You pocket it`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You pocket it`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                 ]
+        //             },
+        //         ]
+        //     },
+        //     {
+        //         ChoiceName: `Make scary noises`,
+        //         Result: [
+        //             {
+        //                 Dialogue: `You make some strange sounds. I'm really not sure how, they're REALLY weird. Please see a doctor. Anyway, you make them and somehow you hear them
+        //                 echoed back at you, almost like a recording. It sounds EXACTLY the same. Just as horrific as you did`,
+        //                 Choices: [
+        //                     {
+        //                         ChoiceName: `Make more sounds`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `Your noises had the opposite effect. A horrific looking creature lurches out of the wood. Apparently whatever sounds you made were it's mating calls. It now appears to be seeking you as it's mate.\n\nWhat do you do?`,
+        //                                 Choices: [
+        //                                     {
+        //                                         ChoiceName: `Pretend to be its mate`,
+        //                                         Result: [
+        //                                             {
+        //                                                 Dialogue: `You pretend`,
+        //                                                 Choices: []
+        //                                             },
+        //                                             {
+        //                                                 Dialogue: `You pretend`,
+        //                                                 Choices: []
+        //                                             },
+        //                                         ]
+        //                                     },
+        //                                     {
+        //                                         ChoiceName: `Run away`,
+        //                                         Result: [
+        //                                             {
+        //                                                 Dialogue: `You run`,
+        //                                                 Choices: []
+        //                                             },
+        //                                             {
+        //                                                 Dialogue: `You run`,
+        //                                                 Choices: []
+        //                                             },
+        //                                         ]
+        //                                     },
+        //                                     {
+        //                                         ChoiceName: `Try to act scary`,
+        //                                         Result: [
+        //                                             {
+        //                                                 Dialogue: `You act scary`,
+        //                                                 Choices: []
+        //                                             },
+        //                                             {
+        //                                                 Dialogue: `You act scary`,
+        //                                                 Choices: []
+        //                                             },
+        //                                         ]
+        //                                     },
+        //                                 ]
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: `Follow the noise`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You follow`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You follow`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                     {
+        //                         ChoiceName: `Keep walking`,
+        //                         Result: [
+        //                             {
+        //                                 Dialogue: `You keep walking`,
+        //                                 Choices: []
+        //                             },
+        //                             {
+        //                                 Dialogue: `You keep walking`,
+        //                                 Choices: []
+        //                             },
+        //                         ]
+        //                     },
+        //                 ]
+        //             },
+        //         ]
+        //     }
+        // ]
+    // }
 ];
 
 function startFight(enemy: string) {
@@ -2429,23 +2430,32 @@ function startFight(enemy: string) {
     setTimeout(playAdventureModule, 10000);
 }
 
+let playAdventure = true;
+
 function playAdventureModule() {
-    //todo - either do another adventure, or go to dragon based on modules played
-    let randomModule: AdventureModule = getRandomItem(modules)!;
-    // handleAdventureModule(randomModule);
+    if(playAdventure) {
+        //todo - either do another adventure, or go to dragon based on modules played
+        let randomModule: AdventureModule = getRandomItem(modules)!;
+        // handleAdventureModule(randomModule);
 
-    displayText(randomModule.Dialogue, () => {
-        setTimeout(() => {
-            handleAdventureModule(randomModule.Choices[0].Result[0])// getRandomItem(randomModule.Choices[0].Result[0].Choices[0].Result)!)
-            // displayText(randomModule.Choices[0].Result[0].Dialogue, () => {
-            //     setTimeout(() => {
-            //         handleAdventureModule(randomModule.Choices[0].Result[0])// getRandomItem(randomModule.Choices[0].Result[0].Choices[0].Result)!)
-            //     }, 3000);
-            // })
-        }, 3000);
-    });
+        // displayText(randomModule.Dialogue, () => {
+        //     setTimeout(() => {
+        //         handleAdventureModule(randomModule.Choices[0].Result[0])// getRandomItem(randomModule.Choices[0].Result[0].Choices[0].Result)!)
+        //         // displayText(randomModule.Choices[0].Result[0].Dialogue, () => {
+        //         //     setTimeout(() => {
+        //         //         handleAdventureModule(randomModule.Choices[0].Result[0])// getRandomItem(randomModule.Choices[0].Result[0].Choices[0].Result)!)
+        //         //     }, 3000);
+        //         // })
+        //     }, 3000);
+        // });
 
-    // handleAdventureModule(getRandomItem(randomModule.Choices[0].Result)!);
+        handleAdventureModule(randomModule)//getRandomItem(randomModule.Choices[0].Result)!);
+    }
+    else {
+        taWS.send(JSON.stringify({ type: 'restartdragon' }));
+    }
+
+    playAdventure = !playAdventure;
 }
 
 function handleAdventureModule(module: AdventureModule) {

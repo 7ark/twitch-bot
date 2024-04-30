@@ -11,7 +11,7 @@ const port = 3000; // Port where your local server will run
 const clientID = process.env.CLIENT_ID as string;
 const clientSecret = process.env.CLIENT_SECRET as string;
 const redirectURI = 'http://localhost:3000/auth/twitch/callback'; // Must match one of the redirect URIs registered in Twitch Developer Console
-const scopes = 'chat:read chat:edit channel:read:redemptions channel:manage:redemptions channel:manage:polls channel:read:subscriptions'; // Add other scopes as needed
+const scopes = 'chat:read chat:edit channel:read:redemptions channel:manage:redemptions channel:manage:polls channel:read:subscriptions moderator:manage:banned_users'; // Add other scopes as needed
 
 // Redirect users to Twitch for authorization
 app.get('/auth/twitch', (req: any, res: any) => {

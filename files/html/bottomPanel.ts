@@ -22,13 +22,20 @@ bpWS.onmessage = (event: MessageEvent) => {
     else if(dataType === 'showfloatingtext') {
         handleShowFloatingText(JSON.parse(event.data));
     }
+    else if(dataType === 'addstickman') {
+        bpWS.send(JSON.stringify({ type: 'adding' }));
+        console.log("ADding stickman");
+        let data = JSON.parse(event.data);
+        let name = data.displayName.toLowerCase();
+        createStickman(name, data.color);
+    }
 };
 
+const defaultY = 180;
+const totalWidth = 2000;
+const sideBuffer = 400;
 
 function handlePlayerMessage(data: { type: string; displayName: string; message: string; color: string; }) {
-    const defaultY = 180;
-    const totalWidth = 2000;
-    const sideBuffer = 400;
     let name = data.displayName.toLowerCase();
 
     if(stickmen.has(name!)){
@@ -84,26 +91,30 @@ function handlePlayerMessage(data: { type: string; displayName: string; message:
         }), {once: true};
     }
     else {
-        const stickman: HTMLPreElement = document.createElement('pre');
-        let extraSpaces = '';
-        let length = Math.floor(name!.length / 3);
-        for (let i = 0; i < length; i++) {
-            extraSpaces += ' ';
-        }
-
-        stickman.textContent = `${name}\n${extraSpaces} O \n${extraSpaces}/|\\\n${extraSpaces}/ \\`;
-        stickmenContainer?.appendChild(stickman);
-        let val = {
-            element: stickman,
-            xPos: Math.random() * (totalWidth - (sideBuffer * 2)) + sideBuffer
-        };
-
-        stickmen.set(name!, val);
-        stickman.style.transform = `translateX(${val.xPos}px) translateY(${defaultY}px) `;
-        stickman.style.color = data.color || '#57a64a';
-        stickman.style.fontWeight = 'bold';
-        stickman.style.position = 'absolute';
+        createStickman(name, data.color);
     }
+}
+
+function createStickman(name: string, color: string) {
+    const stickman: HTMLPreElement = document.createElement('pre');
+    let extraSpaces = '';
+    let length = Math.floor(name!.length / 3);
+    for (let i = 0; i < length; i++) {
+        extraSpaces += ' ';
+    }
+
+    stickman.textContent = `${name}\n${extraSpaces} O \n${extraSpaces}/|\\\n${extraSpaces}/ \\`;
+    stickmenContainer?.appendChild(stickman);
+    let val = {
+        element: stickman,
+        xPos: Math.random() * (totalWidth - (sideBuffer * 2)) + sideBuffer
+    };
+
+    stickmen.set(name!, val);
+    stickman.style.transform = `translateX(${val.xPos}px) translateY(${defaultY}px) `;
+    stickman.style.color = color || '#57a64a';
+    stickman.style.fontWeight = 'bold';
+    stickman.style.position = 'absolute';
 }
 
 function handleExpMessage(data: { type: string; displayName: string; display: string; }) {

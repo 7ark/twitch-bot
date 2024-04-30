@@ -1,31 +1,36 @@
 import {ChatUserstate, Client} from "tmi.js";
 import {
-    calculateExpNeeded, calculateMaxHealth,
+    CalculateExpNeeded,
+    CalculateMaxHealth,
+    ChangePlayerHealth,
     ClassType,
+    GiveExp,
     GivePlayerObject,
     LoadPlayer,
     Player,
     SavePlayer,
     TakeObjectFromPlayer
-} from "./playerData";
-import {broadcast, isDragonActive, sayAllChat} from "./bot";
-import {
-    getRandomIntI,
-    getRandomItem, GetStringifiedSessionData,
-    GiveExp,
-    LoadDragonData, LoadPlayerSession, okayVoices, PlayerSessionData,
-    playSound,
-    playTextToSpeech,
-    SaveDragonData, SavePlayerSession,
-    setMonitorBrightnessContrastTemporarily,
-    setMonitorRotationTemporarily, TriggerDragonAttack, tryToSetVoice
-} from "./utils";
+} from "./utils/playerGameUtils";
+import {Broadcast} from "./bot";
+import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils/utils";
 import fs from "fs";
-import {attackDefinitions, ClassMove, getMove, MoveType} from "./movesDefinitions";
-import {allInventoryObjects, DoesPlayerHaveObject, InventoryObject} from "./inventory";
-import {setAudioMute} from "./obsutils";
-
-// import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
+import {AttackDefinitions, ClassMove, GetMove, MoveType} from "./movesDefinitions";
+import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject, ObjectTier} from "./inventory";
+import {
+    GetObsSourcePosition,
+    GetObsSourceScale,
+    SCENE_HEIGHT,
+    SCENE_WIDTH,
+    SetAudioMute,
+    SetObsSourcePosition,
+    SetObsSourceScale
+} from "./utils/obsutils";
+import {IsDragonActive, SayAllChat} from "./globals";
+import {GetStringifiedSessionData} from "./utils/playerSessionUtils";
+import {DoDamage, StunBytefire} from "./utils/dragonUtils";
+import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
+import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
+import {CreateAndBuildGambleAlert} from "./utils/alertUtils";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -88,10 +93,11 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
 ]);
 
 let battlecryStarted: boolean = false;
+let gainHPOnCrit: boolean = false;
 
-function handleTimeout(command: string) {
+function HandleTimeout(command: string) {
     cooldowns.forEach((val, key) => {
-        if(isCommand(command, key) && !val.isInGracePeriod) {
+        if(IsCommand(command, key) && !val.isInGracePeriod) {
             val.isInGracePeriod = true;
             cooldowns.set(key, val);
 
@@ -113,34 +119,13 @@ function handleTimeout(command: string) {
     })
 }
 
-function cleanMessage(input: string): string {
-    // Check if the string is empty
-    if (input.length === 0) return input;
-
-    // Regex to match valid characters (letters, numbers, punctuation, symbols)
-    const validCharRegex = /[\p{L}\p{N}\p{P}\p{S}]$/u;
-
-    // Get the last character of the string
-    const lastChar = input[input.length - 1];
-
-    // Check if the last character is valid
-    if (!validCharRegex.test(lastChar)) {
-        // If invalid, remove the last character
-        return input.slice(0, input.length - 2);
-    }
-
-    // Return the original string if the last character is valid
-    return input;
-}
-
-export async function processCommands(client: Client, userState: ChatUserstate, command: string) {
-    command = cleanMessage(command.toLowerCase());
+export async function ProcessCommands(client: Client, userState: ChatUserstate, command: string) {
     // console.log(command + " vs " + cleanMessage(command));
 
     let onTimeout: string = '';
     let showCooldownMsg = false;
     cooldowns.forEach((val, key) => {
-        if(val.isOnTimeout && isCommand(command, key)) {
+        if(val.isOnTimeout && IsCommand(command, key)) {
             onTimeout = key;
             showCooldownMsg = val.showCooldownMessage;
         }
@@ -154,17 +139,17 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
     }
 
 
-    if(isCommand(command, 'lurk')) {
+    if(IsCommand(command, 'lurk')) {
         await client.say(process.env.CHANNEL!, `@${userState['display-name']}, have a nice lurk!`);
     }
-    else if(isCommand(command, 'cc')) {
+    else if(IsCommand(command, 'cc')) {
         await client.say(process.env.CHANNEL!, `Crowd Control is a way for you (the viewer) to interact with my modded game and cause fun effects to happen, good or bad. 
         You can get 250 free coins (on desktop) every 30 minutes from the overlay on screen, or buy them from my interact link: https://interact.crowdcontrol.live/#/twitch/26580802/coins`);
     }
-    else if(isCommand(command, 'discord')) {
+    else if(IsCommand(command, 'discord')) {
         await client.say(process.env.CHANNEL!, `Come hang out on our Discord, to chat, give stream suggestions, and get go live notification. Join here: https://discord.gg/A7R5wFFUWG`);
     }
-    else if(isCommand(command, 'mage') || isCommand(command, 'warrior') || isCommand(command, 'rogue')) {
+    else if(IsCommand(command, 'mage') || IsCommand(command, 'warrior') || IsCommand(command, 'rogue')) {
         let player = LoadPlayer(userState['display-name']!);
         // console.log(`Loaded ${player.Username} ${player.Level} ${player.LevelUpsAvailable}`);
         if(player.LevelUpAvailable) {
@@ -176,8 +161,8 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
                     if(player.Classes[i].Type == classType) {
                         if(player.Classes[i].Level === 0) {
                             //Free weapons for warriors
-                            GivePlayerObject(player.Username, "sword");
-                            GivePlayerObject(player.Username, "hammer");
+                            GivePlayerObject(client, player.Username, "sword");
+                            GivePlayerObject(client, player.Username, "hammer");
                         }
                         break;
                     }
@@ -190,7 +175,7 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
                     if(player.Classes[i].Type == classType) {
                         if(player.Classes[i].Level === 0) {
                             //Free dagger for rogues
-                            GivePlayerObject(player.Username, "dagger");
+                            GivePlayerObject(client, player.Username, "dagger");
                         }
                         break;
                     }
@@ -201,7 +186,7 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
                     if(player.Classes[i].Type == classType) {
                         if(player.Classes[i].Level === 0) {
                             //Free wand for mages
-                            GivePlayerObject(player.Username, "wand");
+                            GivePlayerObject(client, player.Username, "wand");
                         }
                         break;
                     }
@@ -210,7 +195,7 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
 
             player.CurrentExp -= player.CurrentExpNeeded;
             player.Level++;
-            player.CurrentExpNeeded = calculateExpNeeded(player.Level);
+            player.CurrentExpNeeded = CalculateExpNeeded(player.Level);
             if(player.CurrentExp < player.CurrentExpNeeded) {
                 player.LevelUpAvailable = false;
             }
@@ -221,7 +206,7 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
                 }
             }
 
-            let final = getPlayerStatsDisplay(userState['display-name']!, player);
+            let final = GetPlayerStatsDisplay(userState['display-name']!, player);
 
             SavePlayer(player);
 
@@ -231,18 +216,18 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you have no level ups available.`);
         }
     }
-    else if(isCommand(command, 'stats') || isCommand(command, 'level')) {
+    else if(IsCommand(command, 'stats') || IsCommand(command, 'level')) {
         let player = LoadPlayer(userState['display-name']!);
 
-        await client.say(process.env.CHANNEL!, getPlayerStatsDisplay(userState['display-name']!, player));
+        await client.say(process.env.CHANNEL!, GetPlayerStatsDisplay(userState['display-name']!, player));
     }
-    else if(isCommand(command, 'moves')) {
+    else if(IsCommand(command, 'moves')) {
         let player = LoadPlayer(userState['display-name']!);
-        let text = `@${userState['display-name']!}, you know: `;
+        let text = `@${userState['display-name']!}, the moves you can use right now are: `;
 
         for (let i = 0; i < player.KnownMoves.length; i++) {
-            let move = getMove(player.KnownMoves[i]);
-            if(isDragonActive || (move !== undefined && move.Type !== MoveType.Attack)) {
+            let move = GetMove(player.KnownMoves[i]);
+            if(IsDragonActive || (move !== undefined && move.Type !== MoveType.Attack)) {
                 text += `!${player.KnownMoves[i]}`;
 
                 if(i < player.KnownMoves.length - 2) {
@@ -254,24 +239,28 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
             }
         }
 
+        let validDefs = AttackDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+
+        text += `. You can learn ${validDefs.length} new moves at this level.`;
+
         await client.say(process.env.CHANNEL!, text);
     }
-    else if(battlecryStarted && isCommand(command, 'battlecry')) {
-        playSound('battlecry');
+    else if(battlecryStarted && IsCommand(command, 'battlecry')) {
+        PlaySound('battlecry');
 
-        doBattleCry(userState['display-name']!);
+        DoBattleCry(userState['display-name']!);
     }
-    else if(userState['display-name']!.toLowerCase() === 'the7ark' && isCommand(command, 'giveallexp')) {
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'giveallexp')) {
         let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
         let expAmount = parseInt(command.replace('!giveallexp ', ''));
         for (let i = 0; i < allPlayerData.length; i++) {
             let currPlayer: Player = allPlayerData[i];
 
-            GiveExp(client, currPlayer.Username, expAmount);
+            await GiveExp(client, currPlayer.Username, expAmount);
         }
         await client.say(process.env.CHANNEL!, `I've given ${expAmount}EXP to ALL adventurers!`);
     }
-    else if(userState['display-name']!.toLowerCase() === 'the7ark' && isCommand(command, 'giveexp')) {
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'giveexp')) {
         console.log("giving exp to user");
         let afterText = command.replace('!giveexp ', '').split(' ');
         let user = afterText[0];
@@ -286,20 +275,20 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
         }
         else {
             await client.say(process.env.CHANNEL!, `Giving ${expAmount} to @${user}`);
-            GiveExp(client, user, expAmount);
+            await GiveExp(client, user, expAmount);
         }
     }
-    else if(userState['display-name']!.toLowerCase() === 'the7ark' && isCommand(command, 'adventure')) {
-        broadcast(JSON.stringify({ type: 'startadventure' }));
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'adventure')) {
+        Broadcast(JSON.stringify({ type: 'startadventure' }));
     }
-    else if(userState['display-name']!.toLowerCase() === 'the7ark' && isCommand(command, 'credits')) {
-        playSound("credits");
-        broadcast(JSON.stringify({ type: 'showcredits', data: GetStringifiedSessionData() }));
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'credits')) {
+        PlaySound("credits");
+        Broadcast(JSON.stringify({ type: 'showcredits', data: GetStringifiedSessionData() }));
     }
-    else if(isCommand(command, 'setvoice')) {
-        await tryToSetVoice(client, userState['display-name']!,  command.replace("!setvoice", "").trim());
+    else if(IsCommand(command, 'setvoice')) {
+        await TryToSetVoice(client, userState['display-name']!,  command.replace("!setvoice", "").trim());
     }
-    else if(isCommand(command, 'yell')) {
+    else if(IsCommand(command, 'yell')) {
         let player = LoadPlayer(userState['display-name']!);
 
         let textToSay = command.replace("!yell", "");
@@ -307,28 +296,45 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
             textToSay = textToSay.slice(0, 250) + "...";
         }
 
-        playTextToSpeech(textToSay, player.Voice === undefined || player.Voice === "" ? getRandomItem(okayVoices)!.voice : player.Voice);
+        PlayTextToSpeech(textToSay, );
 
         setTimeout(() => {
-            broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: textToSay, }));
+            Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: textToSay, }));
         }, 700);
     }
-    else if(isCommand(command, 'inventory')) {
+    else if(IsCommand(command, 'inventory')) {
         let player = LoadPlayer(userState['display-name']!);
         if(player.Inventory.length === 0) {
             await client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you have no items in your inventory`);
         }
         else {
             let final = `@${userState['display-name']!}, you have `;
-            for (let i = 0; i < player.Inventory.length; i++) {
-                let inventoryObj: InventoryObject = allInventoryObjects.find(x => x.ObjectName === player.Inventory[i]);
+            let uniqueItems: Array<{item: InventoryObject, count: number}> = [];
 
-                final += inventoryObj.ContextualName;
-                if(i < player.Inventory.length - 2 && player.Inventory.length > 2) {
+            for (let i = 0; i < player.Inventory.length; i++) {
+                let inventoryObj: InventoryObject = AllInventoryObjects.find(x => x.ObjectName === player.Inventory[i])!;
+
+                let foundObj = uniqueItems.find(x => x.item === inventoryObj);
+                if(foundObj !== undefined) {
+                    foundObj.count++;
+                }
+                else {
+                    uniqueItems.push({item: inventoryObj, count: 1})
+                }
+            }
+
+            for (let i = 0; i < uniqueItems.length; i++) {
+
+                final += uniqueItems[i].count > 1 ? uniqueItems[i].item.PluralName : uniqueItems[i].item.ContextualName;
+                if(uniqueItems[i].count > 1) {
+                    final += ` (x${uniqueItems[i].count})`;
+                }
+
+                if(i < uniqueItems.length - 2 && uniqueItems.length > 2) {
                     final += ", "
                 }
 
-                if(i === player.Inventory.length - 2) {
+                if(i === uniqueItems.length - 2) {
                     final += " and ";
                 }
             }
@@ -336,29 +342,71 @@ export async function processCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, final);
         }
     }
-    else if (isCommand(command, 'use')) {
+    else if (IsCommand(command, 'use')) {
         let player = LoadPlayer(userState['display-name']!);
 
         let objectUsed = command.replace("!use", "").trim();
-        let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectUsed)!;
+        let inventoryObject: InventoryObject = AllInventoryObjects.find(x => objectUsed.includes(x.ObjectName))!;
         
-        if(inventoryObject === undefined || inventoryObject === null) {
-            await client.say(process.env.CHANNEL!, `${player.Username}, you don't have that!`);
+        if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that!`);
         }
         else {
-            await inventoryObject.UseAction(client, player);
+            let wasUsed = await inventoryObject.UseAction(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
+            if(inventoryObject.Consumable && wasUsed) {
+                TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
+            }
         }
     }
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'give')) {
+        let afterText = command.replace('!give ', '').split(' ');
+        let user = afterText[0];
+        let objectUsed = "";
+        for (let i = 1; i < afterText.length; i++) {
+            objectUsed += afterText[i];
+            if(i != afterText.length - 1) {
+                objectUsed += " ";
+            }
+        }
+
+        let inventoryObject: InventoryObject = AllInventoryObjects.find(x => objectUsed.includes(x.ObjectName))!;
+
+        GivePlayerObject(client, user, objectUsed);
+
+    }
+    else if (IsCommand(command, 'info')) {
+        let player = LoadPlayer(userState['display-name']!);
+
+        let objectUsed = command.replace("!use", "").trim();
+        let inventoryObject: InventoryObject = AllInventoryObjects.find(x => objectUsed.includes(x.ObjectName))!;
+
+        if(inventoryObject === undefined || inventoryObject === null) {
+            await client.say(process.env.CHANNEL!, `${player.Username}, I'm not sure what that is`);
+        }
+        else {
+            await client.say(process.env.CHANNEL!, inventoryObject.Info);
+        }
+    }
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'test')) {
+        CreateAndBuildGambleAlert(client, userState['display-name']!, ObjectTier.High);
+
+    }
+    else if(IsCommand(command, 'togglepassive') && IsCommand(command, 'passive')) {
+        let player = LoadPlayer(userState['display-name']!);
+        player.PassiveModeEnabled = !player.PassiveModeEnabled;
+        SavePlayer(player);
+        await client.say(process.env.CHANNEL!, `${player.Username}, passive mode is now ${player.PassiveModeEnabled ? `enabled` : `disabled`}`);
+    }
     else {
-        await handleMoves(client, userState, command);
+        await HandleMoves(client, userState, command);
     }
 }
 
-async function handleMoves(client: Client, userState: ChatUserstate, command: string) {
+async function HandleMoves(client: Client, userState: ChatUserstate, command: string) {
     let player = LoadPlayer(userState['display-name']!);
 
-    if(isCommand(command, 'punch') && isDragonActive) {
-        doDamage(client, userState['display-name']!, 1);
+    if(IsCommand(command, 'punch') && IsDragonActive) {
+        await DoDamage(client, userState['display-name']!, 1);
         client.say(process.env.CHANNEL!, `@${userState['display-name']!} punches Bytefire for 1 damage!`);
         return;
     }
@@ -371,13 +419,13 @@ async function handleMoves(client: Client, userState: ChatUserstate, command: st
         }
     }
 
-    let moveAttempted: ClassMove | undefined = attackDefinitions.find(x => isCommand(command, x.Command));
+    let moveAttempted: ClassMove | undefined = AttackDefinitions.find(x => IsCommand(command, x.Command));
 
     let isDuck = (userState['display-name']!).toLowerCase() === 'one_1egged_duck';
-    let isDucksCommand = (isCommand(command, 'duckhunt') || isCommand(command, ' one1eghaha'));
+    let isDucksCommand = (IsCommand(command, 'duckhunt') || IsCommand(command, ' one1eghaha'));
     if(isDuck && isDucksCommand) {
         moveAttempted = {
-            Command: isCommand(command, 'duckhunt') ? 'duckhunt' : ' one1egHaha',
+            Command: IsCommand(command, 'duckhunt') ? 'duckhunt' : ' one1egHaha',
             Description: '',
             ClassRequired: ClassType.Rogue,
             Type: MoveType.Attack,
@@ -410,46 +458,50 @@ async function handleMoves(client: Client, userState: ChatUserstate, command: st
         if(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level > 0) {
             switch (moveAttempted.Type) {
                 case MoveType.Attack:
-                    handleMoveAttack(client, moveAttempted, player, userState['display-name']!, command);
+                    await HandleMoveAttack(client, moveAttempted, player, userState['display-name']!, command);
                     break;
                 case MoveType.PlaySound:
                     handleMovePlaySound(client, moveAttempted, userState['display-name']!, command);
                     break;
                 case MoveType.ChangeMonitorRotation:
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
-                        playSound(moveAttempted.SoundFile!);
+                        PlaySound(moveAttempted.SoundFile!);
                     }
-                    await handleMoveMonitorRotation(client, moveAttempted, userState['display-name']!, command);
+                    await HandleMoveMonitorRotation(client, moveAttempted, userState['display-name']!, command);
                     break;
                 case MoveType.DarkenMonitor:
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
-                        playSound(moveAttempted.SoundFile!);
+                        PlaySound(moveAttempted.SoundFile!);
                     }
-                    await handleMoveMonitorDarken(client, moveAttempted, userState['display-name']!, command);
+                    await HandleMoveMonitorDarken(client, moveAttempted, userState['display-name']!, command);
                     break;
                 case MoveType.SayAllChat:
+                    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', userState['display-name']!));
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
-                        playSound(moveAttempted.SoundFile!);
+                        PlaySound(moveAttempted.SoundFile!);
                     }
-                    sayAllChat = true;
+                    SayAllChat = true;
                     setTimeout(() => {
-                        sayAllChat = false;
-                    }, 20 * 1000);
+                        SayAllChat = false;
+                    }, 60 * 1000);
                     break;
                 case MoveType.TeleportCameraRandomly:
-                    if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
-                        playSound(moveAttempted.SoundFile!);
-                    }
+                    await HandleRandomCameraTeleport(client, moveAttempted, userState['display-name']!);
                     break;
                 case MoveType.Silence:
+                    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', userState['display-name']!));
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
-                        playSound(moveAttempted.SoundFile!);
+                        PlaySound(moveAttempted.SoundFile!);
                     }
-                    await setAudioMute("Mic/Aux", true);
+                    await SetAudioMute("Mic/Aux", true);
                     setTimeout(async () => {
-                        await setAudioMute("Mic/Aux", false);
+                        await SetAudioMute("Mic/Aux", false);
                     }, 10 * 1000);
 
+                    HandleTimeout(command);
+                    break;
+                case MoveType.GainHPOnCrit:
+                    await HandleGainHPOnCritTemporarily(client, moveAttempted, userState['display-name']!, command);
                     break;
             }
 
@@ -458,19 +510,10 @@ async function handleMoves(client: Client, userState: ChatUserstate, command: st
             client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you need to be a ${ClassType[moveAttempted?.ClassRequired]} to use that ability.`);
         }
     }
-
-    // let index = attackDefinitions.findIndex(x => x.Command == 'duckhunt');
-    // if(index !== -1) {
-    //     attackDefinitions.splice(index, 1)
-    // }
-    // index = attackDefinitions.findIndex(x => x.Command == ' one1egHaha');
-    // if(index !== -1) {
-    //     attackDefinitions.splice(index, 1)
-    // }
 }
 
-function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
-    if(!isDragonActive) {
+async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
+    if(!IsDragonActive) {
         return;
     }
     let chanceToMiss: number = moveAttempted.ChanceToMiss!;
@@ -481,7 +524,7 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
         chanceToMiss = 0;
     }
     
-    let rollToHit = getRandomIntI(0, 100);
+    let rollToHit = GetRandomIntI(0, 100);
 
     if(rollToHit <= chanceToMiss) {
         client.say(process.env.CHANNEL!, `@${username} missed!`);
@@ -489,13 +532,18 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
     else {
         let baseDamage: number = 0;
 
-        let finalSuccessText = getRandomItem(moveAttempted.SuccessText)!;
+        let finalSuccessText = GetRandomItem(moveAttempted.SuccessText)!;
+        let targetPlayer: Player = null;
 
+        let maxDamage = 0;
         if(moveAttempted.Command === "throw") {
-            let objectThrown = command.replace("!throw", "").trim();
+            let pieces = command.replace("!throw", "").trim().split(' ');
+            let objectThrown = pieces.length > 0 ? pieces[0] : "";
+            let target = pieces.length > 1 ? pieces[1] : "";
+            targetPlayer = LoadPlayer(target);
 
             if(objectThrown === "" || objectThrown.length <= 2) {
-                objectThrown = getRandomItem([
+                objectThrown = GetRandomItem([
                     "a rock they found nearby",
                     "a rock they found nearby",
                     "a rock they found nearby",
@@ -507,18 +555,25 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
                     "their feelings",
                 ])!;
 
-                baseDamage = getRandomIntI(1, 2);
+                baseDamage = GetRandomIntI(1, 2);
+                maxDamage = 2;
                 finalSuccessText = finalSuccessText.replace("{object}", objectThrown);
             }
             else {
-                let inventoryObject: InventoryObject = allInventoryObjects.find(x => x.ObjectName === objectThrown)!;
+                let inventoryObject: InventoryObject = AllInventoryObjects.find(x => x.ObjectName === objectThrown)!;
 
                 if(inventoryObject === undefined || inventoryObject.ObjectName === "" || !DoesPlayerHaveObject(username, inventoryObject.ObjectName)) {
                     client.say(process.env.CHANNEL!, `@${username}, you don't have that object!`);
                     return;
                 }
 
-                baseDamage = getRandomIntI(inventoryObject.ThrownDamage!.min, inventoryObject.ThrownDamage!.max);
+                if(inventoryObject.ThrownDamage === undefined) {
+                    client.say(process.env.CHANNEL!, `@${username}, you can't throw that object! You must use !use ${inventoryObject.ObjectName}`);
+                    return;
+                }
+
+                baseDamage = GetRandomIntI(inventoryObject.ThrownDamage!.min, inventoryObject.ThrownDamage!.max);
+                maxDamage = inventoryObject.ThrownDamage!.max;
                 finalSuccessText = finalSuccessText.replace("{object}", inventoryObject.ContextualName);
 
                 if(inventoryObject.Consumable) {
@@ -527,9 +582,9 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
             }
         }
         else {
-            baseDamage = getRandomIntI(moveAttempted.Damage!.min, moveAttempted.Damage!.max);
+            baseDamage = GetRandomIntI(moveAttempted.Damage!.min, moveAttempted.Damage!.max);
+            maxDamage = moveAttempted.Damage!.max;
         }
-
 
         let maxMultiplier = 3; // Targeting a 3x increase at level 100
 
@@ -542,17 +597,25 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
         // Calculate scaled damage
         let scaledDamage = Math.floor(baseDamage * scale);
         
-        let wasCrit = rollToHit >= 95;
+        let wasCrit = rollToHit >= 95 || player.Username.includes("7ark");
         //CRIT!
         if(wasCrit) {
+            scaledDamage = maxDamage;
+
             scaledDamage *= 2;
         }
 
         // const MAX_DAMAGE = 50;
         // scaledDamage = Math.min(scaledDamage, MAX_DAMAGE);
 
+
+        if(targetPlayer != null && targetPlayer.Level > 0) {
+            await ChangePlayerHealth(client, targetPlayer.Username, Math.round(scaledDamage), `@${username} tossed an object at them`);
+            return;
+        }
+
         // Apply the damage
-        doDamage(client, username, Math.round(scaledDamage));
+        await DoDamage(client, username, Math.round(scaledDamage));
 
         if(scaledDamage < 0) {
             finalSuccessText = finalSuccessText.replace("{0} damage", "{0} healing");
@@ -562,33 +625,37 @@ function handleMoveAttack(client: Client, moveAttempted: ClassMove, player: Play
         
         if(wasCrit) {
             finalSuccessText = `It's a critical hit! ${finalSuccessText}`;
+
+            if(gainHPOnCrit) {
+                await ChangePlayerHealth(client, player.Username, Math.round(scaledDamage));
+            }
         }
 
         client.say(process.env.CHANNEL!, finalSuccessText);
-        handleTimeout(command);
+        HandleTimeout(command);
         
         if(moveAttempted.StunChance !== undefined) {
-            if(getRandomIntI(1, 100) <= moveAttempted.StunChance) {
-                stunBytefire(client);
+            if(GetRandomIntI(1, 100) <= moveAttempted.StunChance) {
+                StunBytefire(client);
             }
         }
     }
 }
 
 function handleMovePlaySound(client: Client, moveAttempted: ClassMove, username: string, command: string) {
-    client.say(process.env.CHANNEL!, getRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
-    playSound(moveAttempted.SoundFile!);
+    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
+    PlaySound(moveAttempted.SoundFile!);
 
-    if(isCommand(command, 'battlecry')) {
+    if(IsCommand(command, 'battlecry')) {
         battlecryStarted = true;
 
-        doBattleCry(username);
+        DoBattleCry(username);
     }
 
-    handleTimeout(command);
+    HandleTimeout(command);
 }
 
-function doBattleCry(username: string) {
+function DoBattleCry(username: string) {
     let textOptions = [
         'OOOO RAAAA',
         'AAGGHHHHHH',
@@ -598,7 +665,7 @@ function doBattleCry(username: string) {
 
     let chosenOption = textOptions[Math.floor(Math.random() * textOptions.length)];
 
-    broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: username, displayText: chosenOption }));
+    Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: username, displayText: chosenOption }));
 
     let player = LoadPlayer(username);
 
@@ -615,7 +682,7 @@ function doBattleCry(username: string) {
     }, 300000); //5 Minutes
 }
 
-async function handleMoveMonitorRotation(client: Client, moveAttempted: ClassMove, username: string, command: string) {
+async function HandleMoveMonitorRotation(client: Client, moveAttempted: ClassMove, username: string, command: string) {
     let rotationOptions = [180];
 
     let afterText = command.replace(`!${moveAttempted.Command}`, '');
@@ -629,68 +696,83 @@ async function handleMoveMonitorRotation(client: Client, moveAttempted: ClassMov
         rotationOptions = [270];
     }
 
-    await setMonitorRotationTemporarily(getRandomItem(rotationOptions)!, 15);
+    await SetMonitorRotationTemporarily(GetRandomItem(rotationOptions)!, 15);
 
-    client.say(process.env.CHANNEL!, getRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
+    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
 
-    handleTimeout(command);
+    HandleTimeout(command);
 }
 
-async function handleMoveMonitorDarken(client: Client, moveAttempted: ClassMove, username: string, command: string) {
-    await setMonitorBrightnessContrastTemporarily(0, 20);
+async function HandleGainHPOnCritTemporarily(client: Client, moveAttempted: ClassMove, username: string, command: string) {
+    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
 
-    client.say(process.env.CHANNEL!, getRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
-
-    handleTimeout(command);
-}
-
-function stunBytefire(client: Client) {
-    let dragonInfo = LoadDragonData();
-    let stunTime = getRandomIntI(3, 10);
-    
-    dragonInfo.HitsBeforeAttack += stunTime;
-    client.say(process.env.CHANNEL!, `Bytefire was temporarily stunned and it will take longer for them to attack again!`);
-
-    SaveDragonData(dragonInfo);
-}
-
-function doDamage(client: Client, username: string, damage: number) {
-    let dragonInfo = LoadDragonData();
-    dragonInfo.Health -= damage;
-    if(dragonInfo.Health <= 0) {
-        dragonInfo.Health = 0;
-
-        //Handle dragon death somehow?
+    if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
+        PlaySound(moveAttempted.SoundFile!);
     }
 
+    let textSaid = command.replace("!heroic speech", "").trim()
+    if(textSaid.length > 3) {
+        let player = LoadPlayer(username);
+        PlayTextToSpeech(textSaid, TryGetPlayerVoice(player));
+    }
+
+    gainHPOnCrit = true;
     setTimeout(() => {
-        let playerSession: PlayerSessionData = LoadPlayerSession(username);
-        playerSession.TimesAttackedEnemy++;
-        SavePlayerSession(username, playerSession);
-    }, 100);
-
-    GiveExp(client, username, 1);
-
-    SaveDragonData(dragonInfo);
-
-    broadcast(JSON.stringify({ type: 'attack', info: dragonInfo }));
-
-    dragonInfo.HitsBeforeAttack--;
-    if(dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = getRandomIntI(10, 15);
-
-        setTimeout(() => {
-            TriggerDragonAttack(client);
-        }, 200);
-    }
-    else {
-        setTimeout(() => {
-            TriggerDragonAttack(client);
-        }, 200);
-    }
+        gainHPOnCrit = false;
+    }, 1000 * 60 * 5)
 }
 
-function getPlayerStatsDisplay(username: string, player: Player): string {
+async function HandleRandomCameraTeleport(client: Client, moveAttempted: ClassMove, username: string) {
+    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
+
+    if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
+        PlaySound(moveAttempted.SoundFile!);
+    }
+
+    let itemToTeleport = "Small Camera";
+
+    let ogScale = await GetObsSourceScale(itemToTeleport);
+    let ogPos = await GetObsSourcePosition(itemToTeleport);
+
+    let minScale = 0.7;
+    let maxScale = 1.5;
+
+    let xScale = GetRandomNumber(minScale, maxScale);
+    let yScale = GetRandomNumber(minScale, maxScale);
+
+    // let extreme = getRandomIntI(1, 3) == 1;
+    // if(!extreme) {
+    //     yScale = getRandomNumber(xScale * 0.9, xScale * 1.1);
+    // }
+
+    let newX = ogScale.x * xScale;
+    let newY = ogScale.y * yScale;
+
+    await SetObsSourceScale(itemToTeleport, newX, newY);
+
+    setTimeout(async () => {
+        let currentDim = await GetObsSourcePosition(itemToTeleport);
+
+        await SetObsSourcePosition(itemToTeleport, GetRandomIntI(currentDim.width, SCENE_WIDTH - currentDim.width), GetRandomIntI(currentDim.height, SCENE_HEIGHT - currentDim.height));
+
+        setTimeout(async () => {
+            await GetObsSourcePosition(itemToTeleport)
+            await SetObsSourcePosition(itemToTeleport, ogPos.x, ogPos.y);
+            await SetObsSourceScale(itemToTeleport, ogScale.x, ogScale.y);
+
+        }, 1000 * 15)
+    }, 50);
+}
+
+async function HandleMoveMonitorDarken(client: Client, moveAttempted: ClassMove, username: string, command: string) {
+    await SetMonitorBrightnessContrastTemporarily(0, 20);
+
+    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
+
+    HandleTimeout(command);
+}
+
+function GetPlayerStatsDisplay(username: string, player: Player): string {
     let classesAbove0 = 0;
     for (let i = 0; i < player.Classes.length; i++) {
         if(player.Classes[i].Level > 0) {
@@ -705,7 +787,7 @@ function getPlayerStatsDisplay(username: string, player: Player): string {
     }
     for (let i = 0; i < player.Classes.length; i++) {
         if(player.Classes[i].Level > 0) {
-            final += `a ${getNumberWithOrdinal(player.Classes[i].Level)} level ${ClassType[player.Classes[i].Type]}`;
+            final += `a ${GetNumberWithOrdinal(player.Classes[i].Level)} level ${ClassType[player.Classes[i].Type]}`;
             currClassCount++;
 
             if(currClassCount < classesAbove0 - 1) {
@@ -721,20 +803,14 @@ function getPlayerStatsDisplay(username: string, player: Player): string {
     }
 
     if(player.LevelUpAvailable) {
-        final += ` You also have another level up available.`;
+        final += ` You have a level up available.`;
     }
 
-    final += ` [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${calculateMaxHealth(player)}]HP`;
+    final += ` [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`;
 
     return final;
 }
 
-function getNumberWithOrdinal(n: number) {
-    let s = ["th", "st", "nd", "rd"],
-        v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-function isCommand(message: string, command: string): boolean {
+function IsCommand(message: string, command: string): boolean {
     return message === `!${command}` || message.includes(`!${command} `);
 }

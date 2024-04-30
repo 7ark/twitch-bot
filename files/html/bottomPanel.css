@@ -8,17 +8,6 @@
     animation-fill-mode: forwards; /* Add this line */
 }
 
-/*@keyframes floatAndFade {*/
-/*    0% {*/
-/*        opacity: 1;*/
-/*        transform: translateY(30px);*/
-/*    }*/
-/*    100% {*/
-/*        opacity: 0;*/
-/*        transform: translateY(10px);*/
-/*    }*/
-/*}*/
-
 .floatingText {
     position: absolute;
     overflow: visible !important;

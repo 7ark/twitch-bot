@@ -12,7 +12,7 @@ fcWS.onmessage = (event: MessageEvent) => {
 };
 
 const goalReward = "Crowd Control day with all effects for 1 coin"
-const currentFollowerGoal = 350;
+const currentFollowerGoal = 450;
 
 function handleFollowerCount(data: { type: string; followerCount: number; }) {
     const followerCountElement = document.getElementById('followergoal');

@@ -1,4 +1,4 @@
-import {ClassType} from "./playerData";
+import {ClassType} from "./utils/playerGameUtils";
 
 export enum MoveType {
     Attack,
@@ -8,6 +8,7 @@ export enum MoveType {
     TeleportCameraRandomly, //wizard
     SayAllChat, //Warrior roar
     Silence, //rogue
+    GainHPOnCrit, //warrior
 }
 
 export interface ClassMove {
@@ -29,17 +30,17 @@ export interface ClassMove {
     SuccessText: Array<string>;
 }
 
-export function getMove(name: string) {
-    for (let i = 0; i < attackDefinitions.length; i++) {
-        if(attackDefinitions[i].Command === name) {
-            return attackDefinitions[i];
+export function GetMove(name: string) {
+    for (let i = 0; i < AttackDefinitions.length; i++) {
+        if(AttackDefinitions[i].Command === name) {
+            return AttackDefinitions[i];
         }
     }
 
     return undefined;
 }
 
-export const attackDefinitions: Array<ClassMove> = [
+export const AttackDefinitions: Array<ClassMove> = [
 
     //Attacks
     {
@@ -242,6 +243,17 @@ export const attackDefinitions: Array<ClassMove> = [
         ],
     },
 
+    //Give health on crits
+    {
+        Command: 'heroic speech',
+        Description: `An ability that allows everyone in chat to gain HP on critical hits for 5 minutes`,
+        ClassRequired: ClassType.Warrior,
+        LevelRequirement: 5,
+        Type: MoveType.GainHPOnCrit,
+
+        SuccessText: [`@{name} is giving a heroic speech`],
+    },
+
     //Play sounds
     {
         Command: 'battlecry',
@@ -287,20 +299,20 @@ export const attackDefinitions: Array<ClassMove> = [
         Type: MoveType.SayAllChat,
         SoundFile: 'inspire',
 
-        SuccessText: [`@{name} inspired chat! Every message said will now be said out loud`],
+        SuccessText: [`@{name} inspired chat! Every message said for the next minute will now be said out loud`],
     },
 
     //Teleport camera
-    // {
-    //     Command: 'cast teleport',
-    //     Description: `A special ability that moves Corys camera to another place on stream randomly for 15 seconds`,
-    //     ClassRequired: ClassType.Mage,
-    //     LevelRequirement: 10,
-    //     Type: MoveType.TeleportCameraRandomly,
-    //     SoundFile: 'teleport',
-    //
-    //     SuccessText: [`@{name} teleported Corys camera to another place!`],
-    // },
+    {
+        Command: 'cast teleport',
+        Description: `A special ability that moves Corys camera to another place on stream randomly for 15 seconds`,
+        ClassRequired: ClassType.Mage,
+        LevelRequirement: 10,
+        Type: MoveType.TeleportCameraRandomly,
+        SoundFile: 'teleport',
+
+        SuccessText: [`@{name} teleported Corys camera to another place!`],
+    },
 
     //Silence
     {
