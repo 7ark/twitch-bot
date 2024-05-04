@@ -178,9 +178,14 @@ function showFloatingText(text: string, xPos: number) {
 }
 
 function handleShowFloatingText(data: { type: string; displayName: string; display: string; }) {
-    let stickmanInfo = stickmen.get(data.displayName!)!;
+    let name = data.displayName.toLowerCase();
 
-    showFloatingText(data.display, stickmanInfo.xPos + stickmanInfo.element.offsetWidth / 2);
+    if(stickmen.has(name!)) {
+        let stickmanInfo = stickmen.get(name!)!;
+        // console.log("found info", stickmanInfo);
+
+        showFloatingText( data.display, stickmanInfo.xPos + stickmanInfo.element.offsetWidth / 2);
+    }
 }
 
 function getRandomIntI(min: number, max: number): number {

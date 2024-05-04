@@ -16,6 +16,7 @@ import {
 } from "./utils/twitchUtils";
 import {ReceiveMessageFromHTML} from "./utils/htmlUtils";
 import {GetAllPlayerSessions, HandleLoadingSession, UpdateSessionTimestamp} from "./utils/playerSessionUtils";
+import {TryToStartRandomChatChallenge} from "./utils/alertUtils";
 
 dotenv.config();
 
@@ -175,6 +176,10 @@ async function InitializeBot() {
     setInterval(() => {
         PostNewRegularMessage(client);
     }, 900000); //15 minutes
+
+    setInterval(() => {
+        TryToStartRandomChatChallenge(client);
+    }, 1800000); //30 minutes
 
 }
 

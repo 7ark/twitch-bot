@@ -1,15 +1,20 @@
 import {
-    CalculateExpNeeded,
+    AddStatusEffectToPlayer,
     CalculateMaxHealth,
-    ChangePlayerHealth, GetRandomRewardableObjectFromPlayer,
-    GiveExp, GivePlayerObject,
+    ChangePlayerHealth, GetObjectFromInputText,
+    GetRandomRewardableObjectFromPlayer,
+    GiveExp,
+    GivePlayerObject,
     GivePlayerRandomObject,
     LoadPlayer,
-    Player, SavePlayer, TryLoadPlayer
+    Player,
+    SavePlayer,
+    StatusEffect,
+    TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {Client} from "tmi.js";
 import {Broadcast} from "./bot";
-import {GetRandomIntI, GetRandomNumber, IconType} from "./utils/utils";
+import {ClassType, GetRandomIntI, GetRandomNumber, IconType} from "./utils/utils";
 import {AddToActionQueue} from "./actionqueue";
 import {GetAllPlayerSessions, LoadPlayerSession, LoadRandomPlayerSession} from "./utils/playerSessionUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
@@ -21,6 +26,7 @@ export enum ObjectTier { Low, Mid, High }
 
 export interface InventoryObject {
     ObjectName: string;
+    Alias?: Array<string>;
     ContextualName: string;
     PluralName: string;
     Info: string;
@@ -30,6 +36,10 @@ export interface InventoryObject {
     UseAction: (client: Client, player: Player, afterText: string) => Promise<boolean>;
     Consumable: boolean;
     Rewardable: boolean;
+    ClassRestrictions?: Array<ClassType>;
+    Equippable?: boolean;
+    Durability?: { min: number, max: number};
+    ObjectAttackAction?: (client: Client, player: Player) => Promise<number>;
     Rarity: number;
 }
 
@@ -96,6 +106,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
     },
     {
         ObjectName: "healing potion",
+        Alias: ["healing", "healing potions", "health potion"],
         ContextualName: "a healing potion",
         PluralName: "healing potions",
         Info: "Heals whatever it touches!",
@@ -132,6 +143,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
     },
     {
         ObjectName: "banana bunch",
+        Alias: ["banana", "bananas"],
         ContextualName: "a bunch of bananas",
         PluralName: "bananas",
         Info: "Bananas! Made famous by monkeys. Ex. !use banana bunch",
@@ -160,8 +172,10 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         UseAction: async (client, player, afterText) => {
             //todo - make beer more interesting
             let tooDrunk = GetRandomIntI(1, 10) === 1;
-            await client.say(process.env.CHANNEL!, `@${player.Username}, you chug down a pint of beer. Ah, how wonderful. ${tooDrunk ? `You're a real messy drunk though, huh? You end up passing out, and hitting your head.` : `Refreshing and delicious.`}`);
-            await ChangePlayerHealth(client, player.Username, tooDrunk ? GetRandomIntI(-5, -15) : GetRandomIntI(10, 25))
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you chug down a pint of beer and become drunk for 5 minutes. Ah, how wonderful. ${tooDrunk ? `You're a real messy drunk though, huh? You end up passing out, and hitting your head.` : `Refreshing and delicious.`}`);
+            await ChangePlayerHealth(client, player.Username, tooDrunk ? GetRandomIntI(-5, -15) : GetRandomIntI(10, 25));
+
+            AddStatusEffectToPlayer(player.Username, StatusEffect.Drunk, 60 * 5);
 
             return true;
         },
@@ -171,6 +185,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
     },
     {
         ObjectName: "tinderbox",
+        Alias: ["tinderboxes"],
         ContextualName: "a tinderbox",
         PluralName: "tinderboxes",
         Info: "Let's you catch things on fire when used! Ex. !use tinderbox",
@@ -332,6 +347,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
     },
     {
         ObjectName: "magic nuke",
+        Alias: ["nuke"],
         ContextualName: "a magic nuke",
         PluralName: "magic nukes",
         Info: "Let's you nuke Bytefire, though also hurts yourself and other people. Ex. !use nuke",
@@ -447,7 +463,6 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         IconRep: IconType.Crystal,
         UseAction: async (client, player, afterText) => {
             let expNeeded = player.CurrentExpNeeded - player.CurrentExp;
-            console.log(player.CurrentExp + " / " + player.CurrentExpNeeded + " : " + expNeeded);
             await client.say(process.env.CHANNEL!, `@${player.Username} has crushed a magic crystal!`);
             await GiveExp(client, player.Username, expNeeded);
 
@@ -456,6 +471,70 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Consumable: true,
         Rewardable: true,
         Rarity: 6
+    },
+    {
+        ObjectName: "accuracy potion",
+        ContextualName: "an accuracy potion",
+        PluralName: "accuracy potions",
+        Alias: ["accuracy"],
+        Info: "Doubles your accuracy! Ex. !use accuracy potion",
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.BottleBlue,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} has increased accuracy for 5 minutes`);
+            AddStatusEffectToPlayer(player.Username, StatusEffect.DoubleAccuracy, 60 * 5);
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 10
+    },
+    {
+        ObjectName: "pure nail",
+        ContextualName: "a pure nail",
+        PluralName: "pure nails",
+        Info: "The pure nail from Hollow Knight. An incredible weapon. Has a durability, and will break after several uses. Equip it using !equip pure nail",
+        Tier: ObjectTier.High,
+        IconRep: IconType.PureNail,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you admire the beauty of the pure nail.`);
+
+            return false;
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Rogue, ClassType.Warrior ],
+        ObjectAttackAction: async (client, player) => {
+            return GetRandomIntI(20, 50);
+        },
+        Durability: {min: 10, max: 15},
+        Rarity: 4
+    },
+    {
+        ObjectName: "repair hammer",
+        ContextualName: "a repair hammer",
+        PluralName: "repair hammers",
+        Info: "Allows you to increase the durability of an object you have equipped! Ex. !use repair hammer",
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.Hammer,
+        UseAction: async (client, player, afterText) => {
+            if(player.EquippedObject !== undefined) {
+                let durabilityIncrease = GetRandomIntI(3, 6);
+
+                player.EquippedObject!.RemainingDurability += durabilityIncrease;
+                await client.say(process.env.CHANNEL!, `@${player.Username} the durability of your ${player.EquippedObject} has increased by ${durabilityIncrease}.`);
+                return true;
+            }
+            else {
+                await client.say(process.env.CHANNEL!, `@${player.Username} you must have an object equipped to repair it! Only some objects have durability, use !info [item] to check`);
+                return false;
+            }
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 5
     },
 ]
 

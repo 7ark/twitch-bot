@@ -1,21 +1,25 @@
 import {ChatUserstate, Client} from "tmi.js";
 import {
+    AddStatusEffectToPlayer,
     CalculateExpNeeded,
     CalculateMaxHealth,
     ChangePlayerHealth,
-    ClassType,
+    DoesPlayerHaveStatusEffect,
+    GetObjectFromInputText,
     GiveExp,
     GivePlayerObject,
+    LoadAllPlayers,
     LoadPlayer,
     Player,
     SavePlayer,
+    StatusEffect,
     TakeObjectFromPlayer
 } from "./utils/playerGameUtils";
 import {Broadcast} from "./bot";
-import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils/utils";
+import {ClassType, GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils/utils";
 import fs from "fs";
 import {AttackDefinitions, ClassMove, GetMove, MoveType} from "./movesDefinitions";
-import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject, ObjectTier} from "./inventory";
+import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject} from "./inventory";
 import {
     GetObsSourcePosition,
     GetObsSourceScale,
@@ -30,7 +34,6 @@ import {GetStringifiedSessionData} from "./utils/playerSessionUtils";
 import {DoDamage, StunBytefire} from "./utils/dragonUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
-import {CreateAndBuildGambleAlert} from "./utils/alertUtils";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -94,6 +97,7 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
 
 let battlecryStarted: boolean = false;
 let gainHPOnCrit: boolean = false;
+let isBytefirePoisoned: boolean = false;
 
 function HandleTimeout(command: string) {
     cooldowns.forEach((val, key) => {
@@ -302,7 +306,7 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: textToSay, }));
         }, 700);
     }
-    else if(IsCommand(command, 'inventory')) {
+    else if(IsCommand(command, 'inventory') || IsCommand(command, 'equipment')) {
         let player = LoadPlayer(userState['display-name']!);
         if(player.Inventory.length === 0) {
             await client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you have no items in your inventory`);
@@ -346,7 +350,7 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
         let player = LoadPlayer(userState['display-name']!);
 
         let objectUsed = command.replace("!use", "").trim();
-        let inventoryObject: InventoryObject = AllInventoryObjects.find(x => objectUsed.includes(x.ObjectName))!;
+        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed);
         
         if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that!`);
@@ -355,6 +359,58 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             let wasUsed = await inventoryObject.UseAction(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
             if(inventoryObject.Consumable && wasUsed) {
                 TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
+            }
+        }
+    }
+    else if (IsCommand(command, 'equip')) {
+        let player = LoadPlayer(userState['display-name']!);
+
+        let objectUsed = command.replace("!equip", "").trim();
+        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed);
+
+        if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that!`);
+        }
+        else {
+            if(inventoryObject.Equippable) {
+                if(player.EquippedBacklog === undefined) {
+                    player.EquippedBacklog = [];
+                }
+
+                if(player.EquippedObject !== undefined) {
+
+                    player.EquippedBacklog.push(player.EquippedObject);
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, you have unequipped your ${player.EquippedObject.ObjectName}`);
+                }
+
+                let existingObjectIndex = player.EquippedBacklog.findIndex(x => x.ObjectName === inventoryObject.ObjectName);
+                if(existingObjectIndex !== -1) {
+                    player.EquippedObject = player.EquippedBacklog[existingObjectIndex];
+                    player.EquippedBacklog.splice(existingObjectIndex, 1);
+                }
+                else {
+                    player.EquippedObject = {
+                        ObjectName: inventoryObject.ObjectName,
+                        RemainingDurability: GetRandomIntI(inventoryObject.Durability!.min, inventoryObject.Durability!.max)
+                    };
+                }
+
+                let attackClassInfo = "It will work with ";
+                if(inventoryObject.ClassRestrictions!.length === 3) {
+                    attackClassInfo += "all classes.";
+                }
+                else if(inventoryObject.ClassRestrictions!.length === 1) {
+                    attackClassInfo += `the ${ClassType[inventoryObject.ClassRestrictions![0]]} class.`;
+                }
+                else {
+                    attackClassInfo += `the ${ClassType[inventoryObject.ClassRestrictions![0]]} and ${ClassType[inventoryObject.ClassRestrictions![1]]} classes.`;
+                }
+
+                await client.say(process.env.CHANNEL!, `@${player.Username}, you have equipped your ${player.EquippedObject.ObjectName}. ${attackClassInfo}`);
+                SavePlayer(player);
+            }
+            else {
+                await client.say(process.env.CHANNEL!, `@${player.Username}, you can't equip that object.`);
             }
         }
     }
@@ -377,8 +433,8 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
     else if (IsCommand(command, 'info')) {
         let player = LoadPlayer(userState['display-name']!);
 
-        let objectUsed = command.replace("!use", "").trim();
-        let inventoryObject: InventoryObject = AllInventoryObjects.find(x => objectUsed.includes(x.ObjectName))!;
+        let objectUsed = command.replace("!info", "").trim();
+        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed);
 
         if(inventoryObject === undefined || inventoryObject === null) {
             await client.say(process.env.CHANNEL!, `${player.Username}, I'm not sure what that is`);
@@ -387,15 +443,35 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, inventoryObject.Info);
         }
     }
-    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'test')) {
-        CreateAndBuildGambleAlert(client, userState['display-name']!, ObjectTier.High);
-
-    }
-    else if(IsCommand(command, 'togglepassive') && IsCommand(command, 'passive')) {
+    else if(IsCommand(command, 'togglepassive') || IsCommand(command, 'passive')) {
         let player = LoadPlayer(userState['display-name']!);
         player.PassiveModeEnabled = !player.PassiveModeEnabled;
         SavePlayer(player);
         await client.say(process.env.CHANNEL!, `${player.Username}, passive mode is now ${player.PassiveModeEnabled ? `enabled` : `disabled`}`);
+    }
+    else if(IsCommand(command, 'deathleaderboard') || IsCommand(command, 'deathlb')) {
+        let players = LoadAllPlayers().sort((x, y) => {
+            return x.Deaths - y.Deaths;
+        });
+
+        let text = "Deaths Leaderboard: \n";
+        let max = Math.min(5, players.length);
+        for (let i = 0; i < max; i++) {
+            if(players[i].Deaths == undefined || players[i].Deaths == 0) {
+                break;
+            }
+
+            text += `${GetNumberWithOrdinal(i + 1)}: @${players[i].Username} - ${players[i].Deaths} Deaths`;
+
+            if(i != 5) {
+                text += " | ";
+            }
+        }
+
+        await client.say(process.env.CHANNEL!, text);
+    }
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'test')) {
+        AddStatusEffectToPlayer(userState['display-name']!, StatusEffect.Drunk, 60);
     }
     else {
         await HandleMoves(client, userState, command);
@@ -516,15 +592,26 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
     if(!IsDragonActive) {
         return;
     }
+
+    let isUsingObject = player.EquippedObject !== undefined && GetObjectFromInputText(player.EquippedObject.ObjectName).ClassRestrictions.includes(moveAttempted.ClassRequired);
+
     let chanceToMiss: number = moveAttempted.ChanceToMiss!;
 
     //Try to hit
-    chanceToMiss -= player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level;
+    chanceToMiss -= Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 2);
     if(chanceToMiss < 0) {
         chanceToMiss = 0;
     }
-    
+
     let rollToHit = GetRandomIntI(0, 100);
+
+    if(DoesPlayerHaveStatusEffect(username, StatusEffect.Drunk)) {
+        rollToHit -= GetRandomIntI(5, 30);
+    }
+
+    if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleAccuracy)) {
+        chanceToMiss = Math.round(chanceToMiss / 2);
+    }
 
     if(rollToHit <= chanceToMiss) {
         client.say(process.env.CHANNEL!, `@${username} missed!`);
@@ -560,7 +647,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
                 finalSuccessText = finalSuccessText.replace("{object}", objectThrown);
             }
             else {
-                let inventoryObject: InventoryObject = AllInventoryObjects.find(x => x.ObjectName === objectThrown)!;
+                let inventoryObject: InventoryObject = GetObjectFromInputText(objectThrown);
 
                 if(inventoryObject === undefined || inventoryObject.ObjectName === "" || !DoesPlayerHaveObject(username, inventoryObject.ObjectName)) {
                     client.say(process.env.CHANNEL!, `@${username}, you don't have that object!`);
@@ -586,6 +673,13 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             maxDamage = moveAttempted.Damage!.max;
         }
 
+        if(moveAttempted.Poison) {
+            isBytefirePoisoned = true;
+            setTimeout(() => {
+                isBytefirePoisoned = false;
+            }, 1000 * 60);
+        }
+
         let maxMultiplier = 3; // Targeting a 3x increase at level 100
 
         // Player's level for scaling (example value, replace with actual player level)
@@ -597,7 +691,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         // Calculate scaled damage
         let scaledDamage = Math.floor(baseDamage * scale);
         
-        let wasCrit = rollToHit >= 95 || player.Username.includes("7ark");
+        let wasCrit = rollToHit >= 95;
         //CRIT!
         if(wasCrit) {
             scaledDamage = maxDamage;
@@ -614,6 +708,30 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             return;
         }
 
+        let poisonDamage = Math.max(1, Math.round(scaledDamage * 0.2));
+        if(isBytefirePoisoned && scaledDamage > 0) {
+            scaledDamage += poisonDamage;
+        }
+
+        let extraObjectDamage = 0;
+        let extraObjectName = "";
+        if(isUsingObject) {
+            extraObjectDamage = await GetObjectFromInputText(player.EquippedObject!.ObjectName).ObjectAttackAction(client, player);
+            extraObjectName = GetObjectFromInputText(player.EquippedObject!.ObjectName).ContextualName;
+
+            player.EquippedObject!.RemainingDurability--;
+            if(player.EquippedObject!.RemainingDurability <= 0) {
+                TakeObjectFromPlayer(player.Username, player.EquippedObject!.ObjectName);
+
+                client.say(process.env.CHANNEL!, `@${username}, your ${player.EquippedObject!.ObjectName} ran out of durability and broke!`);
+                player.EquippedObject = undefined;
+            }
+
+            SavePlayer(player);
+
+            scaledDamage += extraObjectDamage;
+        }
+
         // Apply the damage
         await DoDamage(client, username, Math.round(scaledDamage));
 
@@ -622,6 +740,14 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
         
         finalSuccessText = finalSuccessText.replace('{0}', Math.abs(scaledDamage).toString()).replace('{name}', username);
+
+        if(isBytefirePoisoned) {
+            finalSuccessText += ` He took an extra ${poisonDamage} poison damage.`;
+        }
+
+        if(isUsingObject && extraObjectDamage > 0) {
+            finalSuccessText += ` Your attack with ${extraObjectName} did an extra ${extraObjectDamage} damage!`;
+        }
         
         if(wasCrit) {
             finalSuccessText = `It's a critical hit! ${finalSuccessText}`;
@@ -667,19 +793,7 @@ function DoBattleCry(username: string) {
 
     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: username, displayText: chosenOption }));
 
-    let player = LoadPlayer(username);
-
-    if(player.ExpBoostMultiplier > 1) {
-        return;
-    }
-
-    player.ExpBoostMultiplier = 2;
-    SavePlayer(player);
-
-    setTimeout(() => {
-        player.ExpBoostMultiplier = 1;
-        SavePlayer(player);
-    }, 300000); //5 Minutes
+    AddStatusEffectToPlayer(username, StatusEffect.DoubleExp, 60 * 5);
 }
 
 async function HandleMoveMonitorRotation(client: Client, moveAttempted: ClassMove, username: string, command: string) {
@@ -806,11 +920,15 @@ function GetPlayerStatsDisplay(username: string, player: Player): string {
         final += ` You have a level up available.`;
     }
 
-    final += ` [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`;
+    if(player.EquippedObject !== undefined) {
+        final += ` Your equipped ${player.EquippedObject!.ObjectName} has a durability left of ${player.EquippedObject!.RemainingDurability}.`;
+    }
+
+    final += ` You've died ${player.Deaths} times! [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`;
 
     return final;
 }
 
 function IsCommand(message: string, command: string): boolean {
-    return message === `!${command}` || message.includes(`!${command} `);
+    return message.toLowerCase() === `!${command}` || message.toLowerCase().includes(`!${command} `);
 }

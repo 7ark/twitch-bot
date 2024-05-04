@@ -20,7 +20,7 @@ import {CurrentPollJoker, MessageDelegate} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
 import {BanUser, CreatePoll} from "./utils/twitchUtils";
 import {LoadRandomPlayerSession} from "./utils/playerSessionUtils";
-import {CreateAndBuildGambleAlert} from "./utils/alertUtils";
+import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/alertUtils";
 import {ObjectTier} from "./inventory";
 
 const REDEEM_GAIN_5_EXP = '2c1c1337-583b-4a51-a169-b79c3cdd3d08';
@@ -36,7 +36,7 @@ const REDEEM_GAMBLE_MID = `72efd413-6fc0-4762-a8aa-7ebc155eabd4`;
 const REDEEM_GAMBLE_HIGH = `2974cacd-564b-44d3-923c-650962e2177f`;
 const REDEEM_CHAT_CHALLENGE = `37318946-604c-4b3a-8b84-21f2f8c7dd2b`;
 const REDEEM_FULL_HEAL = `2f11982a-179a-47cb-86d5-26478c186693`;
-const REDEEM_ADD_TO_STREAM = `548459e9-e4b1-4c81-b82d-afc8ef355fdb`;
+const REDEEM_OFFER_SIDEQUEST = `4dba9b6d-dbe2-413e-b94c-04670c678561`;
 
 export async function ProcessRedemptions(client: Client, username: string, rewardId: string, redemptionId: string, userInput: string) {
     console.log(`Redemption! from ${username}, a reward id of ${rewardId}`)
@@ -138,197 +138,28 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             CreateAndBuildGambleAlert(client, username, ObjectTier.High);
             break;
         case REDEEM_CHAT_CHALLENGE:
-            //Guess a number between 1 to 10, first person to get the number gets 15 exp and an item, second person gets 15exp, third person gets 5exp
-            //Do a math problem
-
-            let text = `Chat, you've been issued a challenge by ${username}. `;
-            let challenges: Array<{
-                challenge: () => void;
-                valid: () => boolean;
-            }> = [
-                {
-                    challenge:  () => {
-                        //Guess a number challenge.
-                        const vals = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', `ten`];
-                        let numberToGuess = GetRandomIntI(1, 10);
-                        let numberToGuessAsString = vals[numberToGuess];
-                        text += "Guess a number between one and ten and type it into chat. First person to guess gets a prize. You have 15 seconds.";
-
-                        AddToActionQueue(() => {
-                            let s = "";
-                            if(username[username.length - 1] === 's') {
-                                s = "'";
-                            }
-                            else {
-                                s = "'s";
-                            }
-                            PlayTextToSpeech(text);
-                            Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
-                            client.say(process.env.CHANNEL!, text);
-
-                            MessageDelegate.push(PlayerResponse);
-
-                            let someoneGotIt = false;
-
-                            function PlayerResponse(responseName: string, message: string) {
-                                if(message.toLowerCase() == numberToGuess.toString() || message.toLowerCase() == numberToGuessAsString) {
-                                    let index = MessageDelegate.indexOf(PlayerResponse);
-                                    if(index != -1) {
-                                        MessageDelegate.splice(index, 1);
-                                    }
-
-                                    PlayTextToSpeech(`${responseName} has guessed the correct number of ${numberToGuess}!`);
-                                    client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct number of ${numberToGuess}!`);
-                                    GivePlayerRandomObject(client, responseName);
-                                    GiveExp(client, responseName, 5);
-                                    someoneGotIt = true;
-                                }
-                            }
-
-                            setTimeout(() => {
-                                let index = MessageDelegate.indexOf(PlayerResponse);
-                                if(index != -1) {
-                                    MessageDelegate.splice(index, 1);
-                                }
-
-                                if(!someoneGotIt) {
-                                    PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${numberToGuess}.`);
-                                    client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${numberToGuess}.`);
-                                }
-
-                            }, 1000 * 25);
-
-                        }, 30)
-                    },
-                    valid: () => true
-                },
-                {
-                    challenge: () => {
-                        //Word scramble
-                        const words = ['water', 'duck', 'hunt', `secret`, `example`, `dragon`, `bytefire`, `lethal`, `company`, `scrap`, `skyrim`, `dungeon`, `programming`, `coding`, `gamer`];
-
-                        let randomWord = GetRandomItem(words)!;
-                        let scrambledWord = randomWord.split('').sort(function(){return 0.5-Math.random()}).join('')
-
-                        text += `Chat, unscramble this word. The word is "${scrambledWord}" You have 30 seconds.`;
-
-                        AddToActionQueue(() => {
-                            let s = "";
-                            if(username[username.length - 1] === 's') {
-                                s = "'";
-                            }
-                            else {
-                                s = "'s";
-                            }
-                            PlayTextToSpeech(text);
-                            Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
-                            client.say(process.env.CHANNEL!, text);
-
-                            MessageDelegate.push(PlayerResponse);
-
-                            let someoneGotIt = false;
-
-                            function PlayerResponse(responseName: string, message: string) {
-                                if(message.toLowerCase() == randomWord) {
-                                    let index = MessageDelegate.indexOf(PlayerResponse);
-                                    if(index != -1) {
-                                        MessageDelegate.splice(index, 1);
-                                    }
-
-                                    PlayTextToSpeech(`${responseName} has guessed the correct word of ${randomWord}!`);
-                                    client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct word of ${randomWord}!`);
-                                    GivePlayerRandomObject(client, responseName);
-                                    GiveExp(client, responseName, 5);
-                                    someoneGotIt = true;
-                                }
-                            }
-
-                            setTimeout(() => {
-                                let index = MessageDelegate.indexOf(PlayerResponse);
-                                if(index != -1) {
-                                    MessageDelegate.splice(index, 1);
-                                }
-
-                                if(!someoneGotIt) {
-                                    PlayTextToSpeech(`Challenge over. Nobody got the word in time! It was ${randomWord}.`);
-                                    client.say(process.env.CHANNEL!, `Challenge over. Nobody got the word in time! It was ${randomWord}.`);
-                                }
-
-                            }, 1000 * 40);
-
-                        }, 45)
-                    },
-                    valid: () => true
-                },
-                {
-                    challenge: () => {
-                        //Memory test
-
-                        let randomPlayerSession = LoadRandomPlayerSession(["the7ark"]);
-
-                        let user = randomPlayerSession.NameAsDisplayed;
-                        let randomMessage = GetRandomItem(randomPlayerSession.Messages);
-
-                        text += `Chat, guess who said this earlier in the stream. This user said "${randomMessage}". Say their username in chat. You have 60 seconds.`;
-
-                        AddToActionQueue(() => {
-                            let s = "";
-                            if(username[username.length - 1] === 's') {
-                                s = "'";
-                            }
-                            else {
-                                s = "'s";
-                            }
-                            PlayTextToSpeech(text);
-                            Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
-                            client.say(process.env.CHANNEL!, text);
-
-                            MessageDelegate.push(PlayerResponse);
-
-                            let someoneGotIt = false;
-
-                            function PlayerResponse(responseName: string, message: string) {
-                                if(user.toLowerCase().includes(message.toLowerCase().trim())) {
-                                    let index = MessageDelegate.indexOf(PlayerResponse);
-                                    if(index != -1) {
-                                        MessageDelegate.splice(index, 1);
-                                    }
-
-                                    PlayTextToSpeech(`${responseName} has guessed the correct user of ${user}!`);
-                                    client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
-                                    GivePlayerRandomObject(client, responseName);
-                                    GiveExp(client, responseName, 5);
-                                    someoneGotIt = true;
-                                }
-                            }
-
-                            setTimeout(() => {
-                                let index = MessageDelegate.indexOf(PlayerResponse);
-                                if(index != -1) {
-                                    MessageDelegate.splice(index, 1);
-                                }
-
-                                if(!someoneGotIt) {
-                                    PlayTextToSpeech(`Challenge over. Nobody got the user in time! It was ${user}.`);
-                                    client.say(process.env.CHANNEL!, `Challenge over. Nobody got the user in time! It was @${user}.`);
-                                }
-
-                            }, 1000 * 70);
-
-                        }, 80)
-                    },
-                    valid: () => LoadRandomPlayerSession(["the7ark"]).NameAsDisplayed.toLowerCase() != "the7ark"
-                },
-            ];
-
-            let randomChallenge = GetRandomItem(challenges.filter(x => x.valid()))!;
-
-            randomChallenge.challenge();
-
+            StartChatChallenge(client, username)
             break;
         case REDEEM_FULL_HEAL:
             await ChangePlayerHealth(client, player.Username, 9999999);
+            break;
+        case REDEEM_OFFER_SIDEQUEST:
+            let text = `${player.Username} is offering a side quest to "${userInput}". Cory, do you accept?`;
 
+            let s = "";
+            if(player.Username[player.Username.length - 1] === 's') {
+                s = "'";
+            }
+            else {
+                s = "'s";
+            }
+            Broadcast(JSON.stringify({ type: 'showDisplay', title: `${player.Username}${s} Sidequest`, message: text[0].toUpperCase() + text.slice(1), icon: (IconType.Scroll) }));
+
+            PlayTextToSpeech(`${player.Username} is offering a side quest to`, "en-US-BrianNeural", () => {
+                PlayTextToSpeech(userInput, TryGetPlayerVoice(player), () => {
+                    PlayTextToSpeech(`Cory, do you accept?`, "en-US-BrianNeural");
+                });
+            });
             break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))

@@ -39,7 +39,7 @@ export function GetAllPlayerSessionsRaw() {
     return allPlayerSessionData;
 }
 
-export function LoadRandomPlayerSession(exclusions?: Array<string>, excludePassiveMode: boolean = false) {
+export function LoadRandomPlayerSession(exclusions?: Array<string>, excludePassiveMode: boolean = false, hasAtLeastOneMessage: boolean = false) {
     let sessionsAsArray = Array.from(allPlayerSessionData.keys());
 
     if(exclusions !== undefined) {
@@ -53,7 +53,11 @@ export function LoadRandomPlayerSession(exclusions?: Array<string>, excludePassi
 
     for (let i = sessionsAsArray.length - 1; i >= 0; i--) {
         let player = LoadPlayer(sessionsAsArray[i].toLowerCase());
+        let session: PlayerSessionData = allPlayerSessionData.get(sessionsAsArray[i]);
         if(excludePassiveMode && (player.PassiveModeEnabled || player.Level == 0)) {
+            sessionsAsArray.splice(i, 1);
+        }
+        else if(hasAtLeastOneMessage && session.Messages.length == 0) {
             sessionsAsArray.splice(i, 1);
         }
     }

@@ -10,13 +10,12 @@ import {
 import {
     CalculateMaxHealth,
     ChangePlayerHealth,
-    ClassType,
     GiveExp,
     GivePlayerRandomObject,
     LoadPlayer
 } from "./playerGameUtils";
 import {SetSceneItemEnabled} from "./obsutils";
-import {GetRandomIntI, GetRandomNumber} from "./utils";
+import {ClassType, GetRandomIntI, GetRandomNumber} from "./utils";
 
 export interface DragonInfo {
     Health: number;
@@ -36,7 +35,7 @@ export function LoadDragonData(): DragonInfo {
     }
 
     if(dragonInfo.HitsBeforeAttack === undefined || dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = GetRandomIntI(10, 15);
+        dragonInfo.HitsBeforeAttack = GetRandomIntI(8, 12);
     }
 
     return dragonInfo;
@@ -131,7 +130,7 @@ export async function DoDamage(client: Client, username: string, damage: number)
 
     dragonInfo.HitsBeforeAttack--;
     if(dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = GetRandomIntI(10, 15);
+        dragonInfo.HitsBeforeAttack = GetRandomIntI(8, 12);
 
         setTimeout(async () => {
             await TriggerDragonAttack(client);

@@ -1,11 +1,7 @@
 import {ChatUserstate, Client} from "tmi.js";
 import {MessageDelegate, SayAllChat} from "../globals";
-import {LoadPlayer, RandomlyGiveExp} from "./playerGameUtils";
-import {
-    GetRandomInt,
-    GetRandomIntI,
-    GetRandomItem,
-} from "./utils";
+import {DoesPlayerHaveStatusEffect, LoadPlayer, RandomlyGiveExp, StatusEffect} from "./playerGameUtils";
+import {GetRandomInt, GetRandomIntI, GetRandomItem,} from "./utils";
 import {ProcessCommands} from "../commands";
 import {Broadcast} from "../bot";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
@@ -46,9 +42,23 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         hasBeenMessageSinceLastRegularMessage = true;
     }
 
-    if(SayAllChat && message[0] != '!' && !displayName.includes("the7ark")) {
-        let player = LoadPlayer(userState['display-name']!);
-        PlayTextToSpeech(message, TryGetPlayerVoice(player));
+    let player = LoadPlayer(userState['display-name']!);
+    if(message[0] != '!' && !message.includes("!yell")) {
+        if(SayAllChat && !displayName.includes("the7ark")) {
+            PlayTextToSpeech(message, TryGetPlayerVoice(player));
+            setTimeout(() => {
+                Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
+            }, 700);
+        }
+        else if(DoesPlayerHaveStatusEffect(userState['display-name']!, StatusEffect.Drunk)) {
+            if(GetRandomIntI(1, 5) != 1) {
+                let drunkText = DrunkifyText(message);
+                PlayTextToSpeech(drunkText, TryGetPlayerVoice(player));
+                setTimeout(() => {
+                    Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: drunkText, }));
+                }, 700);
+            }
+        }
     }
 
     let col = userState.color;
@@ -98,3 +108,53 @@ export async function PostNewRegularMessage(client: Client) {
 
     hasBeenMessageSinceLastRegularMessage = false;
 }
+function DrunkifyText(sentence: string): string {
+    const drunkBlips = [' *burp* ', ' *hic*', '...'];
+    const words = sentence.split(" ");
+    const drunkWords = words.map(word => {
+        // Randomly repeat letters and syllables
+        let result = word.split("").map(char => Math.random() > 0.8 ? char + char : char).join("");
+
+        // Slur modifications by randomly doubling vowels
+        result = result.replace(/[aeiou]/gi, match => Math.random() > 0.6 ? match + match : match);
+
+        // Randomly insert slurred sounds
+        if (Math.random() > 0.7) {
+            const slurSounds = ["h", "m", "r", "l"];
+            const randomSlur = slurSounds[Math.floor(Math.random() * slurSounds.length)];
+            const insertPosition = Math.floor(Math.random() * result.length);
+            result = result.slice(0, insertPosition) + randomSlur + result.slice(insertPosition);
+        }
+
+        return result;
+    });
+
+    if(GetRandomIntI(1, 2) == 1) {
+        drunkWords.push(GetRandomItem(drunkBlips)!);
+    }
+
+    // Randomly stretch out spaces between words
+    return drunkWords.join(" ");
+}
+
+// function DrunkifyText(text: string): string {
+//     const slurs = [' *burp* ', ' *hic*', '...'];
+//     let drunkText = '';
+//
+//     for (let i = 0; i < text.length; i++) {
+//         const randomChance = Math.random();
+//         if (randomChance < 0.4 && text[i] !== ' ') {
+//             // Duplicate the current letter occasionally
+//             drunkText += text[i] + text[i];
+//         } else {
+//             drunkText += text[i];
+//         }
+//
+//         // Occasionally add a slur or hiccup after a space
+//         if (text[i] === ' ' && randomChance < 0.15) {
+//             drunkText += slurs[Math.floor(Math.random() * slurs.length)];
+//         }
+//     }
+//
+//     return drunkText;
+// }

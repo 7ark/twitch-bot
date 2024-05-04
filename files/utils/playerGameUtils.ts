@@ -2,8 +2,20 @@ import fs from "fs";
 import {ChatUserstate, Client} from "tmi.js";
 import {Broadcast} from "../bot";
 import {AllInventoryObjects, InventoryObject} from "../inventory";
-import {GetRandomIntI, GetRandomItem} from "./utils";
+import {ClassType, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates} from "./utils";
 import {BanUser} from "./twitchUtils";
+
+export enum StatusEffect { DoubleExp, Drunk, DoubleAccuracy }
+export interface StatusEffectModule {
+    Effect: StatusEffect;
+    WhenEffectStarted: Date;
+    EffectTimeInSeconds: number;
+}
+
+export interface EquippableObjectReference {
+    ObjectName: string;
+    RemainingDurability: number;
+}
 
 export interface Player {
     Username: string;
@@ -14,13 +26,14 @@ export interface Player {
     CurrentExp: number;
     CurrentExpNeeded: number;
     KnownMoves: Array<string>;
-    ExpBoostMultiplier: number;
     Voice?: string;
     Inventory: Array<string>;
     PassiveModeEnabled: boolean;
+    Deaths: number;
+    StatusEffects: Array<StatusEffectModule>;
+    EquippedObject?: EquippableObjectReference | undefined;
+    EquippedBacklog?: Array<EquippableObjectReference>;
 }
-
-export enum ClassType { Mage, Warrior, Rogue }
 
 export interface Class {
     Type: ClassType;
@@ -42,6 +55,21 @@ export function TryLoadPlayer(displayName: string): Player | null {
     }
 
     return null;
+}
+
+export function LoadAllPlayers(): Array<Player> {
+    let allPlayers: Array<Player> = [];
+
+    if(fs.existsSync('playerData.json')) {
+        let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
+        for (let i = 0; i < allPlayerData.length; i++) {
+            let currPlayer: Player = allPlayerData[i];
+
+            allPlayers.push(currPlayer);
+        }
+    }
+
+    return allPlayers;
 }
 
 export function LoadPlayer(displayName: string): Player {
@@ -69,9 +97,10 @@ export function LoadPlayer(displayName: string): Player {
         CurrentExp: 0,
         CurrentExpNeeded: CalculateExpNeeded(0),
         KnownMoves: ["punch"],
-        ExpBoostMultiplier: 1,
         Voice: "",
+        Deaths: 0,
         Inventory: [],
+        StatusEffects: [],
         PassiveModeEnabled: false
     }
 
@@ -85,10 +114,6 @@ export function LoadPlayer(displayName: string): Player {
                 break;
             }
         }
-    }
-
-    if(player.ExpBoostMultiplier == undefined || player.ExpBoostMultiplier <= 0) {
-        player.ExpBoostMultiplier = 1;
     }
 
     if(player.KnownMoves === undefined || player.KnownMoves === null || player.KnownMoves.length === 0) {
@@ -121,6 +146,24 @@ export function LoadPlayer(displayName: string): Player {
 
     if(player.CurrentHealth === undefined || player.CurrentHealth <= 0) {
         player.CurrentHealth = CalculateMaxHealth(player);
+    }
+
+    if(player.Deaths === undefined) {
+        player.Deaths = 0;
+    }
+
+    if(player.StatusEffects === undefined) {
+        player.StatusEffects = [];
+    }
+
+    for (let i = player.StatusEffects.length - 1; i >= 0; i--) {
+        let se = player.StatusEffects[i];
+
+        // console.log(`Checking ${se.Effect}: ${se.WhenEffectStarted}`)
+
+        if(GetSecondsBetweenDates(se.WhenEffectStarted, new Date()) >= se.EffectTimeInSeconds) {
+            player.StatusEffects.splice(i, 1);
+        }
     }
 
     return player;
@@ -251,6 +294,7 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
 
         client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} damage and DIED! They've been banned for 5 minutes.`);
         player.CurrentHealth = maxHealth;
+        player.Deaths++;
         await BanUser(client, playerName, 5 * 60, deathReason);
     }
     else if(player.CurrentHealth > maxHealth) {
@@ -269,8 +313,8 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
 export async function GiveExp(client: Client, username: string, amount: number) {
     let player = LoadPlayer(username);
 
-    if(player.ExpBoostMultiplier > 1) {
-        amount *= player.ExpBoostMultiplier;
+    if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp)) {
+        amount *= 2;
     }
 
     player.CurrentExp += amount;
@@ -280,7 +324,7 @@ export async function GiveExp(client: Client, username: string, amount: number) 
             player.LevelUpAvailable = true;
             let text = `@${username} has LEVELED UP! You may choose a class to level into. Use !mage, !warrior, or !rogue to select a class.`;
             if(player.Level == 0) {
-                text = ' Passive mode has now been disabled.';
+                text += ' Passive mode has now been disabled.';
             }
             await client.say(process.env.CHANNEL!, text);
 
@@ -299,10 +343,45 @@ export async function GiveExp(client: Client, username: string, amount: number) 
     SavePlayer(player);
 }
 
-
 export async function RandomlyGiveExp(client: Client, username: string, chanceOutOfTen: number, exp: number) {
     let chance = Math.random() * 10;
     if(chance <= chanceOutOfTen) {
         await GiveExp(client, username, GetRandomIntI(1, 2));
     }
+}
+
+export function GetObjectFromInputText(text: string) {
+    let inventoryObject: InventoryObject | undefined = AllInventoryObjects.find(x => text === (x.ObjectName) || (x.Alias != undefined && x.Alias.some(y => text === (y))))!;
+
+    if(inventoryObject === undefined) {
+        inventoryObject = AllInventoryObjects.find(x => text.includes(x.ObjectName) || (x.Alias != undefined && x.Alias.some(y => text.includes(y))))!;
+    }
+
+    return inventoryObject;
+}
+
+export function AddStatusEffectToPlayer(username: string, effect: StatusEffect, timeInSeconds: number) {
+    let player = LoadPlayer(username);
+
+    let existingEffectIndex = player.StatusEffects.findIndex(x => x.Effect == effect);
+    if(existingEffectIndex == -1) {
+        player.StatusEffects.push({
+            Effect: effect,
+            WhenEffectStarted: new Date(),
+            EffectTimeInSeconds: timeInSeconds
+        })
+    }
+    else {
+        player.StatusEffects[existingEffectIndex].WhenEffectStarted = new Date();
+        player.StatusEffects[existingEffectIndex].EffectTimeInSeconds = timeInSeconds;
+    }
+
+    SavePlayer(player);
+}
+
+export function DoesPlayerHaveStatusEffect(username: string, effect: StatusEffect) {
+    let player = LoadPlayer(username);
+    let existingEffectIndex = player.StatusEffects.findIndex(x => x.Effect == effect);
+
+    return existingEffectIndex != -1;
 }

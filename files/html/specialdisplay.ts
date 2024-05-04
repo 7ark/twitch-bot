@@ -13,7 +13,7 @@ sdWS.onmessage = (event: MessageEvent) => {
     }
 };
 
-enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal }
+enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer }
 
 function getIcon(icon: IconType) {
     switch (icon) {
@@ -45,6 +45,12 @@ function getIcon(icon: IconType) {
             return 'extras/rabbit_t.png';
         case IconType.Crystal:
             return 'extras/crystal_t.png';
+        case IconType.BottleBlue:
+            return 'extras/bottle_blue_t.png';
+        case IconType.PureNail:
+            return 'extras/purenail.png';
+        case IconType.Hammer:
+            return 'extras/hammer_t.png';
     }
 
     return "";

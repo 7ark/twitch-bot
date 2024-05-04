@@ -1,4 +1,6 @@
-export enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal }
+export enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer }
+
+export enum ClassType { Mage, Warrior, Rogue }
 
 export function GetRandomNumber(min: number, max: number): number {
     // The maximum is inclusive and the minimum is inclusive
@@ -32,3 +34,8 @@ export function Shuffle<T>(array: T[]) {
     }
     return array;
 };
+
+export function GetSecondsBetweenDates(date1: Date, date2: Date): number {
+    const milliseconds = new Date(date2).getTime() - new Date(date1).getTime(); // Difference in milliseconds
+    return Math.floor(milliseconds / 1000); // Convert milliseconds to seconds
+}

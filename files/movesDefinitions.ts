@@ -1,4 +1,4 @@
-import {ClassType} from "./utils/playerGameUtils";
+import {ClassType} from "./utils/utils";
 
 export enum MoveType {
     Attack,
@@ -22,6 +22,7 @@ export interface ClassMove {
     ChanceToMiss?: number;
     Damage?: { min: number, max: number };
     StunChance?: number;
+    Poison?: boolean;
 
     //Play Sound
     SoundFile?: string;
@@ -215,14 +216,15 @@ export const AttackDefinitions: Array<ClassMove> = [
     },
     {
         Command: 'poison dart',
-        Description: `An attack that deals damage to Bytefire and poison damage over time (wip)`,
+        Description: `An attack that deals damage to Bytefire and poison damage over time`,
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 5,
         Type: MoveType.Attack,
+        Poison: true,
 
         ChanceToMiss: 30,
         Damage: { min: 3, max: 13 },
-        SuccessText: [`@{name} shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next 10 seconds! (Extra damage still wip)`],
+        SuccessText: [`@{name} shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next minute!`],
     },
     {
         Command: 'cancel',
