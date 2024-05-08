@@ -350,7 +350,23 @@ export async function RandomlyGiveExp(client: Client, username: string, chanceOu
     }
 }
 
-export function GetObjectFromInputText(text: string) {
+export function GetObjectFromInputText(text: string): InventoryObject | undefined {
+    let pieces = text.trim().split(' ');
+    for (let i = 0; i < pieces.length; i++) {
+        let textPiece = pieces[0];
+        for (let j = 1; j < i; j++) {
+            textPiece += " " + pieces[j];
+        }
+        let foundObject = CheckTextInstance(textPiece);
+        if(foundObject !== undefined) {
+            return foundObject;
+        }
+    }
+
+    return undefined;
+}
+
+function CheckTextInstance(text: string): InventoryObject | undefined {
     let inventoryObject: InventoryObject | undefined = AllInventoryObjects.find(x => text === (x.ObjectName) || (x.Alias != undefined && x.Alias.some(y => text === (y))))!;
 
     if(inventoryObject === undefined) {

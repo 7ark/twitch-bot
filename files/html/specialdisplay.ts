@@ -13,7 +13,7 @@ sdWS.onmessage = (event: MessageEvent) => {
     }
 };
 
-enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer }
+enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer, DiamondAxe, Wabbajack, ObsidianDagger }
 
 function getIcon(icon: IconType) {
     switch (icon) {
@@ -51,6 +51,12 @@ function getIcon(icon: IconType) {
             return 'extras/purenail.png';
         case IconType.Hammer:
             return 'extras/hammer_t.png';
+        case IconType.DiamondAxe:
+            return 'extras/diamondaxe.png';
+        case IconType.Wabbajack:
+            return 'extras/wabbajack.png';
+        case IconType.ObsidianDagger:
+            return 'extras/obsidiandagger.png';
     }
 
     return "";
@@ -99,7 +105,10 @@ function gambleDisplay(data: { type: string, title: string, slot1: Array<IconTyp
 
     slots.forEach((slot, index) => rollSlot(slot as HTMLElement, icons[index], 3000));
 
-    setTimeout(hideDisplay, 1000 * 10);
+    setTimeout(() => {
+        hideDisplay();
+        slots.forEach((slot, index) => slot.style.opacity = '0');
+    }, 1000 * 10);
 }
 
 function rollSlot(slot: HTMLElement, icons: string[], delay: number) {

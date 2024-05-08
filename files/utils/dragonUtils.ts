@@ -35,7 +35,7 @@ export function LoadDragonData(): DragonInfo {
     }
 
     if(dragonInfo.HitsBeforeAttack === undefined || dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = GetRandomIntI(8, 12);
+        dragonInfo.HitsBeforeAttack = GetRandomIntI(5, 10);
     }
 
     return dragonInfo;
@@ -64,7 +64,7 @@ export async function TriggerDragonAttack(client: Client) {
             let ac = 10 + Math.floor(playerClassInfo.Classes[ClassType.Rogue].Level / 3) + Math.floor(playerClassInfo.Classes[ClassType.Warrior].Level / 5);
 
             if(roll < ac) {
-                client.say(process.env.CHANNEL!, `Bytefire missed ${playerClassInfo.Username} after rolling a ${roll}!`);
+                client.say(process.env.CHANNEL!, `Bytefire missed ${playerClassInfo.Username} after rolling a ${roll} (He needed ${ac})!`);
             }
             else {
                 let damagePercentage = player.TimesAttackedEnemy / highestNumberOfAttacks;
@@ -73,7 +73,7 @@ export async function TriggerDragonAttack(client: Client) {
                     client.say(process.env.CHANNEL!, `Bytefire critical hit ${playerClassInfo.Username}!`);
                 }
 
-                let maxDamage = Math.floor(CalculateMaxHealth(playerClassInfo) * (roll === 25 ? 0.6 : GetRandomNumber(0.1, 0.3)));
+                let maxDamage = Math.floor(CalculateMaxHealth(playerClassInfo) * (roll === 25 ? 0.6 : GetRandomNumber(0.2, 0.3)));
 
                 let damage = Math.floor(maxDamage * damagePercentage);
 
@@ -130,7 +130,7 @@ export async function DoDamage(client: Client, username: string, damage: number)
 
     dragonInfo.HitsBeforeAttack--;
     if(dragonInfo.HitsBeforeAttack <= 0) {
-        dragonInfo.HitsBeforeAttack = GetRandomIntI(8, 12);
+        dragonInfo.HitsBeforeAttack = GetRandomIntI(5, 10);
 
         setTimeout(async () => {
             await TriggerDragonAttack(client);

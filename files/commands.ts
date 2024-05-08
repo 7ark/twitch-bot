@@ -34,6 +34,7 @@ import {GetStringifiedSessionData} from "./utils/playerSessionUtils";
 import {DoDamage, StunBytefire} from "./utils/dragonUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
+import {DrunkifyText} from "./utils/messageUtils";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -46,7 +47,7 @@ interface CooldownInfo {
 let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
     ["battlecry", {
         gracePeriod: 30000, //30 seconds
-        cooldown: 300000, //5 minutes
+        cooldown: 600000, //5 minutes
         isOnTimeout: false,
         isInGracePeriod: false,
         showCooldownMessage: true,
@@ -296,11 +297,16 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
         let player = LoadPlayer(userState['display-name']!);
 
         let textToSay = command.replace("!yell", "");
+
+        if(DoesPlayerHaveStatusEffect(userState['display-name']!, StatusEffect.Drunk)) {
+            textToSay = DrunkifyText(textToSay);
+        }
+
         if(textToSay.length > 250) {
             textToSay = textToSay.slice(0, 250) + "...";
         }
 
-        PlayTextToSpeech(textToSay, );
+        PlayTextToSpeech(textToSay, TryGetPlayerVoice(player));
 
         setTimeout(() => {
             Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: textToSay, }));
@@ -350,7 +356,7 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
         let player = LoadPlayer(userState['display-name']!);
 
         let objectUsed = command.replace("!use", "").trim();
-        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed);
+        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
         
         if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that!`);
@@ -443,6 +449,9 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, inventoryObject.Info);
         }
     }
+    else if (IsCommand(command, 'voices')) {
+        await client.say(process.env.CHANNEL!, `Use !setvoice [voice] to set your TTS voice for the stream. The available voices are: Andrew, Emma, Brian, Guy, Aria, Davis, Eric, Jacob, Roger, Steffan, AvaMultilingual, Amber, Ashley`);
+    }
     else if(IsCommand(command, 'togglepassive') || IsCommand(command, 'passive')) {
         let player = LoadPlayer(userState['display-name']!);
         player.PassiveModeEnabled = !player.PassiveModeEnabled;
@@ -506,7 +515,7 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
             ClassRequired: ClassType.Rogue,
             Type: MoveType.Attack,
 
-            ChanceToMiss: 30,
+            HitModifier: 30,
             Damage: { min: 3, max: 10 },
             SuccessText: [`@${userState['display-name']!} whips out duck hunt, and shoots Bytefire for {0} damage!`],
         };
@@ -595,32 +604,34 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
     let isUsingObject = player.EquippedObject !== undefined && GetObjectFromInputText(player.EquippedObject.ObjectName).ClassRestrictions.includes(moveAttempted.ClassRequired);
 
-    let chanceToMiss: number = moveAttempted.ChanceToMiss!;
 
     //Try to hit
-    chanceToMiss -= Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 2);
-    if(chanceToMiss < 0) {
-        chanceToMiss = 0;
-    }
+    let rollToHit = GetRandomIntI(1, 20);
+    let extraRollAddition = 0;
+    let wasCrit = rollToHit == 20;
 
-    let rollToHit = GetRandomIntI(0, 100);
+    extraRollAddition = Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 5);
 
     if(DoesPlayerHaveStatusEffect(username, StatusEffect.Drunk)) {
-        rollToHit -= GetRandomIntI(5, 30);
+        extraRollAddition += GetRandomIntI(-10, 10);
     }
 
     if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleAccuracy)) {
-        chanceToMiss = Math.round(chanceToMiss / 2);
+        extraRollAddition = (rollToHit + extraRollAddition) * 2;
     }
 
-    if(rollToHit <= chanceToMiss) {
-        client.say(process.env.CHANNEL!, `@${username} missed!`);
+    let dragonAc = GetRandomIntI(10, 14);
+
+    let rollDisplay = `${rollToHit + extraRollAddition} (${rollToHit} + ${extraRollAddition})`;
+
+    if(rollToHit + extraRollAddition < dragonAc) {
+        client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${dragonAc}`);
     }
     else {
         let baseDamage: number = 0;
 
         let finalSuccessText = GetRandomItem(moveAttempted.SuccessText)!;
-        let targetPlayer: Player = null;
+        let targetPlayer: Player | undefined = undefined;
 
         let maxDamage = 0;
         if(moveAttempted.Command === "throw") {
@@ -690,8 +701,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
         // Calculate scaled damage
         let scaledDamage = Math.floor(baseDamage * scale);
-        
-        let wasCrit = rollToHit >= 95;
+
         //CRIT!
         if(wasCrit) {
             scaledDamage = maxDamage;
@@ -739,7 +749,10 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             finalSuccessText = finalSuccessText.replace("{0} damage", "{0} healing");
         }
         
-        finalSuccessText = finalSuccessText.replace('{0}', Math.abs(scaledDamage).toString()).replace('{name}', username);
+        finalSuccessText = finalSuccessText
+            .replace('{0}', Math.abs(scaledDamage).toString())
+            .replace('{name}', username)
+            .replace("{roll}", rollDisplay);
 
         if(isBytefirePoisoned) {
             finalSuccessText += ` He took an extra ${poisonDamage} poison damage.`;

@@ -21,6 +21,7 @@ import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils
 import {BanUser, CreatePoll} from "./utils/twitchUtils";
 import {IsDragonActive} from "./globals";
 import {DoDamage, LoadDragonData} from "./utils/dragonUtils";
+import {SetSceneItemEnabled} from "./utils/obsutils";
 
 export enum ObjectTier { Low, Mid, High }
 
@@ -175,13 +176,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await client.say(process.env.CHANNEL!, `@${player.Username}, you chug down a pint of beer and become drunk for 5 minutes. Ah, how wonderful. ${tooDrunk ? `You're a real messy drunk though, huh? You end up passing out, and hitting your head.` : `Refreshing and delicious.`}`);
             await ChangePlayerHealth(client, player.Username, tooDrunk ? GetRandomIntI(-5, -15) : GetRandomIntI(10, 25));
 
-            AddStatusEffectToPlayer(player.Username, StatusEffect.Drunk, 60 * 5);
+            AddStatusEffectToPlayer(player.Username, StatusEffect.Drunk, 60 * 10);
 
             return true;
         },
         Consumable: true,
         Rewardable: true,
-        Rarity: 10
+        Rarity: 13
     },
     {
         ObjectName: "tinderbox",
@@ -365,6 +366,14 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
                 let wasBad = false;
 
+                setTimeout(() => {
+                    SetSceneItemEnabled("Explosion VFX", true);
+
+                    setTimeout(() => {
+                        SetSceneItemEnabled("Explosion VFX", false);
+                    }, 1000 * 17);
+                }, 1000 * 2);
+
                 setTimeout(async () => {
                     if(!afterText.includes("chat")) {
                         let dragonMaxHealth = LoadDragonData().MaxHealth;
@@ -420,25 +429,39 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "letter",
         ContextualName: "a letter",
         PluralName: "letters",
-        Info: "Allows you to send a random item you have to someone else! Ex. !use letter the7ark",
+        Info: "Allows you to send an item you have to someone else! Ex. !use letter the7ark crystal",
         Tier: ObjectTier.Mid,
         IconRep: IconType.Letter,
         UseAction: async (client, player, afterText) => {
-            //todo - maybe allow you to specify item?
-            let otherPlayer = TryLoadPlayer(afterText.trim());
+
+            let pieces = afterText.trim().split(' ');
+
+            let otherPlayer = TryLoadPlayer(pieces[0].replace("@", ""));
             if(otherPlayer != null) {
-                let randomItem = GetRandomRewardableObjectFromPlayer(player.Username, ["letter"]);
+                let item = GetObjectFromInputText(afterText.trim().replace(pieces[0] + " ", ""))!;
 
-                if(randomItem != null) {
-                    await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${randomItem.ContextualName}!`);
-                    GivePlayerObject(client, otherPlayer.Username, randomItem.ObjectName);
-                    let index = player.Inventory.indexOf(randomItem.ObjectName);
-                    player.Inventory.splice(index, 1);
+                if(item !== undefined) {
+                    if(item.ObjectName == "letter") {
+                        if(player.Inventory.filter(x => x == item.ObjectName).length <= 1) {
+                            await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have an extra letter to send`);
+                            return false;
+                        }
+                    }
 
-                    SavePlayer(player);
+                    if(player.Inventory.includes(item.ObjectName)) {
+                        await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${item.ContextualName}!`);
+                        GivePlayerObject(client, otherPlayer.Username, item.ObjectName);
+                        let index = player.Inventory.indexOf(item.ObjectName);
+                        player.Inventory.splice(index, 1);
+                        SavePlayer(player);
+                    }
+                    else {
+                        await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that item`);
+                        return false;
+                    }
                 }
                 else {
-                    await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have any giftable items`);
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, I couldn't find that item`);
                     return false;
                 }
             }
@@ -454,6 +477,48 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Rewardable: true,
         Rarity: 10
     },
+    // {
+    //     ObjectName: "letter",
+    //     ContextualName: "a letter",
+    //     PluralName: "letters",
+    //     Info: "Allows you to send a random item you have to someone else! Ex. !use letter the7ark",
+    //     Tier: ObjectTier.Mid,
+    //     IconRep: IconType.Letter,
+    //     UseAction: async (client, player, afterText) => {
+    //
+    //         let pieces = afterText.trim().split(' ');
+    //
+    //         //todo - maybe allow you to specify item?
+    //         let otherPlayer = TryLoadPlayer(pieces[0].trim());
+    //         if(otherPlayer != null) {
+    //             let randomItem = GetRandomRewardableObjectFromPlayer(player.Username, ["letter"]);
+    //
+    //
+    //             if(randomItem != null) {
+    //                 await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${randomItem.ContextualName}!`);
+    //                 GivePlayerObject(client, otherPlayer.Username, randomItem.ObjectName);
+    //                 let index = player.Inventory.indexOf(randomItem.ObjectName);
+    //                 player.Inventory.splice(index, 1);
+    //
+    //                 SavePlayer(player);
+    //             }
+    //             else {
+    //                 await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have any giftable items`);
+    //                 return false;
+    //             }
+    //         }
+    //         else {
+    //             await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player`);
+    //             return false;
+    //         }
+    //
+    //
+    //         return true;
+    //     },
+    //     Consumable: true,
+    //     Rewardable: true,
+    //     Rarity: 10
+    // },
     {
         ObjectName: "crystal",
         ContextualName: "a crystal",
@@ -494,7 +559,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pure nail",
         ContextualName: "a pure nail",
         PluralName: "pure nails",
-        Info: "The pure nail from Hollow Knight. An incredible weapon. Has a durability, and will break after several uses. Equip it using !equip pure nail",
+        Info: "The pure nail from Hollow Knight. An incredible weapon that does more damage. Has a durability, and will break after several uses. Equip it using !equip pure nail",
         Tier: ObjectTier.High,
         IconRep: IconType.PureNail,
         UseAction: async (client, player, afterText) => {
@@ -513,6 +578,72 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Rarity: 4
     },
     {
+        ObjectName: "diamond axe",
+        ContextualName: "a diamond axe",
+        PluralName: "diamond axes",
+        Info: "The diamond axe from Minecraft, it does more damage. Has a durability, and will break after several uses. Equip it using !equip diamond axe",
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.DiamondAxe,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you chop down a nearby tree in a single swing. A distant creeper says "Aw man"`);
+
+            return false;
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Warrior ],
+        ObjectAttackAction: async (client, player) => {
+            return GetRandomIntI(5, 15);
+        },
+        Durability: {min: 20, max: 30},
+        Rarity: 7
+    },
+    {
+        ObjectName: "wabbajack",
+        ContextualName: "a wabbajack",
+        PluralName: "wabbajacks",
+        Info: "The Wabbajack from Skyrim, does more damage. Has a durability, and will break after several uses. Equip it using !equip wabbajack",
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.Wabbajack,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you've started the Mind of Madness questline. Uh oh.`);
+
+            return false;
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Mage ],
+        ObjectAttackAction: async (client, player) => {
+            return GetRandomIntI(10, 20);
+        },
+        Durability: {min: 20, max: 30},
+        Rarity: 7
+    },
+    {
+        ObjectName: "obsidian dagger",
+        ContextualName: "an obsidian dagger",
+        PluralName: "obsidian daggers",
+        Info: "An obsidian dagger from Runescape, it does more damage. Has a durability, and will break after several uses. Equip it using !equip obsidian dagger",
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.ObsidianDagger,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you look into the obsidian. Oooo, shiny.`);
+
+            return false;
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Rogue ],
+        ObjectAttackAction: async (client, player) => {
+            return GetRandomIntI(10, 20);
+        },
+        Durability: {min: 30, max: 45},
+        Rarity: 7
+    },
+    {
         ObjectName: "repair hammer",
         ContextualName: "a repair hammer",
         PluralName: "repair hammers",
@@ -524,7 +655,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                 let durabilityIncrease = GetRandomIntI(3, 6);
 
                 player.EquippedObject!.RemainingDurability += durabilityIncrease;
-                await client.say(process.env.CHANNEL!, `@${player.Username} the durability of your ${player.EquippedObject} has increased by ${durabilityIncrease}.`);
+                await client.say(process.env.CHANNEL!, `@${player.Username} the durability of your ${player.EquippedObject.ObjectName} has increased by ${durabilityIncrease}.`);
                 return true;
             }
             else {

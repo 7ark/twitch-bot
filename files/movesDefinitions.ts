@@ -19,7 +19,7 @@ export interface ClassMove {
     Type: MoveType;
 
     //Attacking
-    ChanceToMiss?: number;
+    HitModifier?: number;
     Damage?: { min: number, max: number };
     StunChance?: number;
     Poison?: boolean;
@@ -50,9 +50,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 20,
+        HitModifier: 5,
         Damage: { min: 1, max: 2 },
-        SuccessText: [`{name} smashes Bytefire with a hammer for {0} damage!`],
+        SuccessText: [`{name} rolled {roll} and smashes Bytefire with a hammer for {0} damage!`],
     },
     {
         Command: 'slash',
@@ -60,9 +60,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 30,
+        HitModifier: 5,
         Damage: { min: 2, max: 3 },
-        SuccessText: [`@{name} slashes at Bytefire with a blade for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and slashes at Bytefire with a blade for {0} damage!`],
     },
     {
         Command: 'shoot',
@@ -71,9 +71,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 40,
+        HitModifier: 7,
         Damage: { min: 5, max: 8 },
-        SuccessText: [`@{name} shoots an arrow at Bytefire for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and shoots an arrow at Bytefire for {0} damage!`],
     },
     {
         Command: 'stab',
@@ -82,9 +82,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 50,
+        HitModifier: 7,
         Damage: { min: 7, max: 12 },
-        SuccessText: [`@{name} stabs at Bytefire with a sword for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and stabs at Bytefire with a sword for {0} damage!`],
     },
     {
         Command: 'charge',
@@ -94,9 +94,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         Type: MoveType.Attack,
         StunChance: 10,
 
-        ChanceToMiss: 50,
+        HitModifier: 50,
         Damage: { min: 7, max: 12 },
-        SuccessText: [`@{name} charges at Bytefire, slamming their shield into him for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and charges at Bytefire, slamming their shield into him for {0} damage!`],
     },
     {
         Command: 'rage',
@@ -105,9 +105,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 10,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 50,
+        HitModifier: 9,
         Damage: { min: 10, max: 20 },
-        SuccessText: [`@{name} gets into a frenzied rage, and starts beating the shit out of Bytefire for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and gets into a frenzied rage, and starts beating the shit out of Bytefire for {0} damage!`],
     },
     {
         Command: 'cast bolt',
@@ -115,9 +115,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 20,
-        Damage: { min: 1, max: 2 },
-        SuccessText: [`@{name} fires a bolt at Bytefire and it hits for {0} damage!`],
+        HitModifier: 5,
+        Damage: { min: 3, max: 6 },
+        SuccessText: [`@{name} rolled {roll} and fires a bolt at Bytefire and it hits for {0} damage!`],
     },
     {
         Command: 'cast fireball',
@@ -125,9 +125,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 40,
+        HitModifier: 5,
         Damage: { min: 5, max: 10 },
-        SuccessText: [`@{name} shoots a fireball at Bytefire and it explodes for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and shoots a fireball at Bytefire and it explodes for {0} damage!`],
     },
     {
         Command: 'cast freezing ray',
@@ -136,9 +136,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 40,
+        HitModifier: 7,
         Damage: { min: 8, max: 12 },
-        SuccessText: [`@{name} blasts Bytefire with a freezing ray for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and blasts Bytefire with a freezing ray for {0} damage!`],
     },
     {
         Command: 'cast feels',
@@ -147,9 +147,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 50,
+        HitModifier: 7,
         Damage: { min: 7, max: 12 },
-        SuccessText: [`@{name} uses 'feels' on Bytefire, making him very sad, and causing him to take {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and uses 'feels' on Bytefire, making him very sad, and causing him to take {0} damage!`],
     },
     {
         Command: 'cast lightning',
@@ -158,9 +158,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 40,
+        HitModifier: 7,
         Damage: { min: 10, max: 15 },
-        SuccessText: [`@{name} calls down a bolt of lightning on Bytefire for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and calls down a bolt of lightning on Bytefire for {0} damage!`],
     },
     {
         Command: 'cast meteor shower',
@@ -169,9 +169,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 10,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 20,
+        HitModifier: 9,
         Damage: { min: 5, max: 25 },
-        SuccessText: [`@{name} summons a meteor shower and rains massive rocks down on Bytefire for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and summons a meteor shower and rains massive rocks down on Bytefire for {0} damage!`],
     },
     {
         Command: 'throw',
@@ -179,8 +179,8 @@ export const AttackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 20,
-        SuccessText: [`@{name} throws {object} at Bytefire for {0} damage!`],
+        HitModifier: 5,
+        SuccessText: [`@{name} rolled {roll} and throws {object} at Bytefire for {0} damage!`],
     },
     {
         Command: 'backstab',
@@ -188,9 +188,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 30,
+        HitModifier: 5,
         Damage: { min: 4, max: 6 },
-        SuccessText: [`@{name} backstabs Bytefire using a dagger for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and backstabs Bytefire using a dagger for {0} damage!`],
     },
     {
         Command: 'sneak attack',
@@ -199,9 +199,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 40,
+        HitModifier: 7,
         Damage: { min: 8, max: 15 },
-        SuccessText: [`@{name} stabs Bytefire while hidden in the shadows for {0} damage!`],
+        SuccessText: [`@{name} rolled {roll} and stabs Bytefire while hidden in the shadows for {0} damage!`],
     },
     {
         Command: 'blackmail',
@@ -210,9 +210,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 30,
+        HitModifier: 7,
         Damage: { min: 3, max: 13 },
-        SuccessText: [`@{name} blackmails Bytefire with sensitive information, and he takes {0} psychic damage!`],
+        SuccessText: [`@{name} rolled {roll} and blackmails Bytefire with sensitive information, and he takes {0} psychic damage!`],
     },
     {
         Command: 'poison dart',
@@ -222,9 +222,9 @@ export const AttackDefinitions: Array<ClassMove> = [
         Type: MoveType.Attack,
         Poison: true,
 
-        ChanceToMiss: 30,
+        HitModifier: 7,
         Damage: { min: 3, max: 13 },
-        SuccessText: [`@{name} shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next minute!`],
+        SuccessText: [`@{name} rolled {roll} and rolled {roll} and shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next minute!`],
     },
     {
         Command: 'cancel',
@@ -233,15 +233,15 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 10,
         Type: MoveType.Attack,
 
-        ChanceToMiss: 50,
+        HitModifier: 9,
         Damage: { min: 8, max: 15 },
         SuccessText: [
-            `@{name} cancels Bytefire after some drunk tweets he made, and he takes {0} damage to his reputation!`,
-            `@{name} cancels Bytefire for plagiarizing someone else's work, and he takes {0} damage to his reputation!`,
-            `@{name} cancels Bytefire for insulting people he disagreed with, and he takes {0} damage to his reputation!`,
-            `@{name} cancels Bytefire for some tweets he made in 1995, and he takes {0} damage to his reputation!`,
-            `@{name} cancels Bytefire after some jokes he made, and he takes {0} damage to his reputation!`,
-            `@{name} cancels Bytefire after burning people to a crisp, and he takes {0} damage to his reputation!`,
+            `@{name} rolled {roll} and cancels Bytefire after some drunk tweets he made, and he takes {0} damage to his reputation!`,
+            `@{name} rolled {roll} and cancels Bytefire for plagiarizing someone else's work, and he takes {0} damage to his reputation!`,
+            `@{name} rolled {roll} and cancels Bytefire for insulting people he disagreed with, and he takes {0} damage to his reputation!`,
+            `@{name} rolled {roll} and cancels Bytefire for some tweets he made in 1995, and he takes {0} damage to his reputation!`,
+            `@{name} rolled {roll} and cancels Bytefire after some jokes he made, and he takes {0} damage to his reputation!`,
+            `@{name} rolled {roll} and cancels Bytefire after burning people to a crisp, and he takes {0} damage to his reputation!`,
         ],
     },
 

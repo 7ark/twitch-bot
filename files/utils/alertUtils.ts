@@ -263,12 +263,15 @@ export function StartChatChallenge(client: Client, username: string) {
         {
             challenge:  () => {
                 //Do a math problem
-                let numberOne = GetRandomIntI(1, 10);
-                let numberTwo = GetRandomIntI(1, 10);
-                let numberThree = GetRandomIntI(1, 10);
+                let numberOne = GetRandomIntI(2, 10);
+                let numberTwo = GetRandomIntI(2, 10);
+                let numberThree = GetRandomIntI(2, 10);
 
                 let operators = ["+", "-", "*"];
                 let operatorOne = GetRandomItem(operators)!;
+                if(operatorOne == "+" || operatorOne == "-") {
+                    operators = ["*"];
+                }
                 let operatorTwo = GetRandomItem(operators)!;
 
                 let constructedMath = `${numberOne} ${operatorOne} ${numberTwo} ${operatorTwo} ${numberThree}`;
@@ -285,7 +288,10 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text);
+
+                    let textButForSpeech = text.replace("+", "plus").replace("-", "minus").replace("*", "multiplied by");
+
+                    PlayTextToSpeech(textButForSpeech);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 

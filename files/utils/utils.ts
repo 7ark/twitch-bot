@@ -1,4 +1,4 @@
-export enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer }
+export enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer, DiamondAxe, Wabbajack, ObsidianDagger }
 
 export enum ClassType { Mage, Warrior, Rogue }
 

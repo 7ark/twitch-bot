@@ -52,10 +52,10 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         }
         else if(DoesPlayerHaveStatusEffect(userState['display-name']!, StatusEffect.Drunk)) {
             if(GetRandomIntI(1, 5) != 1) {
-                let drunkText = DrunkifyText(message);
-                PlayTextToSpeech(drunkText, TryGetPlayerVoice(player));
+                message = DrunkifyText(message);
+                PlayTextToSpeech(message, TryGetPlayerVoice(player));
                 setTimeout(() => {
-                    Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: drunkText, }));
+                    Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
                 }, 700);
             }
         }
@@ -108,7 +108,8 @@ export async function PostNewRegularMessage(client: Client) {
 
     hasBeenMessageSinceLastRegularMessage = false;
 }
-function DrunkifyText(sentence: string): string {
+
+export function DrunkifyText(sentence: string): string {
     const drunkBlips = [' *burp* ', ' *hic*', '...'];
     const words = sentence.split(" ");
     const drunkWords = words.map(word => {

@@ -36,6 +36,7 @@ const totalWidth = 2000;
 const sideBuffer = 400;
 
 function handlePlayerMessage(data: { type: string; displayName: string; message: string; color: string; }) {
+    // console.log(data);
     let name = data.displayName.toLowerCase();
 
     if(stickmen.has(name!)){
