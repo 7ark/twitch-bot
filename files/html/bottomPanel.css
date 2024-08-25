@@ -12,6 +12,5 @@
     position: absolute;
     overflow: visible !important;
     animation: floatAndFade 10s ease-out forwards;
-    color: #ff0; /* Yellow color, change as needed */
     pointer-events: none; /* Ensures the text doesn't interfere with clicking */
 }

@@ -1,4 +1,10 @@
-export enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer, DiamondAxe, Wabbajack, ObsidianDagger }
+export enum IconType {
+    Info, Scroll, Pencil, Coins,
+    Bottle, Box, Fruit, Bomb,
+    Bananas, CheeseWheel, Beer, Letter,
+    Rabbit, Crystal, BottleBlue, PureNail,
+    Hammer, DiamondAxe, Wabbajack, ObsidianDagger,
+    PoolNoodle }
 
 export enum ClassType { Mage, Warrior, Rogue }
 
@@ -21,6 +27,15 @@ export function GetRandomItem<T>(array: T[]): T | undefined {
     return array[randomIndex];
 }
 
+export function GetRandomEnum<T>(enumObj: T): number {
+    const enumValues = Object.keys(enumObj)
+        .filter(k => !isNaN(Number(k))) // Filter out non-numeric keys
+        .map(k => enumObj[k as keyof T]);
+
+    const randomIndex = Math.floor(Math.random() * enumValues.length);
+    return randomIndex;
+}
+
 export function GetNumberWithOrdinal(n: number) {
     let s = ["th", "st", "nd", "rd"],
         v = n % 100;
@@ -35,7 +50,20 @@ export function Shuffle<T>(array: T[]) {
     return array;
 };
 
+export function RemoveFromArray<T>(array: T[], val: T) {
+    const index = array.indexOf(val, 0);
+    if(index > -1) {
+        array.splice(index, 1);
+    }
+};
+
 export function GetSecondsBetweenDates(date1: Date, date2: Date): number {
     const milliseconds = new Date(date2).getTime() - new Date(date1).getTime(); // Difference in milliseconds
     return Math.floor(milliseconds / 1000); // Convert milliseconds to seconds
+}
+
+export function AddSpacesBeforeCapitals(string: string) {
+    string = string.replace(/([a-z])([A-Z])/g, '$1 $2');
+    string = string.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+    return string;
 }

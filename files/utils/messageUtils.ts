@@ -6,7 +6,18 @@ import {ProcessCommands} from "../commands";
 import {Broadcast} from "../bot";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {PlayTextToSpeech, TryGetPlayerVoice} from "./audioUtils";
+import {MinigameType} from "./minigameUtils";
+import {DoesPlayerHaveQuest, GivePlayerRandomQuest} from "./questUtils";
+import {AudioType} from "../streamSettings";
 
+let lastMessageTimestamp = new Date();
+
+export function GetMinutesSinceLastMessage(): number {
+    const currentTimestamp = new Date();
+    const millisecondsDifference = currentTimestamp.getTime() - lastMessageTimestamp.getTime();
+    const minutesDifference = millisecondsDifference / (1000 * 60);
+    return minutesDifference;
+}
 
 function CleanMessage(input: string): string {
     // Check if the string is empty
@@ -40,12 +51,13 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
 
     if(!displayName.includes("the7ark")) {
         hasBeenMessageSinceLastRegularMessage = true;
+        lastMessageTimestamp = new Date();
     }
 
     let player = LoadPlayer(userState['display-name']!);
     if(message[0] != '!' && !message.includes("!yell")) {
         if(SayAllChat && !displayName.includes("the7ark")) {
-            PlayTextToSpeech(message, TryGetPlayerVoice(player));
+            PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
             setTimeout(() => {
                 Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
             }, 700);
@@ -53,7 +65,7 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         else if(DoesPlayerHaveStatusEffect(userState['display-name']!, StatusEffect.Drunk)) {
             if(GetRandomIntI(1, 5) != 1) {
                 message = DrunkifyText(message);
-                PlayTextToSpeech(message, TryGetPlayerVoice(player));
+                PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
                 setTimeout(() => {
                     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
                 }, 700);
@@ -61,11 +73,20 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         }
     }
 
+    //Must be level 5 to get quests, not have a quest already, and a 1 in 5 chance with each message
+    if(player.Level >= 5 &&
+        !DoesPlayerHaveQuest(player.Username) &&
+        GetRandomIntI(1, 3) == 1
+    ) {
+        await GivePlayerRandomQuest(client, player.Username);
+    }
+
     let col = userState.color;
     Broadcast(JSON.stringify({ type: 'message', displayName, message, color: col }));
 
     let session = LoadPlayerSession(displayName);
     session.NameColor = col;
+    session.IsSubscribed = userState.subscriber ?? false;
     if(message[0] === '!'){
         if(message.includes("!yell")) {
             session.Messages.push(message.replace("!yell", "").trim());
@@ -82,15 +103,17 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
     SavePlayerSession(displayName, session);
 }
 
+const minigameKeys = Object
+    .keys(MinigameType)
+    .filter((v) => isNaN(Number(v)))
+
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
-    "Come hang out on our Discord, to chat, give stream suggestions, and get go live notification. Join here: https://discord.gg/A7R5wFFUWG",
-    "Use any amount of bits to cheer or just use !yell to yell at me in text to speech live on stream!",
-    "Have an idea to make the stream more exciting? Use the 'Offer Side Quest' channel point redemption to propose a change.",
-    "If you see any funny moments during stream, clipping them is much appreciated!",
-    "Follow me on Twitter for information about streams, as well as my personal projects: https://twitter.com/The7ark",
-    "I'm a game developer! Feel free to ask questions or talk about code. I've also released a game called Battle Tracks, find more in the stream description.",
-    "Check what stuff you have with !inventory, then you can !throw [item] or !use [item]. You can !info [item] to learn more about it."
+    "Check out my socials - Discord to chat discord.gg/A7R5wFFUWG & Twitter to see more about my personal projects twitter.com/The7ark",
+    `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting our dragon, Bytefire. You can use !moves to see what you can do. Use the (Learn a Move) channel point redeem to learn more moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
+    "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus",
+    "Check what stuff you have with !inventory. You can !info [item] to learn more about it.",
+    `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`
 ];
 let regularMessageIndex: number = GetRandomInt(0, regularMessages.length);
 
@@ -114,10 +137,10 @@ export function DrunkifyText(sentence: string): string {
     const words = sentence.split(" ");
     const drunkWords = words.map(word => {
         // Randomly repeat letters and syllables
-        let result = word.split("").map(char => Math.random() > 0.8 ? char + char : char).join("");
+        let result = word.split("").map(char => Math.random() > 0.4 ? char + char : char).join("");
 
         // Slur modifications by randomly doubling vowels
-        result = result.replace(/[aeiou]/gi, match => Math.random() > 0.6 ? match + match : match);
+        result = result.replace(/[aeiou]/gi, match => Math.random() > 0.3 ? match + match : match);
 
         // Randomly insert slurred sounds
         if (Math.random() > 0.7) {

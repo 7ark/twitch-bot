@@ -13,7 +13,14 @@ sdWS.onmessage = (event: MessageEvent) => {
     }
 };
 
-enum IconType { Info, Scroll, Pencil, Coins, Bottle, Box, Fruit, Bomb, Bananas, CheeseWheel, Beer, Letter, Rabbit, Crystal, BottleBlue, PureNail, Hammer, DiamondAxe, Wabbajack, ObsidianDagger }
+enum IconType {
+    Info, Scroll, Pencil, Coins,
+    Bottle, Box, Fruit, Bomb,
+    Bananas, CheeseWheel, Beer, Letter,
+    Rabbit, Crystal, BottleBlue, PureNail,
+    Hammer, DiamondAxe, Wabbajack, ObsidianDagger,
+    PoolNoodle
+}
 
 function getIcon(icon: IconType) {
     switch (icon) {
@@ -57,6 +64,8 @@ function getIcon(icon: IconType) {
             return 'extras/wabbajack.png';
         case IconType.ObsidianDagger:
             return 'extras/obsidiandagger.png';
+        case IconType.PoolNoodle:
+            return 'extras/poolnoodle.png';
     }
 
     return "";

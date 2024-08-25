@@ -1,11 +1,17 @@
 import fs from "fs";
-import {ChatUserstate, Client} from "tmi.js";
+import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
-import {AllInventoryObjects, InventoryObject} from "../inventory";
+import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventory";
 import {ClassType, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates} from "./utils";
 import {BanUser} from "./twitchUtils";
+import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
+import {HandleQuestProgress, Quest, QuestType} from "./questUtils";
+import {DamageType} from "./dragonUtils";
 
-export enum StatusEffect { DoubleExp, Drunk, DoubleAccuracy }
+const COZY_POINT_HEALTH_CONVERSION = 5;
+
+export enum StatusEffect { DoubleExp, Drunk, DoubleAccuracy, FireResistance, ColdResistance }
+
 export interface StatusEffectModule {
     Effect: StatusEffect;
     WhenEffectStarted: Date;
@@ -33,6 +39,10 @@ export interface Player {
     StatusEffects: Array<StatusEffectModule>;
     EquippedObject?: EquippableObjectReference | undefined;
     EquippedBacklog?: Array<EquippableObjectReference>;
+    Gems: number;
+    SpendableGems: number;
+    CurrentQuest: Quest | undefined;
+    CozyPoints: number;
 }
 
 export interface Class {
@@ -101,7 +111,11 @@ export function LoadPlayer(displayName: string): Player {
         Deaths: 0,
         Inventory: [],
         StatusEffects: [],
-        PassiveModeEnabled: false
+        PassiveModeEnabled: false,
+        Gems: 0,
+        SpendableGems: 0,
+        CurrentQuest: undefined,
+        CozyPoints: 0
     }
 
     if(fs.existsSync('playerData.json')) {
@@ -148,12 +162,23 @@ export function LoadPlayer(displayName: string): Player {
         player.CurrentHealth = CalculateMaxHealth(player);
     }
 
-    if(player.Deaths === undefined) {
+    if(player.Deaths == undefined) {
         player.Deaths = 0;
     }
 
     if(player.StatusEffects === undefined) {
         player.StatusEffects = [];
+    }
+
+    if(player.Gems == undefined) {
+        player.Gems = 0;
+    }
+    if(player.SpendableGems == undefined){
+        player.SpendableGems = player.Gems;
+    }
+
+    if(player.CozyPoints == undefined) {
+        player.CozyPoints = 0;
     }
 
     for (let i = player.StatusEffects.length - 1; i >= 0; i--) {
@@ -213,11 +238,31 @@ export function CalculateMaxHealth(player: Player): number {
         }
     }
 
+    max += player.CozyPoints * COZY_POINT_HEALTH_CONVERSION;
+
     return max;
 }
 
 export function CalculateExpNeeded(level: number) {
     return 5 + (level * (3 + level));
+}
+
+export function GivePlayerRandomObjectInTier(client: Client, playerName: string, tier: Array<ObjectTier>) {
+    let player = LoadPlayer(playerName);
+    let options: Array<InventoryObject> = [];
+    for (let i = 0; i < AllInventoryObjects.length; i++) {
+        if(AllInventoryObjects[i].Rewardable && tier.includes(AllInventoryObjects[i].Tier)) {
+            if(AllInventoryObjects[i].Consumable || !player.Inventory.includes(AllInventoryObjects[i].ObjectName)) {
+                for (let j = 0; j < AllInventoryObjects[i].Rarity; j++) {
+                    options.push(AllInventoryObjects[i]);
+                }
+            }
+        }
+    }
+
+    let obj = GetRandomItem(options)!;
+
+    GivePlayerObject(client, playerName, obj.ObjectName);
 }
 
 export function GivePlayerRandomObject(client: Client, playerName: string) {
@@ -236,7 +281,6 @@ export function GivePlayerRandomObject(client: Client, playerName: string) {
     let obj = GetRandomItem(options)!;
 
     GivePlayerObject(client, playerName, obj.ObjectName);
-
 }
 
 export function GivePlayerObject(client: Client, playerName: string, object: string) {
@@ -245,7 +289,11 @@ export function GivePlayerObject(client: Client, playerName: string, object: str
     SavePlayer(player);
 
     let obj = AllInventoryObjects.find(x => x.ObjectName === object);
-    client.say(process.env.CHANNEL!, `@${playerName} has gained ${obj.ContextualName}. ${obj.Info}`)
+    client.say(process.env.CHANNEL!, `@${playerName} has gained ${obj.ContextualName}. ${obj.Info}`);
+
+    setTimeout(async () => {
+        await HandleQuestProgress(client, playerName, QuestType.GetItem, 1);
+    }, 10);
 }
 
 export function TakeObjectFromPlayer(playerName: string, object: string) {
@@ -278,7 +326,7 @@ export function GetRandomRewardableObjectFromPlayer(playerName: string, exclusio
     return GetRandomItem(options);
 }
 
-export async function ChangePlayerHealth(client: Client, playerName: string, amount: number, deathReason?: string) {
+export async function ChangePlayerHealth(client: Client, playerName: string, amount: number, damageType: DamageType, deathReason?: string) {
     let player = LoadPlayer(playerName);
     let maxHealth = CalculateMaxHealth(player);
 
@@ -288,13 +336,26 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     
     player.CurrentHealth += amount;
     if(player.CurrentHealth <= 0) {
-        player.CurrentHealth = 0;
-        
-        //Handle death
+        player.CurrentHealth = 0
 
         client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} damage and DIED! They've been banned for 5 minutes.`);
         player.CurrentHealth = maxHealth;
         player.Deaths++;
+
+        let playerSession = LoadPlayerSession(player.Username);
+        playerSession.TimesDied++;
+        SavePlayerSession(player.Username, playerSession);
+
+        //Show dead stickman
+        setTimeout(() => {
+            Broadcast(JSON.stringify({ type: 'changestickmanappearance', displayName: player.Username, changeType: 'died' }));
+        }, 1000);
+
+        //Show revived stickman
+        setTimeout(() => {
+            Broadcast(JSON.stringify({ type: 'changestickmanappearance', displayName: player.Username, changeType: 'revive' }));
+        }, 1000 * 60 * 5);
+
         await BanUser(client, playerName, 5 * 60, deathReason);
     }
     else if(player.CurrentHealth > maxHealth) {
@@ -302,7 +363,7 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
         client.say(process.env.CHANNEL!, `@${playerName} has healed to full.`);
     }
     else {
-        client.say(process.env.CHANNEL!, `@${playerName} has ${amount > 0 ? `healed by ${amount}` : `taken ${Math.abs(amount)} damage`}! [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`);
+        client.say(process.env.CHANNEL!, `@${playerName} has ${amount > 0 ? `healed by ${amount}` : `taken ${Math.abs(amount)} ${DamageType[damageType]} damage`}! [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`);
     }
     
     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: playerName, display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`, }));
@@ -330,7 +391,7 @@ export async function GiveExp(client: Client, username: string, amount: number) 
 
             setTimeout(async () => {
                 Broadcast(JSON.stringify({ type: 'exp', displayName: username, display: `LEVEL UP!`, }));
-                await ChangePlayerHealth(client, username, Math.floor(CalculateMaxHealth(player) * 0.4));
+                await ChangePlayerHealth(client, username, Math.floor(CalculateMaxHealth(player) * 0.4), DamageType.None);
             }, 700);
         }
         else {
@@ -353,13 +414,16 @@ export async function RandomlyGiveExp(client: Client, username: string, chanceOu
 export function GetObjectFromInputText(text: string): InventoryObject | undefined {
     let pieces = text.trim().split(' ');
     for (let i = 0; i < pieces.length; i++) {
-        let textPiece = pieces[0];
-        for (let j = 1; j < i; j++) {
-            textPiece += " " + pieces[j];
-        }
-        let foundObject = CheckTextInstance(textPiece);
-        if(foundObject !== undefined) {
-            return foundObject;
+        let textPiece = "";
+        for (let j = i; j < pieces.length; j++) {
+            if(textPiece != "") {
+                textPiece += " ";
+            }
+            textPiece += pieces[j];
+            let foundObject = CheckTextInstance(textPiece);
+            if(foundObject !== undefined) {
+                return foundObject;
+            }
         }
     }
 
@@ -400,4 +464,31 @@ export function DoesPlayerHaveStatusEffect(username: string, effect: StatusEffec
     let existingEffectIndex = player.StatusEffects.findIndex(x => x.Effect == effect);
 
     return existingEffectIndex != -1;
+}
+
+export function GiveCozyPoints(username: string, points: number) {
+    let player = LoadPlayer(username);
+    player.CozyPoints += points;
+    player.CurrentHealth += points * COZY_POINT_HEALTH_CONVERSION;
+    SavePlayer(player);
+}
+
+export function ProcessCozyPointTick(username: string) {
+    let player = LoadPlayer(username);
+    if(player.CozyPoints > 0) {
+        player.CozyPoints--;
+
+        let max = CalculateMaxHealth(player);
+        if(player.CurrentHealth >= max) {
+            player.CurrentHealth = max;
+        }
+        SavePlayer(player);
+    }
+}
+
+export function TickAllCozyPoints() {
+    let players = LoadAllPlayers();
+    for (let i = 0; i < players.length; i++) {
+        ProcessCozyPointTick(players[i].Username);
+    }
 }

@@ -4,6 +4,7 @@ import {Broadcast} from "../bot";
 import {LoadDragonData, SaveDragonData} from "./dragonUtils";
 import {PlayTextToSpeech} from "./audioUtils";
 import {CreatePoll} from "./twitchUtils";
+import {AudioType} from "../streamSettings";
 
 
 export async function ReceiveMessageFromHTML(message: string) {
@@ -32,7 +33,7 @@ export async function ReceiveMessageFromHTML(message: string) {
             break;
         case 'tts':
             let ttsData: { type: string, text: string } =  JSON.parse(message);
-            PlayTextToSpeech(ttsData.text);
+            PlayTextToSpeech(ttsData.text, AudioType.GameAlerts);
             break;
         case 'restartdragon':
             let dragonData = LoadDragonData();

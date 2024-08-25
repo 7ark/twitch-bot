@@ -1,8 +1,11 @@
+import {ShowLeaderboard} from "./utils/minigameUtils";
+
 interface ActionSet {
     Action: () => void;
     Seconds: number;
 }
 
+//Primary actions
 let actionQueue: Array<ActionSet> = [];
 let isActionRunning = false;
 
@@ -29,4 +32,38 @@ function HandleNextItemInQueue() {
             HandleNextItemInQueue();
         }
     }, actionSet.Seconds * 1000)
+}
+
+//Minigame actions
+let minigameQueue: Array<ActionSet> = [];
+let isMinigameRunning = false;
+export let IsMinigameQueueEmpty : boolean;
+
+export function AddToMinigameQueue(minigame: () => void, seconds: number) {
+    IsMinigameQueueEmpty = false;
+    minigameQueue.push({
+        Action: minigame,
+        Seconds: seconds
+    });
+    if(!isMinigameRunning) {
+        HandleNextMinigameItemInQueue();
+    }
+}
+
+function HandleNextMinigameItemInQueue() {
+    isMinigameRunning = true;
+    let minigameSet = minigameQueue[0];
+    minigameQueue.splice(0, 1);
+
+    minigameSet.Action();
+
+    setTimeout(async () => {
+        isMinigameRunning = false;
+        if(minigameQueue.length > 0) {
+            HandleNextMinigameItemInQueue();
+        }
+        else {
+            IsMinigameQueueEmpty = true;
+        }
+    }, minigameSet.Seconds * 1000)
 }

@@ -7,6 +7,8 @@ export interface PlayerSessionData {
     Messages: Array<string>;
     TimesAttackedEnemy: number;
     NameColor?: string;
+    IsSubscribed: boolean;
+    TimesDied: number;
 }
 let allPlayerSessionData: Map<string, PlayerSessionData> = new Map<string, PlayerSessionData>();
 let timestamp: Date;
@@ -77,7 +79,9 @@ export function LoadPlayerSession(displayName: string) {
         NameAsDisplayed: fullDisplayName,
         Messages: [],
         TimesAttackedEnemy: 0,
-        NameColor: undefined
+        NameColor: undefined,
+        TimesDied: 0,
+        IsSubscribed: false
     }
     displayName = displayName.toLowerCase();
 

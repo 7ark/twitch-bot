@@ -17,6 +17,10 @@ import {
 import {ReceiveMessageFromHTML} from "./utils/htmlUtils";
 import {GetAllPlayerSessions, HandleLoadingSession, UpdateSessionTimestamp} from "./utils/playerSessionUtils";
 import {TryToStartRandomChatChallenge} from "./utils/alertUtils";
+import {InitializeShop} from "./utils/minigameUtils";
+import {TickAllCozyPoints} from "./utils/playerGameUtils";
+import {SetupMonsterDamageTypes} from "./utils/dragonUtils";
+import {CurrentStreamSettings} from "./streamSettings";
 
 dotenv.config();
 
@@ -58,6 +62,9 @@ app.get('/credits', (req, res) => {
 });
 app.get('/specialDisplay', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'files', 'html', 'specialdisplay.html'));
+});
+app.get('/minigame', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'files', 'html', 'minigame.html'));
 });
 app.get('/extension', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'files', 'html', 'extension.html'));
@@ -118,7 +125,8 @@ async function InitializeBot() {
                 await ToggleObject("Follower Count")
                 await ToggleObject("Credits")
                 await ToggleObject("Special Display")
-                await ToggleObject("Chat")
+                await ToggleObject("Minigames")
+                // await ToggleObject("Chat")
 
                 setTimeout(() => {
                     let sessions = GetAllPlayerSessions();
@@ -175,15 +183,27 @@ async function InitializeBot() {
 
     setInterval(() => {
         PostNewRegularMessage(client);
-    }, 900000); //15 minutes
+    }, 840000); //14 minutes
+
+    if(CurrentStreamSettings.doesRandomChatChallenges) {
+        setInterval(() => {
+            TryToStartRandomChatChallenge(client);
+        }, 1800000); //30 minutes
+    }
 
     setInterval(() => {
-        TryToStartRandomChatChallenge(client);
+        TickAllCozyPoints();
     }, 1800000); //30 minutes
 
+    setInterval(() => {
+        SetupMonsterDamageTypes();
+
+        client.say(process.env.CHANNEL!, `Bytefire is adapting! He has changed his resistances, vulnerabilities, and immunities. Watch out!`);
+    }, 1800000); //30 minutes
 }
 
 HandleLoadingSession();
+InitializeShop();
 
 process.on('SIGINT', (code) => {
     console.log(`About to exit with code: ${code}`);

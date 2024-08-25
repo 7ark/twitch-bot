@@ -9,22 +9,94 @@ import {
 } from "./playerSessionUtils";
 import {
     CalculateMaxHealth,
-    ChangePlayerHealth,
+    ChangePlayerHealth, DoesPlayerHaveStatusEffect,
     GiveExp,
     GivePlayerRandomObject,
-    LoadPlayer
+    LoadPlayer, StatusEffect
 } from "./playerGameUtils";
 import {SetSceneItemEnabled} from "./obsutils";
-import {ClassType, GetRandomIntI, GetRandomNumber} from "./utils";
+import {ClassType, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils";
+import {HandleQuestProgress, QuestType} from "./questUtils";
+import {PlayTextToSpeech} from "./audioUtils";
+import {AudioType} from "../streamSettings";
 
-export interface DragonInfo {
+enum MonsterType { Dragon }
+
+export enum DamageType {
+    None,
+    Piercing,
+    Slashing,
+    Bludgeoning,
+    Fire,
+    Cold,
+    Poison,
+    Psychic,
+}
+
+export interface MonsterInfo {
+    // Type: MonsterType;
     Health: number;
     MaxHealth: number;
     HitsBeforeAttack: number;
 }
 
-export function LoadDragonData(): DragonInfo {
-    let dragonInfo: DragonInfo = {
+const RESISTANCE_COUNT = 2;
+const IMMUNITY_COUNT = 1;
+const VULNERABILITY_COUNT = 1;
+
+let currentMonsterResistances: Array<string> = [];
+let currentMonsterImmunities: Array<string> = [];
+let currentMonsterVulnerabilities: Array<string> = [];
+
+export function SetupMonsterDamageTypes() {
+    currentMonsterImmunities = [];
+    currentMonsterVulnerabilities = [];
+    currentMonsterResistances = [];
+
+    let damageTypeOptions = Object.keys(DamageType)
+        .filter(k => !isNaN(Number(k))) // Filter out non-numeric keys
+        .map(k => k as DamageType);
+
+    for (let i = 0; i < RESISTANCE_COUNT; i++) {
+        let randomType = GetRandomItem(damageTypeOptions)!;
+
+        const index = damageTypeOptions.indexOf(randomType, 0);
+        if (index > -1) {
+            damageTypeOptions.splice(index, 1);
+        }
+
+        console.log(`Monster is resistant to ${DamageType[randomType]}`)
+        currentMonsterResistances.push(DamageType[randomType]);
+    }
+    for (let i = 0; i < IMMUNITY_COUNT; i++) {
+        let randomType = GetRandomItem(damageTypeOptions)!;
+
+        const index = damageTypeOptions.indexOf(randomType, 0);
+        if (index > -1) {
+            damageTypeOptions.splice(index, 1);
+        }
+
+        console.log(`Monster is immune to ${DamageType[randomType]}`)
+        currentMonsterImmunities.push(DamageType[randomType]);
+    }
+    for (let i = 0; i < VULNERABILITY_COUNT; i++) {
+        let randomType = GetRandomItem(damageTypeOptions)!;
+
+        const index = damageTypeOptions.indexOf(randomType, 0);
+        if (index > -1) {
+            damageTypeOptions.splice(index, 1);
+        }
+
+        console.log(`Monster is vulnerable to ${DamageType[randomType]}`)
+        currentMonsterVulnerabilities.push(DamageType[randomType]);
+    }
+}
+
+SetupMonsterDamageTypes();
+
+export function LoadDragonData(): MonsterInfo {
+    let dragonInfo: MonsterInfo = {
+        // Type: MonsterType.Dragon,
         Health: 500,
         MaxHealth: 500,
         HitsBeforeAttack: 10
@@ -77,8 +149,19 @@ export async function TriggerDragonAttack(client: Client) {
 
                 let damage = Math.floor(maxDamage * damagePercentage);
 
+                let bytefireDamageType = GetRandomItem([DamageType.Fire, DamageType.Cold])!;
+
+                if(DoesPlayerHaveStatusEffect(playerClassInfo.Username, StatusEffect.FireResistance) && bytefireDamageType == DamageType.Fire) {
+                    damage = Math.floor(damage * 0.5);
+                    client.say(process.env.CHANNEL!, `${playerClassInfo.Username} resisted the fire damage and only took half damage!`);
+                }
+                if(DoesPlayerHaveStatusEffect(playerClassInfo.Username, StatusEffect.ColdResistance) && bytefireDamageType == DamageType.Cold) {
+                    damage = Math.floor(damage * 0.5);
+                    client.say(process.env.CHANNEL!, `${playerClassInfo.Username} resisted the cold damage and only took half damage!`);
+                }
+
                 if(damage > 0) {
-                    await ChangePlayerHealth(client, playerClassInfo.Username, -damage, "Dying to Bytefire");
+                    await ChangePlayerHealth(client, playerClassInfo.Username, -damage, bytefireDamageType, "Dying to Bytefire");
                 }
             }
         }
@@ -90,9 +173,69 @@ export async function TriggerDragonAttack(client: Client) {
     }
 }
 
-export async function DoDamage(client: Client, username: string, damage: number) {
+export function IsMonsterResistant(damageType: DamageType) {
+    return currentMonsterResistances.includes(DamageType[damageType]);
+}
+export function IsMonsterImmune(damageType: DamageType) {
+    return currentMonsterImmunities.includes(DamageType[damageType]);
+}
+export function IsMonsterVulnerable(damageType: DamageType) {
+    return currentMonsterVulnerabilities.includes(DamageType[damageType]);
+}
+
+export function GetDamageTypeText(damageType: DamageType) {
+    if(IsMonsterResistant(damageType)) {
+        return `Bytefire is resistant to ${DamageType[damageType].toLowerCase()} damage and takes half damage!`;
+    }
+    if(IsMonsterImmune(damageType)) {
+        return `Bytefire is immune to ${DamageType[damageType].toLowerCase()} damage and takes NO DAMAGE!`;
+    }
+    if(IsMonsterVulnerable(damageType)) {
+        return `Bytefire is vulnerable to ${DamageType[damageType].toLowerCase()} damage and takes double damage!`;
+    }
+
+    return ``;
+}
+
+export async function GetAdjustedDamage(client: Client, damage: number, damageType: DamageType, showDamageTypeResponse: boolean = false): Promise<number> {
+    let result = damage;
+
+    if(IsMonsterResistant(damageType)) {
+        result = Math.floor(damage * 0.5);
+
+        if(showDamageTypeResponse) {
+            await client.say(process.env.CHANNEL!, GetDamageTypeText(damageType));
+        }
+    }
+    if(IsMonsterImmune(damageType)) {
+        result = 0;
+
+        if(showDamageTypeResponse) {
+            await client.say(process.env.CHANNEL!, GetDamageTypeText(damageType));
+        }
+    }
+    if(IsMonsterVulnerable(damageType)) {
+        result = Math.floor(damage * 2);
+
+        if(showDamageTypeResponse) {
+            await client.say(process.env.CHANNEL!, GetDamageTypeText(damageType));
+        }
+    }
+
+    return result;
+}
+
+export async function DoDamage(client: Client, username: string, damage: number, damageType: DamageType, showDamageTypeResponse: boolean = true): Promise<boolean> {
     let dragonInfo = LoadDragonData();
+
+    damage = await GetAdjustedDamage(client, damage, damageType, showDamageTypeResponse);
+
     dragonInfo.Health -= damage;
+
+    setTimeout(async () => {
+        await HandleQuestProgress(client, username, QuestType.DealDamage, damage);
+    }, 50);
+
     if(dragonInfo.Health <= 0) {
         dragonInfo.Health = 0;
         SaveDragonData(dragonInfo);
@@ -100,7 +243,6 @@ export async function DoDamage(client: Client, username: string, damage: number)
         setTimeout(async () => {
             await SetSceneItemEnabled("Dragon Fight", false);
             await SetSceneItemEnabled("Dragon Fight Instructions", false);
-            await SetSceneItemEnabled("Text Adventure", true);
 
             await client.say(process.env.CHANNEL!, `Bytefire has been defeated! Giving everyone who participated 15 EXP.`);
 
@@ -110,12 +252,22 @@ export async function DoDamage(client: Client, username: string, damage: number)
                 await GivePlayerRandomObject(client, sessions[i].NameAsDisplayed);
             }
 
-            setTimeout(() => {
-                Broadcast(JSON.stringify({ type: 'startadventure' }));
-            }, 100);
+            PlayTextToSpeech("Bytefire has been defeated and will return in five minutes", AudioType.GameAlerts);
+            setTimeout(async () => {
+                let dragonData = LoadDragonData();
+
+                dragonData.Health = dragonData.MaxHealth;
+                SaveDragonData(dragonData);
+
+                await SetSceneItemEnabled("Dragon Fight", true);
+                await SetSceneItemEnabled("Dragon Fight Instructions", true);
+            }, 1000 * 60 * 5)
+            // setTimeout(() => {
+            //     Broadcast(JSON.stringify({ type: 'startadventure' }));
+            // }, 100);
         }, 100);
 
-        return;
+        return false;
     }
 
     setTimeout(() => {
@@ -137,9 +289,11 @@ export async function DoDamage(client: Client, username: string, damage: number)
         }, 200);
     }
     SaveDragonData(dragonInfo);
+
+    return true;
 }
 
-export function SaveDragonData(dragon: DragonInfo) {
+export function SaveDragonData(dragon: MonsterInfo) {
     fs.writeFileSync('boss.json', JSON.stringify(dragon));
 }
 

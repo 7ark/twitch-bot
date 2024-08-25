@@ -4,9 +4,12 @@ import {Broadcast} from "../bot";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
 import {Client} from "tmi.js";
 import {AddToActionQueue} from "../actionqueue";
-import {GiveExp, GivePlayerObject, GivePlayerRandomObject} from "./playerGameUtils";
+import {GiveExp, GivePlayerObject, GivePlayerRandomObject, LoadPlayer} from "./playerGameUtils";
 import {MessageDelegate} from "../globals";
 import {LoadRandomPlayerSession} from "./playerSessionUtils";
+import {AudioType} from "../streamSettings";
+import {GetMinutesSinceLastMessage} from "./messageUtils";
+import fs from "fs";
 
 export function CreateAndBuildGambleAlert(client: Client, username: string, tier: ObjectTier) {
     const SLOT_LENGTH = 8;
@@ -22,6 +25,12 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
             let options = [];
             for (let i = 0; i < relevantInventoryObjects.length; i++) {
                 for (let j = 0; j < relevantInventoryObjects[i].Rarity; j++) {
+                    if(tier == relevantInventoryObjects[i].Tier) {
+                        for (let k = 0; k < 10; k++) {
+                            options.push(relevantInventoryObjects[i]);
+                        }
+                    }
+
                     options.push(relevantInventoryObjects[i]);
                 }
             }
@@ -70,7 +79,7 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
         //     console.log(slot3[i].ObjectName);
         // }
 
-        PlayTextToSpeech(`${username} is gambling! Let's see what they get!`);
+        PlayTextToSpeech(`${username} is gambling! Let's see what they get!`, AudioType.GameAlerts);
         let s = "";
         if(username[username.length - 1] === 's') {
             s = "'";
@@ -81,7 +90,7 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
         Broadcast(JSON.stringify({ type: 'gamble', title: username + s +" Gamble", slot1: slot1.map(x => x.IconRep), slot2: slot2.map(x => x.IconRep), slot3: slot3.map(x => x.IconRep) }));
 
         setTimeout(() => {
-            PlaySound("drumroll");
+            PlaySound("drumroll", AudioType.GameAlerts);
         }, 3000);
 
         setTimeout(() => {
@@ -110,22 +119,26 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
             let text = `${username} `;
             switch (win) {
                 case WinType.Jackpot:
-                    text += "won the jackpot!";
+                    let player = LoadPlayer(username);
+                    let expToGet = GetRandomIntI(player.CurrentExpNeeded * 0.1, player.CurrentExpNeeded * 0.3);
+
+                    text += `won the jackpot! They get ${expToGet} EXP!`;
 
                     setTimeout(() => {
-                        PlaySound("cheering");
+                        PlaySound("cheering", AudioType.GameAlerts);
                     }, 2000);
 
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         GivePlayerObject(client, username, objWon.ObjectName);
-                        GivePlayerObject(client, username, objWon.ObjectName);
+
+                        await GiveExp(client, username, expToGet);
                     }, 4000);
                     break;
                 case WinType.Normal:
                     text += `won ${objWon.ContextualName}`;
 
                     setTimeout(() => {
-                        PlaySound("cheering");
+                        PlaySound("cheering", AudioType.GameAlerts);
                     }, 2000);
 
                     setTimeout(() => {
@@ -136,13 +149,13 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
                     text += "won nothing";
 
                     setTimeout(() => {
-                        PlaySound("booing");
+                        PlaySound("booing", AudioType.GameAlerts);
                     }, 2000);
                     break;
 
             }
 
-            PlayTextToSpeech(text);
+            PlayTextToSpeech(text, AudioType.GameAlerts);
 
 
         }, 4000 + SLOT_LENGTH * 500);
@@ -171,23 +184,12 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
     }, 10 + SLOT_LENGTH)
 }
 
-let lastChatChangeTimestamp: Date | undefined = undefined;
-
 export function TryToStartRandomChatChallenge(client: Client) {
-    let shouldDoChallenge = false;
-    if(lastChatChangeTimestamp !== undefined) {
-        const hourDifference = (new Date().getTime() - lastChatChangeTimestamp.getTime()) / (1000 * 60 * 60);
-        if(hourDifference >= 1) {
-            shouldDoChallenge = true;
-        }
-    }
-    else {
-        shouldDoChallenge = true;
+    if(GetMinutesSinceLastMessage() > 15) {
+        return;
     }
 
-    if(shouldDoChallenge) {
-        StartChatChallenge(client, "Cory");
-    }
+    StartChatChallenge(client, "Cory");
 }
 
 export function StartChatChallenge(client: Client, username: string) {
@@ -216,7 +218,7 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text);
+                    PlayTextToSpeech(text, AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -231,14 +233,14 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has guessed the correct number of ${numberToGuess}!`);
+                            PlayTextToSpeech(`${responseName} has guessed the correct number of ${numberToGuess}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct number of ${numberToGuess}!`);
                             GivePlayerRandomObject(client, responseName);
                             GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
-                                PlaySound("cheering");
+                                PlaySound("cheering", AudioType.GameAlerts);
                             }, 2000);
                         }
                     }
@@ -250,7 +252,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${numberToGuess}.`);
+                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${numberToGuess}.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${numberToGuess}.`);
                         }
 
@@ -291,7 +293,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let textButForSpeech = text.replace("+", "plus").replace("-", "minus").replace("*", "multiplied by");
 
-                    PlayTextToSpeech(textButForSpeech);
+                    PlayTextToSpeech(textButForSpeech, AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -306,14 +308,14 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has gotten the correct number of ${result}!`);
+                            PlayTextToSpeech(`${responseName} has gotten the correct number of ${result}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${result}!`);
                             GivePlayerRandomObject(client, responseName);
                             GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
-                                PlaySound("cheering");
+                                PlaySound("cheering", AudioType.GameAlerts);
                             }, 2000);
                         }
                     }
@@ -325,7 +327,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${result}.`);
+                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${result}.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${result}.`);
                         }
 
@@ -338,7 +340,8 @@ export function StartChatChallenge(client: Client, username: string) {
         {
             challenge: () => {
                 //Word scramble
-                const words = ['water', 'duck', 'hunt', `secret`, `example`, `dragon`, `bytefire`, `lethal`, `company`, `scrap`, `skyrim`, `dungeon`, `programming`, `coding`, `gamer`];
+                const words = ['water', 'duck', 'hunt', `secret`, `example`, `dragon`, `bytefire`, `lethal`, `company`, `scrap`, `skyrim`, `dungeon`, `programming`, `coding`, `gamer`, `function`, `loaf`,
+                `scramble`, `twitch`, `fallout`, `nuclear`, `subscription`, `control`, `maddening`, `minigame`, `stickman`, `delay`, `gems`];
 
                 let randomWord = GetRandomItem(words)!;
                 let scrambledWord = randomWord.split('').sort(function(){return 0.5-Math.random()}).join('')
@@ -353,7 +356,7 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text);
+                    PlayTextToSpeech(text, AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -368,14 +371,14 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has guessed the correct word of ${randomWord}!`);
+                            PlayTextToSpeech(`${responseName} has guessed the correct word of ${randomWord}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct word of ${randomWord}!`);
                             GivePlayerRandomObject(client, responseName);
                             GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
-                                PlaySound("cheering");
+                                PlaySound("cheering", AudioType.GameAlerts);
                             }, 2000);
                         }
                     }
@@ -387,7 +390,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the word in time! It was ${randomWord}.`);
+                            PlayTextToSpeech(`Challenge over. Nobody got the word in time! It was ${randomWord}.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the word in time! It was ${randomWord}.`);
                         }
 
@@ -416,7 +419,7 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text);
+                    PlayTextToSpeech(text, AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -425,20 +428,20 @@ export function StartChatChallenge(client: Client, username: string) {
                     let someoneGotIt = false;
 
                     function PlayerResponse(responseName: string, message: string) {
-                        if(user.toLowerCase().includes(message.toLowerCase().trim())) {
+                        if(user.toLowerCase().includes(message.replace("@", "").toLowerCase().trim())) {
                             let index = MessageDelegate.indexOf(PlayerResponse);
                             if(index != -1) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has guessed the correct user of ${user}!`);
+                            PlayTextToSpeech(`${responseName} has guessed the correct user of ${user}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
                             GivePlayerRandomObject(client, responseName);
                             GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
-                                PlaySound("cheering");
+                                PlaySound("cheering", AudioType.GameAlerts);
                             }, 2000);
                         }
                     }
@@ -450,7 +453,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the user in time! It was ${user}.`);
+                            PlayTextToSpeech(`Challenge over. Nobody got the user in time! It was ${user}.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the user in time! It was @${user}.`);
                         }
 

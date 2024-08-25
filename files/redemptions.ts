@@ -7,21 +7,18 @@ import {
     RandomlyGiveExp,
     SavePlayer
 } from "./utils/playerGameUtils";
-import axios from "axios";
 import {Broadcast} from "./bot";
-import {
-    GetRandomIntI,
-    GetRandomItem,
-    IconType
-} from "./utils/utils";
+import {GetRandomIntI, GetRandomItem, IconType} from "./utils/utils";
 import {AttackDefinitions} from "./movesDefinitions";
 import {AddToActionQueue} from "./actionqueue";
-import {CurrentPollJoker, MessageDelegate} from "./globals";
+import {CurrentPollJoker} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
 import {BanUser, CreatePoll} from "./utils/twitchUtils";
-import {LoadRandomPlayerSession} from "./utils/playerSessionUtils";
 import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/alertUtils";
 import {ObjectTier} from "./inventory";
+import {GivePlayerRandomQuest, HandleQuestProgress, QuestType} from "./utils/questUtils";
+import {DamageType} from "./utils/dragonUtils";
+import {AudioType} from "./streamSettings";
 
 const REDEEM_GAIN_5_EXP = '2c1c1337-583b-4a51-a169-b79c3cdd3d08';
 const REDEEM_GAIN_20_EXP = '8ed9b9a2-89d3-48e5-9783-f12ae4fe2c61';
@@ -37,6 +34,7 @@ const REDEEM_GAMBLE_HIGH = `2974cacd-564b-44d3-923c-650962e2177f`;
 const REDEEM_CHAT_CHALLENGE = `37318946-604c-4b3a-8b84-21f2f8c7dd2b`;
 const REDEEM_FULL_HEAL = `2f11982a-179a-47cb-86d5-26478c186693`;
 const REDEEM_OFFER_SIDEQUEST = `4dba9b6d-dbe2-413e-b94c-04670c678561`;
+const REDEEM_REROLL_QUEST = `b6cf6ef8-88f5-44a0-91c1-cb5b051da55f`;
 
 export async function ProcessRedemptions(client: Client, username: string, rewardId: string, redemptionId: string, userInput: string) {
     console.log(`Redemption! from ${username}, a reward id of ${rewardId}`)
@@ -72,21 +70,21 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             break;
         case REDEEM_PLAY_CHEERING:
             // playSound("credits");
-            PlaySound("cheering");
+            PlaySound("cheering", AudioType.GameAlerts);
             break;
         case REDEEM_PLAY_BOOING:
-            PlaySound("booing");
+            PlaySound("booing", AudioType.GameAlerts);
             break;
         case REDEEM_PLAY_CRICKETS:
-            PlaySound("crickets");
+            PlaySound("crickets", AudioType.GameAlerts);
             break;
         case REDEEM_PLAY_LAUGHTER:
-            PlaySound("laughing");
+            PlaySound("laughing", AudioType.GameAlerts);
             break;
         case REDEEM_TELL_A_JOKE:
             let textToSay = userInput;
 
-            AddToActionQueue(() => {
+            AddToActionQueue(async () => {
                 let s = "";
                 if(player.Username[player.Username.length - 1] === 's') {
                     s = "'";
@@ -96,8 +94,8 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 }
                 Broadcast(JSON.stringify({ type: 'showDisplay', title: `${player.Username}${s} Joke`, message: textToSay[0].toUpperCase() + textToSay.slice(1), icon: (IconType.Info) }));
 
-                PlayTextToSpeech(textToSay, TryGetPlayerVoice(player), () => {
-                    PlaySound("badumtiss");
+                PlayTextToSpeech(textToSay, AudioType.GameAlerts, TryGetPlayerVoice(player), () => {
+                    PlaySound("badumtiss", AudioType.GameAlerts);
                     CurrentPollJoker = username;
                     CreatePoll({
                         title: "Was that joke funny?",
@@ -107,14 +105,14 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                         ]
                     }, 30, false, (winner: string) => {
                         let wasFunny = winner === "Yes";
-                        PlayTextToSpeech(`Chat has found the joke of ${player.Username} to be... ${wasFunny ? `FUNNY` : `NOT FUNNY`}`, "en-US-BrianNeural", async () => {
+                        PlayTextToSpeech(`Chat has found the joke of ${player.Username} to be... ${wasFunny ? `FUNNY` : `NOT FUNNY`}`, AudioType.GameAlerts, "en-US-BrianNeural", async () => {
                             if(wasFunny) {
-                                PlaySound("cheering");
+                                PlaySound("cheering", AudioType.GameAlerts);
                                 GivePlayerRandomObject(client, player.Username);
-                                await GiveExp(client, player.Username, 5);
+                                await GiveExp(client, player.Username, 50);
                             }
                             else {
-                                PlaySound("booing", "wav", () => {
+                                PlaySound("booing", AudioType.GameAlerts, "wav", () => {
                                     PlayTextToSpeech("They have been temporarily banned for 5 minutes.");
                                 });
                                 await BanUser(client, player.Username, 5 * 60, "Being unfunny");
@@ -123,6 +121,8 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                     });
                 });
 
+                await HandleQuestProgress(client, username, QuestType.TellJoke, 1);
+
                 setTimeout(() => {
                     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: username, display: textToSay, }));
                 }, 700);
@@ -130,18 +130,24 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             break;
         case REDEEM_GAMBLE_LOW:
             CreateAndBuildGambleAlert(client, username, ObjectTier.Low);
+
+            await HandleQuestProgress(client, username, QuestType.Gamble, 1);
             break;
         case REDEEM_GAMBLE_MID:
             CreateAndBuildGambleAlert(client, username, ObjectTier.Mid);
+
+            await HandleQuestProgress(client, username, QuestType.Gamble, 1);
             break;
         case REDEEM_GAMBLE_HIGH:
             CreateAndBuildGambleAlert(client, username, ObjectTier.High);
+
+            await HandleQuestProgress(client, username, QuestType.Gamble, 1);
             break;
         case REDEEM_CHAT_CHALLENGE:
             StartChatChallenge(client, username)
             break;
         case REDEEM_FULL_HEAL:
-            await ChangePlayerHealth(client, player.Username, 9999999);
+            await ChangePlayerHealth(client, player.Username, 9999999, DamageType.None);
             break;
         case REDEEM_OFFER_SIDEQUEST:
             let text = `${player.Username} is offering a side quest to "${userInput}". Cory, do you accept?`;
@@ -155,11 +161,14 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             }
             Broadcast(JSON.stringify({ type: 'showDisplay', title: `${player.Username}${s} Sidequest`, message: text[0].toUpperCase() + text.slice(1), icon: (IconType.Scroll) }));
 
-            PlayTextToSpeech(`${player.Username} is offering a side quest to`, "en-US-BrianNeural", () => {
-                PlayTextToSpeech(userInput, TryGetPlayerVoice(player), () => {
-                    PlayTextToSpeech(`Cory, do you accept?`, "en-US-BrianNeural");
+            PlayTextToSpeech(`${player.Username} is offering a side quest to`, AudioType.GameAlerts, "en-US-BrianNeural", () => {
+                PlayTextToSpeech(userInput, AudioType.GameAlerts, TryGetPlayerVoice(player), () => {
+                    PlayTextToSpeech(`Cory, do you accept?`, AudioType.GameAlerts, "en-US-BrianNeural");
                 });
             });
+            break;
+        case REDEEM_REROLL_QUEST:
+            await GivePlayerRandomQuest(client, player.Username);
             break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))

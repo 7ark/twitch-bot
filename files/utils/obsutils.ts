@@ -1,8 +1,8 @@
 import OBSWebSocket from "obs-websocket-js";
 
 const obs = new OBSWebSocket();
-export const SCENE_WIDTH = 2560;
-export const SCENE_HEIGHT = 1440;
+export const SCENE_WIDTH = 1920;
+export const SCENE_HEIGHT = 1080;
 
 export async function ConnectToObs() {
     console.log(`Connecting to OBS`);
@@ -21,7 +21,7 @@ export function DisconnectFromObs() {
     obs.disconnect();
 }
 
-async function GetOpenScene() {
+export async function GetOpenScene() {
     const response = await obs.call('GetSceneList');
 
     return response.currentProgramSceneName;
@@ -35,7 +35,7 @@ async function GetSceneItems(sceneName: string) {
     return response.sceneItems;
 }
 
-async function DoesSceneContainItem(sceneName: string, itemName: string) : Promise<boolean> {
+export async function DoesSceneContainItem(sceneName: string, itemName: string) : Promise<boolean> {
     const response = await obs.call('GetSceneItemList', {
         sceneName: sceneName
     });

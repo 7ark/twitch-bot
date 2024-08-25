@@ -6,6 +6,9 @@ interface PlayerSessionData {
     NameAsDisplayed: string;
     Messages: Array<string>;
     TimesAttackedEnemy: number;
+    NameColor?: string;
+    IsSubscribed: boolean;
+    TimesDied: number;
 }
 
 // let activeUsers: Map<string, string[]> = new Map<string, string[]>();
@@ -47,7 +50,10 @@ function showCredits(data: { type: string; data: string }) {
         activeUsers.set("Nobody", {
             NameAsDisplayed: "Nobody",
             Messages: ["Wow, nobody showed up. INCREDIBLE!"],
-            TimesAttackedEnemy: 0
+            TimesAttackedEnemy: 0,
+            TimesDied: 0,
+            NameColor: undefined,
+            IsSubscribed: false
         });
     }
 
@@ -60,13 +66,32 @@ function showCredits(data: { type: string; data: string }) {
     creditsContainer.style.height = 'max-content'//`${1700 + (activeUsers.size * 400)}px`;
 
     let first = true;
+    let shownMemorial = false;
+
+    activeUsers = new Map([...activeUsers.entries()].sort((a, b) => a[1].TimesDied - b[1].TimesDied));
+
     // Dynamically add names to the container
-    activeUsers.forEach((messages, name) => {
+    activeUsers.forEach((sessionData, name) => {
         if(name.toLowerCase() === "the7ark") {
             return;
         }
+
+        if(sessionData.TimesDied > 0 && !shownMemorial) {
+            const nameElement = document.createElement('div');
+            nameElement.textContent = "In Memory...";
+            nameElement.style.margin = '250px';
+            nameElement.style.marginBottom = '400px';
+            nameElement.style.fontSize = "150px";
+            creditsContainer.appendChild(nameElement)
+
+            shownMemorial = true;
+        }
+
         const nameElement = document.createElement('div');
-        nameElement.textContent = messages.NameAsDisplayed;
+        nameElement.textContent = sessionData.NameAsDisplayed;
+        if(sessionData.IsSubscribed && sessionData.NameColor != undefined) {
+            nameElement.style.color = sessionData.NameColor;
+        }
         nameElement.style.marginBottom = '5px';
         nameElement.style.fontSize = "150px";
         if(first){
@@ -76,7 +101,12 @@ function showCredits(data: { type: string; data: string }) {
         // Create and style the subtitle part
         const subtitlePart = document.createElement('div');
 
-        let chosenMessage = getRandomItem(messages.Messages);
+        let chosenMessage = getRandomItem(sessionData.Messages.filter(x => x.length >= 3));
+
+        if(chosenMessage === undefined) {
+            chosenMessage = getRandomItem(sessionData.Messages);
+        }
+
         if(chosenMessage === undefined) {
             chosenMessage = getRandomItem([
                 `They were a strong and silent type`,
@@ -90,11 +120,16 @@ function showCredits(data: { type: string; data: string }) {
         else {
             chosenMessage = `"${chosenMessage}"`;
         }
+        if(sessionData.TimesDied > 0) {
+            chosenMessage += `\nThey died ${sessionData.TimesDied} times`
+        }
 
         subtitlePart.textContent = chosenMessage; // Set the subtitle text
         subtitlePart.style.fontSize = "50px"; // Smaller font size for subtitle
         subtitlePart.style.color = "grey"; // Example styling
         subtitlePart.style.marginBottom = '200px';
+        subtitlePart.style.whiteSpace = 'pre-wrap'; // Preserves new lines
+        subtitlePart.style.textAlign = 'center';
 
 
         creditsContainer.appendChild(nameElement);

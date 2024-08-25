@@ -1,12 +1,14 @@
 import {exec} from "child_process";
-import play, { AudioPlayHandle } from "audio-play";
-const load = require('audio-loader');
-const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
+import play, {AudioPlayHandle} from "audio-play";
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import {Client} from "tmi.js";
 import {LoadPlayer, Player, SavePlayer} from "./playerGameUtils";
 import {GetRandomItem} from "./utils";
+import {AudioType, CurrentStreamSettings} from "../streamSettings";
+
+const load = require('audio-loader');
+const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
 
 let audioPaused = false;
 
@@ -53,7 +55,7 @@ function convertMp3ToWav(mp3FilePath: string, wavFilePath: string): Promise<void
     });
 }
 
-export function PlaySound(soundName: string, extension: string = "wav", callback?: () => void) {
+export function PlaySound(soundName: string, type: AudioType, extension: string = "wav", callback?: () => void) {
     try {
 
         let audioBuffer = load(`files/extras/${soundName}.${extension}`);//.then(play);
@@ -61,7 +63,8 @@ export function PlaySound(soundName: string, extension: string = "wav", callback
         audioBuffer.then((buffer) => {
             let playHandle: AudioPlayHandle = play(buffer, {
                 start: 0,
-                end: buffer.duration
+                end: buffer.duration,
+                volume: CurrentStreamSettings.volume.get(type)
             }, () => {});
 
             setTimeout(() => {
@@ -202,7 +205,7 @@ export function TryGetPlayerVoice(player: Player) {
     return player.Voice === undefined || player.Voice === "" ? GetRandomItem(okayVoices)!.voice : player.Voice;
 }
 
-export function PlayTextToSpeech(text: string, voiceToUse: string = "en-US-BrianNeural", callback?: () => void) {
+export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse: string = "en-US-BrianNeural", callback?: () => void) {
     const subscriptionKey = process.env.AZURE_KEY;
     const serviceRegion = process.env.AZURE_REGION;
 
@@ -240,7 +243,7 @@ export function PlayTextToSpeech(text: string, voiceToUse: string = "en-US-Brian
                 console.log(`Audio synthesized for text`);
 
                 setTimeout(() => {
-                    PlaySound("CurrentTextToSpeech", "wav", callback)
+                    PlaySound("CurrentTextToSpeech", audioType, "wav", callback)
                 }, 100);
             }
             else {

@@ -29,6 +29,9 @@ bpWS.onmessage = (event: MessageEvent) => {
         let name = data.displayName.toLowerCase();
         createStickman(name, data.color);
     }
+    else if (dataType === 'changestickmanappearance') {
+        ChangeStickman(JSON.parse(event.data));
+    }
 };
 
 const defaultY = 180;
@@ -129,7 +132,7 @@ function handleExpMessage(data: { type: string; displayName: string; display: st
     }
 }
 
-function showFloatingText(text: string, xPos: number) {
+function showFloatingText(text: string, xPos: number, color: string = '#ff0') {
     const floatingText = document.createElement('div');
     floatingText.classList.add('floatingText');
     floatingText.textContent = text;
@@ -139,6 +142,7 @@ function showFloatingText(text: string, xPos: number) {
     floatingText.style.width = "400px";
     floatingText.style.height = "auto";
     floatingText.style.textAlign = "center";
+    floatingText.style.color = color;
     // floatingText.style.alignContent = "flex-end";
     floatingText.style.whiteSpace = 'normal';
 
@@ -158,7 +162,6 @@ function showFloatingText(text: string, xPos: number) {
 
     floatingText.style.transform = `translateY(${startingY}px)`;
     let delay = (0.5 + (((floatingTextHeight / 21) - 1) * 0.5));
-    console.log(delay)
     floatingText.style.animationDelay = `${delay}s`;
 
     const keyframes = `
@@ -186,6 +189,56 @@ function handleShowFloatingText(data: { type: string; displayName: string; displ
         // console.log("found info", stickmanInfo);
 
         showFloatingText( data.display, stickmanInfo.xPos + stickmanInfo.element.offsetWidth / 2);
+    }
+}
+
+function ChangeStickman(data: { type: string; displayName: string; changeType: string }) {
+    let name = data.displayName.toLowerCase();
+
+    if(stickmen.has(name!)){
+        let stickmanInfo = stickmen.get(name!)!;
+        let stickman = stickmanInfo.element!;
+        const currentXPos = stickmanInfo.xPos;
+
+        switch (data.changeType) {
+            case `died`:
+                showFloatingText('DIED!', currentXPos + 20, '#FF0000');
+            case `revive`:
+                let fromRot = data.changeType == 'died' ? 0 : 90;
+                let toRot = data.changeType == 'died' ? 90 : 0;
+
+
+                // Generate dynamic animation
+                const keyframes = `
+            @keyframes rot {
+                0% { transform: translateX(${currentXPos}px) translateY(${defaultY}px) rotate(${fromRot}deg); }
+                100% { transform: translateX(${currentXPos}px) translateY(${defaultY}px) rotate(${toRot}deg); }
+            }
+            `;
+
+                stickman.style.animationName = `rot`;
+                stickman.style.animationDuration = '1.5s';
+                stickman.style.animationFillMode = 'forwards';
+                stickman.style.animationTimingFunction = 'ease';
+
+                // Update the <style> tag or create it if it doesn't exist
+                let styleTag = document.getElementById('dynamic-animations');
+                if (!styleTag) {
+                    styleTag = document.createElement('style');
+                    styleTag.id = 'dynamic-animations';
+                    document.head.appendChild(styleTag);
+                }
+                styleTag.textContent += keyframes;
+
+                // Optional: Remove the class after animation ends to reset state
+                stickman.addEventListener('animationend', () => {
+                    stickman.style.animation = '';
+                    stickman.style.transform = `translateX(${stickmanInfo.xPos}px) translateY(${defaultY}px) rotate(${toRot}deg) `;
+                    stickmen.set(name!, stickmanInfo);
+                }), {once: true};
+                break;
+        }
+
     }
 }
 
