@@ -178,13 +178,13 @@ export async function TryToSetVoice(client: Client, displayName: string, voice: 
         voice = "en-us-" + voice;
     }
 
-    if(!voice.includes("neural")) {
-        voice = voice + "neural";
+    if(!voice.includes("Neural")) {
+        voice = voice + "Neural";
     }
 
     let foundVoice = voices.voices.find(x => {
-        console.log(x.shortName + " vs " + voice)
-        return x.shortName.toLowerCase() === voice
+        console.log(x.shortName.toLowerCase() + " vs " + voice.toLowerCase())
+        return x.shortName.toLowerCase() === voice.toLowerCase()
     });
 
     if(foundVoice === undefined) {

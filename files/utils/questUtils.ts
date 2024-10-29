@@ -72,7 +72,7 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
             multiplyArray = [ 20, 25, 30, 40, 50 ];
             return GetRandomIntI(difficulty, difficulty * 5) * GetRandomItem(multiplyArray);
         case QuestType.TellJoke:
-            return GetRandomIntI(difficulty, difficulty * 2) * GetRandomItem(multiplyArray);
+            return GetRandomIntI(2, difficulty) * GetRandomItem(multiplyArray);
         case QuestType.GetItem:
             return GetRandomIntI(difficulty, difficulty * 2) * GetRandomItem(multiplyArray);
         case QuestType.Gamble:
@@ -80,10 +80,10 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
     }
 }
 
-export function GetRandomQuest(): Quest {
+export function GetRandomQuest(difficultyOverride: number = -1): Quest {
     let type = GetRandomEnum(QuestType);
 
-    let difficulty = GetRandomIntI(1, 5);
+    let difficulty = difficultyOverride != -1 ? difficultyOverride : GetRandomIntI(1, 5);
     let goalValue = GetRandomGoalValue(type, difficulty);
 
     console.log(type + " " + difficulty + " " + goalValue);
@@ -103,7 +103,7 @@ export function DoesPlayerHaveQuest(username: string): boolean {
 export async function GivePlayerRandomQuest(client: Client, username: string) {
     let player = LoadPlayer(username);
 
-    player.CurrentQuest = GetRandomQuest();
+    player.CurrentQuest = GetRandomQuest(player.Level <= 1 ? GetRandomIntI(1, 2) : -1);
 
     await client.say(process.env.CHANNEL!, `@${username}, you've been given a QUEST: ${GetQuestText(player.CurrentQuest.Type, player.CurrentQuest.Goal)}. This is a difficulty ${player.CurrentQuest.FiveStarDifficulty} quest.`);
 
@@ -111,33 +111,35 @@ export async function GivePlayerRandomQuest(client: Client, username: string) {
 }
 
 async function GiveQuestRewards(client: Client, username: string, difficulty: number) {
+    let exp = 1;
     switch (difficulty) {
         case 1:
-            await GiveExp(client, username, GetRandomIntI(10, 25));
+            exp = GetRandomIntI(10, 25);
             break;
         case 2:
-            await GiveExp(client, username, GetRandomIntI(25, 50));
-            if(GetRandomIntI(1, 5) == 1) {
+            exp = GetRandomIntI(25, 50);
+            if(GetRandomIntI(1, 3) == 1) {
                 GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low]);
             }
             break;
         case 3:
-            await GiveExp(client, username, GetRandomIntI(50, 75));
-            if(GetRandomIntI(1, 3) == 1) {
+            exp = GetRandomIntI(50, 75);
+            if(GetRandomIntI(1, 2) == 1) {
                 GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid]);
             }
             break;
         case 4:
-            await GiveExp(client, username, GetRandomIntI(100, 150));
+            exp = GetRandomIntI(100, 150);
             GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid]);
             break;
         case 5:
-            await GiveExp(client, username, GetRandomIntI(150, 200));
-            if(GetRandomIntI(1, 3) == 1) {
-                GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid, ObjectTier.High]);
-            }
+            exp = GetRandomIntI(150, 300)
+            GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid, ObjectTier.High]);
             break;
     }
+
+    await GiveExp(client, username, exp);
+    await client.say(process.env.CHANNEL!, `@${username}, you've received ${exp} EXP as a reward!`);
 }
 
 export async function HandleQuestProgress(client: Client, username: string, type: QuestType, addedProgress: number) {
@@ -150,11 +152,16 @@ export async function HandleQuestProgress(client: Client, username: string, type
                 //Quest complete!
                 await client.say(process.env.CHANNEL!, `@${username}, you've completed your quest!`);
 
-                await GiveQuestRewards(client, username, player.CurrentQuest!.FiveStarDifficulty);
+                let difficulty = player.CurrentQuest!.FiveStarDifficulty;
                 player.CurrentQuest = undefined;
+                SavePlayer(player);
+
+                await GiveQuestRewards(client, username, difficulty);
+            }
+            else {
+                SavePlayer(player);
             }
 
-            SavePlayer(player);
         }
     }
 }

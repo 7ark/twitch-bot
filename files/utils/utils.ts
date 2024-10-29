@@ -4,9 +4,11 @@ export enum IconType {
     Bananas, CheeseWheel, Beer, Letter,
     Rabbit, Crystal, BottleBlue, PureNail,
     Hammer, DiamondAxe, Wabbajack, ObsidianDagger,
-    PoolNoodle }
+    PoolNoodle, PortalCake, PowerHelmet , DuckHuntGun,
+    CardboardBox
+}
 
-export enum ClassType { Mage, Warrior, Rogue }
+export enum ClassType { Mage, Warrior, Rogue, Cleric }
 
 export function GetRandomNumber(min: number, max: number): number {
     // The maximum is inclusive and the minimum is inclusive
@@ -22,7 +24,7 @@ export function GetRandomInt(min: number, max: number): number {
 }
 
 export function GetRandomItem<T>(array: T[]): T | undefined {
-    if (array.length === 0) return undefined;
+    if (array === undefined || array.length === 0) return undefined;
     const randomIndex = GetRandomInt(0, array.length);// Math.floor(Math.random() * array.length);
     return array[randomIndex];
 }

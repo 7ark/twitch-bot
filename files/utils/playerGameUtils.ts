@@ -7,6 +7,7 @@ import {BanUser} from "./twitchUtils";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {HandleQuestProgress, Quest, QuestType} from "./questUtils";
 import {DamageType} from "./dragonUtils";
+import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 
 const COZY_POINT_HEALTH_CONVERSION = 5;
 
@@ -16,6 +17,12 @@ export interface StatusEffectModule {
     Effect: StatusEffect;
     WhenEffectStarted: Date;
     EffectTimeInSeconds: number;
+}
+
+export interface CommandCooldown {
+    Command: string;
+    WhenDidCommand: Date;
+    CommandCooldownInSeconds: number;
 }
 
 export interface EquippableObjectReference {
@@ -37,12 +44,14 @@ export interface Player {
     PassiveModeEnabled: boolean;
     Deaths: number;
     StatusEffects: Array<StatusEffectModule>;
+    CommandCooldowns: Array<CommandCooldown>;
     EquippedObject?: EquippableObjectReference | undefined;
     EquippedBacklog?: Array<EquippableObjectReference>;
     Gems: number;
     SpendableGems: number;
     CurrentQuest: Quest | undefined;
     CozyPoints: number;
+    HasVip: boolean;
 }
 
 export interface Class {
@@ -102,6 +111,10 @@ export function LoadPlayer(displayName: string): Player {
                 Type: ClassType.Rogue,
                 Level: 0
             },
+            {
+                Type: ClassType.Cleric,
+                Level: 0
+            },
         ],
         LevelUpAvailable: false,
         CurrentExp: 0,
@@ -111,11 +124,13 @@ export function LoadPlayer(displayName: string): Player {
         Deaths: 0,
         Inventory: [],
         StatusEffects: [],
+        CommandCooldowns: [],
         PassiveModeEnabled: false,
         Gems: 0,
         SpendableGems: 0,
         CurrentQuest: undefined,
-        CozyPoints: 0
+        CozyPoints: 0,
+        HasVip: false
     }
 
     if(fs.existsSync('playerData.json')) {
@@ -156,6 +171,19 @@ export function LoadPlayer(displayName: string): Player {
                 player.Inventory.push("wand");
             }
         }
+        if(player.Classes[i].Type === ClassType.Cleric) {
+            if(player.Classes[i].Level > 0 && !player.Inventory.includes("healing amulet")) {
+                player.Inventory.push("healing amulet");
+            }
+        }
+    }
+
+    if(!player.Classes.find(x => x.Type == ClassType.Cleric)) {
+        player.Classes.push(
+            {
+                Type: ClassType.Cleric,
+                Level: 0
+            });
     }
 
     if(player.CurrentHealth === undefined || player.CurrentHealth <= 0) {
@@ -165,9 +193,15 @@ export function LoadPlayer(displayName: string): Player {
     if(player.Deaths == undefined) {
         player.Deaths = 0;
     }
+    if(player.HasVip == undefined) {
+        player.HasVip = false;
+    }
 
     if(player.StatusEffects === undefined) {
         player.StatusEffects = [];
+    }
+    if(player.CommandCooldowns === undefined) {
+        player.CommandCooldowns = [];
     }
 
     if(player.Gems == undefined) {
@@ -188,6 +222,13 @@ export function LoadPlayer(displayName: string): Player {
 
         if(GetSecondsBetweenDates(se.WhenEffectStarted, new Date()) >= se.EffectTimeInSeconds) {
             player.StatusEffects.splice(i, 1);
+        }
+    }
+    for (let i = player.CommandCooldowns.length - 1; i >= 0; i--) {
+        let command = player.CommandCooldowns[i];
+
+        if(GetSecondsBetweenDates(command.WhenDidCommand, new Date()) >= command.CommandCooldownInSeconds) {
+            player.CommandCooldowns.splice(i, 1);
         }
     }
 
@@ -333,14 +374,90 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     if(amount > 0 && player.CurrentHealth >= maxHealth) {
         return;
     }
-    
-    player.CurrentHealth += amount;
-    if(player.CurrentHealth <= 0) {
-        player.CurrentHealth = 0
 
-        client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} damage and DIED! They've been banned for 5 minutes.`);
+    if(amount < 0) {
+        //Make amount positive just for each math
+        amount = Math.abs(amount);
+
+        if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.FireResistance) && damageType == DamageType.Fire) {
+            amount = Math.floor(amount * 0.5);
+            await client.say(process.env.CHANNEL!, `${player.Username} resisted the fire damage and only took half damage!`);
+        }
+        if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.ColdResistance) && damageType == DamageType.Cold) {
+            amount = Math.floor(amount * 0.5);
+            await client.say(process.env.CHANNEL!, `${player.Username} resisted the cold damage and only took half damage!`);
+        }
+
+        let isUsingObject = false
+        if(player.EquippedObject !== undefined) {
+            let obj = GetObjectFromInputText(player.EquippedObject.ObjectName);
+            if(obj !== undefined) {
+                let hasAtLeastOne = false;
+                for (let i = 0; i < player.Classes.length; i++) {
+                    if(obj!.ClassRestrictions?.includes(player.Classes[i].Type)) {
+                        hasAtLeastOne = true;
+                        break;
+                    }
+                }
+
+                isUsingObject = hasAtLeastOne;
+            }
+        }
+
+        if(isUsingObject) {
+            let obj = await GetObjectFromInputText(player.EquippedObject!.ObjectName);
+            if(obj !== undefined && obj.ObjectOnAttackedAction !== undefined) {
+                let defenseObjectInfo: {
+                    resistances?: Array<DamageType>,
+                    immunities?: Array<DamageType>,
+                    vulnerabilities?: Array<DamageType>,
+                    armorAdjustment?: number
+                } = obj?.ObjectOnAttackedAction(client, player);
+                for (let i = 0; i < defenseObjectInfo.resistances?.length ?? 0; i++) {
+                    if(damageType == defenseObjectInfo.resistances![i]) {
+                        amount = Math.floor(amount * 0.5);
+                        await client.say(process.env.CHANNEL!, `${player.Username} resisted the ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and only took half damage!`);
+                    }
+                    if(damageType == defenseObjectInfo.immunities![i]) {
+                        amount = 0;
+                        await client.say(process.env.CHANNEL!, `${player.Username} is immune to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took NO damage!`);
+                    }
+                    if(damageType == defenseObjectInfo.vulnerabilities![i]) {
+                        amount = Math.floor(amount * 2);
+                        await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took DOUBLE damage!`);
+                    }
+                }
+            }
+        }
+
+        //Set amount negative again
+        amount = -amount;
+
+        if(amount == 0) {
+            return;
+        }
+    }
+
+    player = LoadPlayer(playerName);
+    player.CurrentHealth += amount;
+    SavePlayer(player);
+    if(player.CurrentHealth <= 0) {
+        player = LoadPlayer(playerName);
+        player.CurrentHealth = 0
+        SavePlayer(player);
+
+        await client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} ${DamageType[damageType]} damage and DIED! They've been banned for 5 minutes.`);
+        player = LoadPlayer(playerName);
         player.CurrentHealth = maxHealth;
         player.Deaths++;
+        SavePlayer(player);
+
+        //Flash red lights
+        await SetLightColor(1, 0, 0, 0);
+        await SetLightBrightness(1, 0);
+        setTimeout(async () => {
+            await FadeOutLights();
+        }, 4000);
 
         let playerSession = LoadPlayerSession(player.Username);
         playerSession.TimesDied++;
@@ -359,7 +476,9 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
         await BanUser(client, playerName, 5 * 60, deathReason);
     }
     else if(player.CurrentHealth > maxHealth) {
+        player = LoadPlayer(playerName);
         player.CurrentHealth = maxHealth;
+        SavePlayer(player);
         client.say(process.env.CHANNEL!, `@${playerName} has healed to full.`);
     }
     else {
@@ -367,23 +486,34 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     }
     
     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: playerName, display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`, }));
-    SavePlayer(player);
 }
 
 
 export async function GiveExp(client: Client, username: string, amount: number) {
-    let player = LoadPlayer(username);
-
     if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp)) {
         amount *= 2;
     }
 
-    player.CurrentExp += amount;
+    let player = LoadPlayer(username);
+    player.CurrentExp += Math.round(amount);
+    player.CurrentExp = Math.floor(player.CurrentExp);
+    SavePlayer(player);
 
     if(!player.LevelUpAvailable) {
         if(player.CurrentExp >= player.CurrentExpNeeded) {
+            player = LoadPlayer(username);
             player.LevelUpAvailable = true;
-            let text = `@${username} has LEVELED UP! You may choose a class to level into. Use !mage, !warrior, or !rogue to select a class.`;
+            SavePlayer(player);
+
+            let classOptions = Object.keys(ClassType)
+                .filter(key => isNaN(Number(key)))
+                .map(x => `!${x.toLowerCase()}`);
+
+            let formattedOptions = classOptions.length > 1
+                ? classOptions.slice(0, -1).join(', ') + ', or ' + classOptions[classOptions.length - 1]
+                : classOptions[0];
+
+            let text = `@${username} has LEVELED UP! You may choose a class to level into. Use ${formattedOptions} to select a class.`;
             if(player.Level == 0) {
                 text += ' Passive mode has now been disabled.';
             }
@@ -401,11 +531,10 @@ export async function GiveExp(client: Client, username: string, amount: number) 
         }
     }
 
-    SavePlayer(player);
 }
 
 export async function RandomlyGiveExp(client: Client, username: string, chanceOutOfTen: number, exp: number) {
-    let chance = Math.random() * 10;
+    let chance = Math.round(Math.random() * 10);
     if(chance <= chanceOutOfTen) {
         await GiveExp(client, username, GetRandomIntI(1, 2));
     }
@@ -440,6 +569,25 @@ function CheckTextInstance(text: string): InventoryObject | undefined {
     return inventoryObject;
 }
 
+export function TriggerCommandCooldownOnPlayer(username: string, command: string, timeInSeconds: number) {
+    let player = LoadPlayer(username);
+
+    let existingEffectIndex = player.CommandCooldowns.findIndex(x => x.Command == command);
+    if(existingEffectIndex == -1) {
+        player.CommandCooldowns.push({
+            Command: command,
+            WhenDidCommand: new Date(),
+            CommandCooldownInSeconds: timeInSeconds
+        })
+    }
+    else {
+        player.CommandCooldowns[existingEffectIndex].WhenDidCommand = new Date();
+        player.CommandCooldowns[existingEffectIndex].CommandCooldownInSeconds = timeInSeconds;
+    }
+
+    SavePlayer(player);
+}
+
 export function AddStatusEffectToPlayer(username: string, effect: StatusEffect, timeInSeconds: number) {
     let player = LoadPlayer(username);
 
@@ -464,6 +612,27 @@ export function DoesPlayerHaveStatusEffect(username: string, effect: StatusEffec
     let existingEffectIndex = player.StatusEffects.findIndex(x => x.Effect == effect);
 
     return existingEffectIndex != -1;
+}
+
+export function IsCommandOnCooldown(username: string, command: string) {
+    let player = LoadPlayer(username);
+    let existingEffectIndex = player.CommandCooldowns.findIndex(x => x.Command == command);
+
+    return existingEffectIndex != -1;
+}
+
+export function GetCommandCooldownTimeLeftInSeconds(username: string, command: string) {
+    let player = LoadPlayer(username);
+    let existingEffectIndex = player.CommandCooldowns.findIndex(x => x.Command == command);
+
+    if(existingEffectIndex != -1) {
+        let commandCooldown = player.CommandCooldowns[existingEffectIndex];
+        let secondsLeft = commandCooldown.CommandCooldownInSeconds - GetSecondsBetweenDates(commandCooldown.WhenDidCommand, new Date());
+
+        return secondsLeft;
+    }
+
+    return 0;
 }
 
 export function GiveCozyPoints(username: string, points: number) {

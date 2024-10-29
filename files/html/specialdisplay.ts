@@ -19,7 +19,8 @@ enum IconType {
     Bananas, CheeseWheel, Beer, Letter,
     Rabbit, Crystal, BottleBlue, PureNail,
     Hammer, DiamondAxe, Wabbajack, ObsidianDagger,
-    PoolNoodle
+    PoolNoodle, PortalCake, PowerHelmet, DuckHuntGun,
+    CardboardBox
 }
 
 function getIcon(icon: IconType) {
@@ -66,6 +67,14 @@ function getIcon(icon: IconType) {
             return 'extras/obsidiandagger.png';
         case IconType.PoolNoodle:
             return 'extras/poolnoodle.png';
+        case IconType.PortalCake:
+            return 'extras/cake.png';
+        case IconType.PowerHelmet:
+            return 'extras/fallouthelm.png';
+        case IconType.DuckHuntGun:
+            return 'extras/duckhuntgun.png';
+        case IconType.CardboardBox:
+            return 'extras/cardboardbox.png';
     }
 
     return "";

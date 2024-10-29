@@ -5,6 +5,8 @@ import Process from "process";
 import ngrok from "ngrok";
 import {GetRandomItem} from "./utils";
 import {Broadcast, options} from "../bot";
+import {ProcessRedemptions} from "../redemptions";
+import {MakeRainbowLights} from "./lightsUtils";
 const ngrok = require('ngrok');
 
 let ngrokUrl: string = '';
@@ -131,7 +133,7 @@ async function GetAppAccessToken() {
             client_id: process.env.CLIENT_ID || '',
             client_secret: process.env.CLIENT_SECRET || '',
             grant_type: 'client_credentials',
-            scope: 'channel:read:redemptions channel:manage:redemptions moderator:manage:banned_users' // Include any other scopes needed
+            scope: 'channel:read:redemptions channel:manage:redemptions moderator:manage:banned_users channel:manage:vips' // Include any other scopes needed
         }).toString();
 
         const response = await axios.post('https://id.twitch.tv/oauth2/token', params, {
@@ -168,32 +170,86 @@ export async function SubscribeToEventSub() {
         return;
     }
 
-    const subscriptionBody = {
-        "type": "channel.channel_points_custom_reward_redemption.add",
-        "version": "1",
-        "condition": {
-            "broadcaster_user_id": process.env.CHANNEL_ID
+    const eventSubscriptions = [
+        {
+            "type": "channel.channel_points_custom_reward_redemption.add",
+            "condition": {
+                "broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": false
         },
-        "transport": {
-            "method": "webhook",
-            "callback": `${ngrokUrl}/twitch/callback`,
-            "secret": "aSecretString" // Used to generate a signature to verify Twitch notifications
-        }
-    };
+        {
+            "type": "channel.subscribe",
+            "condition": {
+                "broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": true,
+            "requiredScopes": ["channel:read:subscriptions"]
+        },
+        {
+            "type": "channel.raid",
+            "condition": {
+                "to_broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": false
+        },
+        // {
+        //     "type": "channel.hype_train.begin",
+        //     "condition": {
+        //         "broadcaster_user_id": process.env.CHANNEL_ID
+        //     },
+        //     "requiresUserToken": true,
+        //     "requiredScopes": ["channel:read:hype_train"]
+        // }
+    ];
 
-    try {
-        const response = await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', subscriptionBody, {
-            headers: {
-                "Authorization": `Bearer ${appAccessToken}`,
-                "Client-Id": process.env.CLIENT_ID,
-                "Content-Type": "application/json"
+    for(const eventSub of eventSubscriptions) {
+        const subscriptionBody = {
+            "type": eventSub.type,
+            "version": "1",
+            "condition": eventSub.condition,
+            "transport": {
+                "method": "webhook",
+                "callback": `${ngrokUrl}/twitch/callback`,
+                "secret": "aSecretString" // Used to generate a signature to verify Twitch notifications
             }
-        });
+        };
 
-        console.log("Subscription successful");
-    } catch (error: any) {
-        console.error("Error subscribing to EventSub:", error.response.data);
+        try {
+            const response = await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', subscriptionBody, {
+                headers: {
+                    "Authorization": `Bearer ${appAccessToken}`,
+                    "Client-Id": process.env.CLIENT_ID,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            console.log(`Subscription to ${eventSub.type} successful`);
+        } catch (error: any) {
+            console.error("Error subscribing to EventSub:", error.response.data);
+        }
     }
+}
+
+export async function HandleEventSubResponse(client: Client, req: any) {
+    let type = req.body.subscription.type;
+
+    console.log(`Processing Eventsub response for type ${type}`);
+
+    switch (type) {
+        case "channel.channel_points_custom_reward_redemption.add":
+            await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
+            break;
+        case "channel.subscribe":
+            await MakeRainbowLights(10);
+            console.log("REGISTERING A SUB");
+            console.log(req.body);
+            break;
+        case "channel.raid":
+            await MakeRainbowLights(15);
+            break;
+    }
+
 }
 
 export async function BanUser(client: Client, username: string, duration: number, reason?: string) {
@@ -224,6 +280,60 @@ export async function BanUser(client: Client, username: string, duration: number
         console.error("Error banning user:", error);
     }
 }
+
+export async function GiveUserVIP(client: Client, username: string) {
+    try {
+        let userid = await GetUserId(username);
+        console.log("User ID is " + userid);
+
+        const response = await axios.post(
+            `https://api.twitch.tv/helix/channels/vips`,
+            null, // No body is required for this endpoint
+            {
+                params: {
+                    broadcaster_id: process.env.CHANNEL_ID!,
+                    user_id: userid!,
+                },
+                headers: {
+                    'Authorization': `Bearer ${GetAuthBearerToken()}`,
+                    'Client-Id': process.env.CLIENT_ID!,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        console.log(`Successfully granted VIP status to ${username}`);
+    } catch (error: any) {
+        console.error("Error granting VIP status to user:", error.response?.data || error.message);
+    }
+}
+
+export async function RemoveUserVIP(client: Client, username: string) {
+    try {
+        let userid = await GetUserId(username);
+        console.log("User ID is " + userid);
+
+        const response = await axios.delete(
+            `https://api.twitch.tv/helix/channels/vips`,
+            {
+                params: {
+                    broadcaster_id: process.env.CHANNEL_ID!,
+                    user_id: userid!,
+                },
+                headers: {
+                    'Authorization': `Bearer ${GetAuthBearerToken()}`,
+                    'Client-Id': process.env.CLIENT_ID!,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        console.log(`Successfully removed VIP status from ${username}`);
+    } catch (error: any) {
+        console.error("Error removing VIP status from user:", error.response?.data || error.message);
+    }
+}
+
 async function GetUserId(username: string): Promise<string | null> {
     const url = `https://api.twitch.tv/helix/users?login=${username}`;
     const headers = {

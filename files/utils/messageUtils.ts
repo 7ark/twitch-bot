@@ -112,7 +112,7 @@ const regularMessages: Array<string> = [
     "Check out my socials - Discord to chat discord.gg/A7R5wFFUWG & Twitter to see more about my personal projects twitter.com/The7ark",
     `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting our dragon, Bytefire. You can use !moves to see what you can do. Use the (Learn a Move) channel point redeem to learn more moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
     "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus",
-    "Check what stuff you have with !inventory. You can !info [item] to learn more about it.",
+    "Check what stuff you have with !inventory. You can !info [item] to learn more about it. You can also use !info [move name] to learn about what it does",
     `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`
 ];
 let regularMessageIndex: number = GetRandomInt(0, regularMessages.length);

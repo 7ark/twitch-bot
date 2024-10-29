@@ -38,6 +38,7 @@
     "speaker": "^0.5.4",
     "text-to-speech-js": "^1.1.10",
     "tmi.js": "^1.8.5",
+    "tplink-smarthome-api": "^5.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "ws": "^8.16.0"

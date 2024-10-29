@@ -10,6 +10,7 @@ export enum MoveType {
     SayAllChat, //Warrior roar
     Silence, //rogue
     GainHPOnCrit, //warrior
+    Heal, //Cleric
 }
 
 export interface ClassMove {
@@ -26,24 +27,27 @@ export interface ClassMove {
     StunChance?: number;
     Poison?: boolean;
 
+    HealAmount?: { min: number, max: number };
     //Play Sound
     SoundFile?: string;
 
     //Final text
     SuccessText: Array<string>;
+
+    PersonalMoveCooldownInSeconds?: number;
 }
 
 export function GetMove(name: string) {
-    for (let i = 0; i < AttackDefinitions.length; i++) {
-        if(AttackDefinitions[i].Command === name) {
-            return AttackDefinitions[i];
+    for (let i = 0; i < MoveDefinitions.length; i++) {
+        if(MoveDefinitions[i].Command === name) {
+            return MoveDefinitions[i];
         }
     }
 
     return undefined;
 }
 
-export const AttackDefinitions: Array<ClassMove> = [
+export const MoveDefinitions: Array<ClassMove> = [
     //WARRIOR
     {
         Command: 'smash',
@@ -208,7 +212,7 @@ export const AttackDefinitions: Array<ClassMove> = [
         Type: MoveType.Attack,
 
         HitModifier: 6,
-        Damage: { min: 10, max: 50 },
+        Damage: { min: 10, max: 25 },
         DamageTypes: [DamageType.Cold, DamageType.Fire],
         SuccessText: [`@{name} rolled {roll} and sends torrents of ice and fire in all directions, destroying the land around Bytefire for {0} damage!`],
     },
@@ -306,6 +310,52 @@ export const AttackDefinitions: Array<ClassMove> = [
         ],
     },
 
+    //CLERIC
+    {
+        Command: 'smite',
+        Description: `An attack that deals damage to Bytefire`,
+        ClassRequired: ClassType.Cleric,
+        Type: MoveType.Attack,
+
+        HitModifier: 3,
+        Damage: { min: 5, max: 10 },
+        DamageTypes: [DamageType.Fire],
+        SuccessText: [`@{name} rolled {roll} and smites Bytefire using a powerful smite for {0} damage!`],
+    },
+    {
+        Command: 'heal',
+        Description: `Heals a target for a small amount, cannot be used on self. Ex. !heal @the7ark`,
+        ClassRequired: ClassType.Cleric,
+        Type: MoveType.Heal,
+
+        HealAmount: { min: 2, max: 15 },
+        SuccessText: [`@{name} is healing {target}!`],
+        PersonalMoveCooldownInSeconds: 120
+    },
+    {
+        Command: 'divine strike',
+        Description: `An attack that deals damage to Bytefire`,
+        ClassRequired: ClassType.Cleric,
+        LevelRequirement: 5,
+        Type: MoveType.Attack,
+
+        HitModifier: 3,
+        Damage: { min: 10, max: 15 },
+        DamageTypes: [DamageType.Fire],
+        SuccessText: [`@{name} rolled {roll} and drives a radiant burst of flame into Bytefire, channeling their magical energy into the attack for {0} damage!`],
+    },
+    {
+        Command: 'restore',
+        Description: `Heals a target for a large amount, cannot be used on self. Ex. !restore @the7ark`,
+        ClassRequired: ClassType.Cleric,
+        LevelRequirement: 5,
+        Type: MoveType.Heal,
+
+        HealAmount: { min: 15, max: 50 },
+        SuccessText: [`@{name} is restoring {target}s health!`],
+        PersonalMoveCooldownInSeconds: 240
+    },
+
     //Give health on crits
     {
         Command: 'heroic speech',
@@ -314,7 +364,7 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 5,
         Type: MoveType.GainHPOnCrit,
 
-        SuccessText: [`@{name} is giving a heroic speech`],
+        SuccessText: [`@{name} is giving a heroic speech, and everyone gains HP on critical hits for the next 5 minutes.`],
     },
 
     //Play sounds
@@ -337,6 +387,7 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 3,
         Type: MoveType.ChangeMonitorRotation,
         SoundFile: 'confusion',
+        PersonalMoveCooldownInSeconds: 10 * 60,
 
         SuccessText: [`@{name} cast confusion! The screen has been rotated for 15 seconds`],
     },
@@ -349,6 +400,7 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 3,
         Type: MoveType.DarkenMonitor,
         SoundFile: 'shroud',
+        PersonalMoveCooldownInSeconds: 10 * 60,
 
         SuccessText: [`@{name} shrouded Cory in darkness! The screen has been darkened for 20 seconds`],
     },
@@ -356,13 +408,13 @@ export const AttackDefinitions: Array<ClassMove> = [
     //Say all chat
     {
         Command: 'inspire',
-        Description: `A special ability that makes it so all chat messages are said out loud for 20 seconds`,
+        Description: `A special ability that makes it so all chat messages are said out loud for 5 minutes`,
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 10,
         Type: MoveType.SayAllChat,
         SoundFile: 'inspire',
 
-        SuccessText: [`@{name} inspired chat! Every message said for the next minute will now be said out loud`],
+        SuccessText: [`@{name} inspired chat! Every message said for the next 5 minutes will now be said out loud`],
     },
 
     //Teleport camera
@@ -385,6 +437,7 @@ export const AttackDefinitions: Array<ClassMove> = [
         LevelRequirement: 10,
         Type: MoveType.Silence,
         SoundFile: 'silence',
+        PersonalMoveCooldownInSeconds: 10 * 60,
 
         SuccessText: [`@{name} silenced Cory for 15 seconds.`],
     },

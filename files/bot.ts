@@ -10,7 +10,7 @@ import {ConnectToObs, DisconnectFromObs, ToggleObject} from "./utils/obsutils";
 import {OnMessage, PostNewRegularMessage} from "./utils/messageUtils";
 import {
     CheckNewFollowers,
-    GetAuthToken, GetNgrokURL,
+    GetAuthToken, GetNgrokURL, HandleEventSubResponse,
     RefreshAccessTokenAndReconnect,
     SubscribeToEventSub
 } from "./utils/twitchUtils";
@@ -21,6 +21,7 @@ import {InitializeShop} from "./utils/minigameUtils";
 import {TickAllCozyPoints} from "./utils/playerGameUtils";
 import {SetupMonsterDamageTypes} from "./utils/dragonUtils";
 import {CurrentStreamSettings} from "./streamSettings";
+import {FadeOutLights, SetLightBrightness, SetLightColor, SetLightVisible} from "./utils/lightsUtils";
 
 dotenv.config();
 
@@ -140,11 +141,15 @@ async function InitializeBot() {
             }
 
             console.log("Initialized");
+            await SetLightVisible(true);
+            await FadeOutLights();
         } else {
             // For all other notifications, you can acknowledge the receipt
             res.sendStatus(200);
 
-            await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
+            // console.log(req.body);
+            await HandleEventSubResponse(client, req);
+            // await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
         }
 
     });
@@ -205,7 +210,8 @@ async function InitializeBot() {
 HandleLoadingSession();
 InitializeShop();
 
-process.on('SIGINT', (code) => {
+process.on('SIGINT', async (code) => {
+    await SetLightVisible(false);
     console.log(`About to exit with code: ${code}`);
 
     UpdateSessionTimestamp();

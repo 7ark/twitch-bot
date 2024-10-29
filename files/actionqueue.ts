@@ -3,6 +3,7 @@ import {ShowLeaderboard} from "./utils/minigameUtils";
 interface ActionSet {
     Action: () => void;
     Seconds: number;
+    Username?: string;
 }
 
 //Primary actions
@@ -39,11 +40,16 @@ let minigameQueue: Array<ActionSet> = [];
 let isMinigameRunning = false;
 export let IsMinigameQueueEmpty : boolean;
 
-export function AddToMinigameQueue(minigame: () => void, seconds: number) {
+export function GetUserMinigameCount(username: string): number {
+    return minigameQueue.filter(x => x.Username === username).length;
+}
+
+export function AddToMinigameQueue(minigame: () => void, seconds: number, username?: string) {
     IsMinigameQueueEmpty = false;
     minigameQueue.push({
         Action: minigame,
-        Seconds: seconds
+        Seconds: seconds,
+        Username: username
     });
     if(!isMinigameRunning) {
         HandleNextMinigameItemInQueue();

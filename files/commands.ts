@@ -5,15 +5,18 @@ import {
     CalculateMaxHealth,
     ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
+    GetCommandCooldownTimeLeftInSeconds,
     GetObjectFromInputText,
     GiveExp,
     GivePlayerObject,
+    IsCommandOnCooldown,
     LoadAllPlayers,
     LoadPlayer,
     Player,
     SavePlayer,
     StatusEffect,
     TakeObjectFromPlayer,
+    TriggerCommandCooldownOnPlayer,
     TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {Broadcast} from "./bot";
@@ -27,7 +30,7 @@ import {
     GetSecondsBetweenDates
 } from "./utils/utils";
 import fs from "fs";
-import {AttackDefinitions, ClassMove, GetMove, MoveType} from "./movesDefinitions";
+import {ClassMove, GetMove, MoveDefinitions, MoveType} from "./movesDefinitions";
 import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject} from "./inventory";
 import {
     DoesSceneContainItem,
@@ -42,8 +45,15 @@ import {
     SetObsSourceScale
 } from "./utils/obsutils";
 import {IsDragonActive, SayAllChat} from "./globals";
-import {GetStringifiedSessionData} from "./utils/playerSessionUtils";
-import {DamageType, DoDamage, GetAdjustedDamage, GetDamageTypeText, StunBytefire} from "./utils/dragonUtils";
+import {GetStringifiedSessionData, LoadPlayerSession, SavePlayerSession} from "./utils/playerSessionUtils";
+import {
+    DamageType,
+    DoDamage,
+    GetAdjustedDamage,
+    GetDamageTypeText,
+    ReduceDragonHits,
+    StunBytefire
+} from "./utils/dragonUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
 import {DrunkifyText} from "./utils/messageUtils";
@@ -52,11 +62,15 @@ import {
     HandleMinigames,
     IsCommandMinigame,
     MinigameType,
+    ResetLeaderboard,
     ShowLeaderboard,
     ShowShop
 } from "./utils/minigameUtils";
 import {DoesPlayerHaveQuest, GetQuestText} from "./utils/questUtils";
 import {AudioType} from "./streamSettings";
+import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
+import {RemoveUserVIP} from "./utils/twitchUtils";
+import {GetUserMinigameCount} from "./actionqueue";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -81,6 +95,13 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
+    ["cast teleport", {
+        gracePeriod: 0,
+        cooldown: 300000, //5 minutes
+        isOnTimeout: false,
+        isInGracePeriod: false,
+        showCooldownMessage: true,
+    }],
     ["shroud", {
         gracePeriod: 0,
         cooldown: 600000, //10 minutes
@@ -98,13 +119,6 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
     ["silence", {
         gracePeriod: 0,
         cooldown: 600000, //10 minutes
-        isOnTimeout: false,
-        isInGracePeriod: false,
-        showCooldownMessage: true,
-    }],
-    ["cast teleport", {
-        gracePeriod: 0,
-        cooldown: 300000, //5 minutes
         isOnTimeout: false,
         isInGracePeriod: false,
         showCooldownMessage: true,
@@ -159,6 +173,7 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
     let onTimeout: string = '';
     let showCooldownMsg = false;
     cooldowns.forEach((val, key) => {
+
         if(val.isOnTimeout && IsCommand(command, key)) {
             onTimeout = key;
             showCooldownMsg = val.showCooldownMessage;
@@ -184,46 +199,34 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
     else if(IsCommand(command, 'discord')) {
         await client.say(process.env.CHANNEL!, `Come hang out on our Discord, to chat, give stream suggestions, and get go live notification. Join here: https://discord.gg/A7R5wFFUWG`);
     }
-    else if(IsCommand(command, 'mage') || IsCommand(command, 'warrior') || IsCommand(command, 'rogue')) {
-        // console.log(`Loaded ${player.Username} ${player.Level} ${player.LevelUpsAvailable}`);
+    //Selecting class
+    else if(Object.keys(ClassType).filter(key => isNaN(Number(key))).some(key => IsCommand(command, key.toLowerCase()))) {
         if(player.LevelUpAvailable) {
-            let classType: ClassType = ClassType.Mage;
-            if(command.includes('warrior')) {
-                classType = ClassType.Warrior;
+            let classTypeKey = Object.keys(ClassType)
+                .filter(key => isNaN(Number(key)))
+                .find(key => IsCommand(command, key.toLowerCase()));
 
-                for (let i = 0; i < player.Classes.length; i++) {
-                    if(player.Classes[i].Type == classType) {
-                        if(player.Classes[i].Level === 0) {
-                            //Free weapons for warriors
-                            GivePlayerObject(client, player.Username, "sword");
-                            GivePlayerObject(client, player.Username, "hammer");
-                        }
-                        break;
-                    }
-                }
-            }
-            else if(command.includes('rogue')) {
-                classType = ClassType.Rogue;
+            if (!classTypeKey) return; // In case something goes wrong
 
-                for (let i = 0; i < player.Classes.length; i++) {
-                    if(player.Classes[i].Type == classType) {
-                        if(player.Classes[i].Level === 0) {
-                            //Free dagger for rogues
-                            GivePlayerObject(client, player.Username, "dagger");
-                        }
+            // Convert classTypeKey (string) to the corresponding enum value
+            let classType: ClassType = ClassType[classTypeKey as keyof typeof ClassType];
+            let playerClass = player.Classes.find(c => c.Type === classType);
+
+            if(playerClass && playerClass.Level === 0) {
+                switch (classType) {
+                    case ClassType.Warrior:
+                        GivePlayerObject(client, player.Username, "sword");
+                        GivePlayerObject(client, player.Username, "hammer");
                         break;
-                    }
-                }
-            }
-            else {
-                for (let i = 0; i < player.Classes.length; i++) {
-                    if(player.Classes[i].Type == classType) {
-                        if(player.Classes[i].Level === 0) {
-                            //Free wand for mages
-                            GivePlayerObject(client, player.Username, "wand");
-                        }
+                    case ClassType.Mage:
+                        GivePlayerObject(client, player.Username, "wand");
                         break;
-                    }
+                    case ClassType.Rogue:
+                        GivePlayerObject(client, player.Username, "dagger");
+                        break;
+                    case ClassType.Cleric:
+                        GivePlayerObject(client, player.Username, "healing amulet");
+                        break;
                 }
             }
 
@@ -250,6 +253,9 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you have no level ups available.`);
         }
     }
+    // else if(IsCommand(command, 'mage') || IsCommand(command, 'warrior') || IsCommand(command, 'rogue')) {
+    //     // console.log(`Loaded ${player.Username} ${player.Level} ${player.LevelUpsAvailable}`);
+    // }
     else if(IsCommand(command, 'stats') || IsCommand(command, 'level')) {
         let split = command.trim().split(' ');
 
@@ -282,7 +288,7 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             }
         }
 
-        let validDefs = AttackDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+        let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
 
         text += `. You can learn ${validDefs.length} new moves at this level. You can also use !randomattack to use any random attack move you know.`;
 
@@ -364,12 +370,13 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
                     foundObj.count++;
                 }
                 else {
+                    if(inventoryObj === undefined)
+                        console.log(`FAILED TO FIND INVENTORY ITEM: ${player.Inventory[i]}`)
                     uniqueItems.push({item: inventoryObj, count: 1})
                 }
             }
 
             for (let i = 0; i < uniqueItems.length; i++) {
-
                 final += uniqueItems[i].count > 1 ? uniqueItems[i].item.PluralName : uniqueItems[i].item.ContextualName;
                 if(uniqueItems[i].count > 1) {
                     final += ` (x${uniqueItems[i].count})`;
@@ -492,11 +499,17 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
 
     }
     else if (IsCommand(command, 'info')) {
-        let objectUsed = command.replace("!info", "").trim();
-        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
+        let infoFocus = command.replace("!info", "").trim();
+        let inventoryObject: InventoryObject = GetObjectFromInputText(infoFocus)!;
 
         if(inventoryObject === undefined || inventoryObject === null) {
-            await client.say(process.env.CHANNEL!, `${player.Username}, I'm not sure what that is. You need to use !info [item name]`);
+            let move = GetMove(infoFocus);
+            if(move !== undefined) {
+                await client.say(process.env.CHANNEL!, move.Description);
+            }
+            else {
+                await client.say(process.env.CHANNEL!, `${player.Username}, I'm not sure what that is. You need to use !info [item or move name]`);
+            }
         }
         else {
             await client.say(process.env.CHANNEL!, inventoryObject.Info);
@@ -535,7 +548,8 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
         await client.say(process.env.CHANNEL!, text);
     }
     else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'test')) {
-        AddStatusEffectToPlayer(userState['display-name']!, StatusEffect.Drunk, 60);
+        //Flash red lights
+        await RemoveUserVIP(client, "One_1egged_Duck");
     }
     else if(IsCommand(command, "gems")) {
         await client.say(process.env.CHANNEL!, `@${player.Username}, you have ${player.SpendableGems} gems.`);
@@ -604,9 +618,10 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             if(foundIndex !== -1) {
                 let cost = shopItems[foundIndex].cost;
                 if(player.SpendableGems >= cost) {
-                    GivePlayerObject(client, player.Username, chosenObject.ObjectName);
                     player.SpendableGems -= cost;
                     SavePlayer(player);
+
+                    GivePlayerObject(client, player.Username, chosenObject.ObjectName);
                 }
                 else {
                     await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have enough gems! You need ${(shopItems[foundIndex].cost - player.SpendableGems)} more gems.`);
@@ -635,8 +650,19 @@ export async function ProcessCommands(client: Client, userState: ChatUserstate, 
             await client.say(process.env.CHANNEL!, `@${player.Username}, you have no status effects`);
         }
     }
+    else if(userState['display-name']!.toLowerCase() === 'the7ark' && IsCommand(command, 'resetleaderboard')) {
+        await ResetLeaderboard(client);
+    }
     else if(IsCommandMinigame(command)) {
-        await HandleMinigames(client, userState['display-name']!, command);
+        const MAX_INSTANCES = 3;
+        let activeInstances = GetUserMinigameCount(userState['display-name']!);
+
+        if(activeInstances >= MAX_INSTANCES) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you have reached the max amount of queued minigames you can do! Please wait.`);
+        }
+        else {
+            await HandleMinigames(client, userState['display-name']!, command);
+        }
     }
     else {
         await HandleMoves(client, userState, command);
@@ -648,9 +674,9 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
 
     if(IsCommand(command, 'randomattack') && IsDragonActive) {
         let bannedMoves = [];
-        for (let i = 0; i < AttackDefinitions.length; i++) {
-            if(AttackDefinitions[i].Type !== MoveType.Attack) {
-                bannedMoves.push(AttackDefinitions[i].Command);
+        for (let i = 0; i < MoveDefinitions.length; i++) {
+            if(MoveDefinitions[i].Type !== MoveType.Attack || MoveDefinitions[i].DamageTypes === undefined) {
+                bannedMoves.push(MoveDefinitions[i].Command);
             }
         }
         console.log(bannedMoves);
@@ -676,6 +702,11 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
     if(IsCommand(command, 'punch') && IsDragonActive) {
         await DoDamage(client, userState['display-name']!, 1, DamageType.Bludgeoning);
         client.say(process.env.CHANNEL!, `@${userState['display-name']!} punches Bytefire for 1 bludgeoning damage!`);
+
+        let playerSession: PlayerSessionData = LoadPlayerSession(userState['display-name']!);
+        playerSession.TimesAttackedEnemy++;
+        SavePlayerSession(userState['display-name']!, playerSession);
+        ReduceDragonHits(client);
         return;
     }
 
@@ -687,7 +718,7 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
         }
     }
 
-    let moveAttempted: ClassMove | undefined = AttackDefinitions.find(x => IsCommand(command, x.Command));
+    let moveAttempted: ClassMove | undefined = MoveDefinitions.find(x => IsCommand(command, x.Command));
 
     let isDuck = (userState['display-name']!).toLowerCase() === 'one_1egged_duck';
     let isDucksCommand = (IsCommand(command, 'duckhunt') || IsCommand(command, ' one1eghaha'));
@@ -699,49 +730,75 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
             Type: MoveType.Attack,
 
             HitModifier: 5,
-            Damage: { min: 3, max: 10 },
+            Damage: { min: 3, max: 25 },
+            DamageTypes: [DamageType.Piercing, DamageType.Fire],
             SuccessText: [`@${userState['display-name']!} whips out duck hunt, and shoots Bytefire for {0} damage!`],
         };
     }
 
-    if(!any) {
-        if(moveAttempted !== undefined) {
-            let playerRelevantClass = player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!;
-            if(playerRelevantClass.Level > 0) {
-                if(moveAttempted?.LevelRequirement > 0 && playerRelevantClass.Level < moveAttempted?.LevelRequirement) {
-                    client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you don't know that move. You need to be a level ${moveAttempted?.LevelRequirement} ${ClassType[playerRelevantClass.Type]} to learn this move.`);
+    if(!isDuck && !isDucksCommand) {
+        if(!any) {
+            if(moveAttempted !== undefined) {
+                let playerRelevantClass = player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!;
+                if(playerRelevantClass.Level > 0) {
+                    if(moveAttempted?.LevelRequirement > 0 && playerRelevantClass.Level < moveAttempted?.LevelRequirement) {
+                        client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you don't know that move. You need to be a level ${moveAttempted?.LevelRequirement} ${ClassType[playerRelevantClass.Type]} to learn this move.`);
+                    }
+                    else {
+                        client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you don't know that move. Redeem 'Learn a Move' to learn new moves.`);
+                    }
                 }
                 else {
-                    client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you don't know that move. Redeem 'Learn a Move' to learn new moves.`);
+                    client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you need to be a ${ClassType[moveAttempted?.ClassRequired]} to use that ability.`);
                 }
             }
-            else {
-                client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you need to be a ${ClassType[moveAttempted?.ClassRequired]} to use that ability.`);
-            }
+            return;
         }
-        return;
     }
 
+
     if(moveAttempted !== undefined) {
+        if(IsCommandOnCooldown(player.Username, moveAttempted!.Command!)) {
+            let cooldownSecondsLeft = GetCommandCooldownTimeLeftInSeconds(player.Username, moveAttempted!.Command!);
+
+            await client.say(process.env.CHANNEL!, `@${userState['display-name']!}, this move is currently on cooldown! You can do this again in ${cooldownSecondsLeft} seconds.`);
+            return;
+        }
+
         if(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level > 0) {
             switch (moveAttempted.Type) {
                 case MoveType.Attack:
                     await HandleMoveAttack(client, moveAttempted, player, userState['display-name']!, command);
                     break;
+                case MoveType.Heal:
+                    await HandleMoveHeal(client, moveAttempted, player, userState['display-name']!, command);
+                    break;
                 case MoveType.PlaySound:
                     handleMovePlaySound(client, moveAttempted, userState['display-name']!, command);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
                     break;
                 case MoveType.ChangeMonitorRotation:
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
                         PlaySound(moveAttempted.SoundFile!, AudioType.UserGameActions);
                     }
                     await HandleMoveMonitorRotation(client, moveAttempted, userState['display-name']!, command);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
                     break;
                 case MoveType.DarkenMonitor:
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
                         PlaySound(moveAttempted.SoundFile!, AudioType.UserGameActions);
                     }
                     await HandleMoveMonitorDarken(client, moveAttempted, userState['display-name']!, command);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
                     break;
                 case MoveType.SayAllChat:
                     client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', userState['display-name']!));
@@ -751,10 +808,21 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
                     SayAllChat = true;
                     setTimeout(() => {
                         SayAllChat = false;
-                    }, 60 * 1000);
+                    }, 60 * 1000 * 5);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
+                    HandleTimeout(command);
                     break;
                 case MoveType.TeleportCameraRandomly:
                     await HandleRandomCameraTeleport(client, moveAttempted, userState['display-name']!);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
+
+                    HandleTimeout(command);
                     break;
                 case MoveType.Silence:
                     client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', userState['display-name']!));
@@ -789,9 +857,17 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
                     }, 15 * 1000);
 
                     HandleTimeout(command);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
                     break;
                 case MoveType.GainHPOnCrit:
                     await HandleGainHPOnCritTemporarily(client, moveAttempted, userState['display-name']!, command);
+
+                    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+                        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+                    }
                     break;
             }
 
@@ -800,6 +876,46 @@ async function HandleMoves(client: Client, userState: ChatUserstate, command: st
             client.say(process.env.CHANNEL!, `@${userState['display-name']!}, you need to be a ${ClassType[moveAttempted?.ClassRequired]} to use that ability.`);
         }
     }
+}
+
+async function HandleMoveHeal(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
+    let pieces = command.trim().split(' ');
+
+    if(pieces.length <= 1){
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you need to specify a target to heal. Ex. !heal @the7ark`);
+        return;
+    }
+
+    let otherPlayer = TryLoadPlayer(pieces[1].replace("@", ""));
+
+    if(otherPlayer === null) {
+        await client.say(process.env.CHANNEL!, `@${player.Username}, could not find player with the username ${pieces[1].replace("@", "")}`);
+        return;
+    }
+
+    if(otherPlayer?.Username == player.Username) {
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you cannot heal yourself, only others. This is the burden of a cleric.`);
+        return;
+    }
+
+    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+    }
+
+    await SetLightColor(0, 1, 0, 0);
+    await SetLightBrightness(1, 0);
+    setTimeout(async () => {
+        await FadeOutLights();
+    }, 2000);
+
+    let healAmount = GetRandomIntI(moveAttempted.HealAmount!.min, moveAttempted.HealAmount!.max);
+
+    let successText = GetRandomItem(moveAttempted.SuccessText)!
+        .replace('{name}', username)
+        .replace(`{target}`, otherPlayer.Username)
+        .replace(`{0}`, Math.abs(healAmount).toString());
+    await client.say(process.env.CHANNEL!, successText);
+    await ChangePlayerHealth(client, otherPlayer!.Username, healAmount, DamageType.None);
 }
 
 async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
@@ -815,7 +931,6 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
     }
 
-
     //Try to hit
     let rollToHit = GetRandomIntI(1, 20);
     let extraRollAddition = 0;
@@ -823,7 +938,8 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
     extraRollAddition = Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 5) + moveAttempted.HitModifier;
 
-    if(DoesPlayerHaveStatusEffect(username, StatusEffect.Drunk)) {
+    let isDrunk = DoesPlayerHaveStatusEffect(username, StatusEffect.Drunk);
+    if(isDrunk) {
         extraRollAddition += GetRandomIntI(-10, 10);
     }
 
@@ -842,12 +958,22 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         rollDisplay = "a NATURAL TWENTY";
     }
 
-    if(rollToHit + extraRollAddition < dragonAc) {
+    if(rollToHit + extraRollAddition < dragonAc || rollToHit === 1) {
         client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${dragonAc}`);
 
         if(rollToHit === 1) {
-            await ChangePlayerHealth(client, username, -Math.round(GetRandomIntI(moveAttempted.Damage?.min!, moveAttempted.Damage?.max!) / 2), GetRandomItem(moveAttempted.DamageTypes!)!);
+            if(moveAttempted.Damage === undefined) {
+                await ChangePlayerHealth(client, username, -Math.round(GetRandomIntI(25, 50)), GetRandomItem(moveAttempted.DamageTypes!)!);
+            }
+            else {
+                await ChangePlayerHealth(client, username, -Math.round(GetRandomIntI(moveAttempted.Damage?.min!, moveAttempted.Damage?.max!) / 2), GetRandomItem(moveAttempted.DamageTypes!)!);
+            }
         }
+
+        let playerSession: PlayerSessionData = LoadPlayerSession(username);
+        playerSession.TimesAttackedEnemy++;
+        SavePlayerSession(username, playerSession);
+        ReduceDragonHits(client);
     }
     else {
         let baseDamage: number = 0;
@@ -947,23 +1073,47 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         } | undefined;
         let extraObjectName = "";
         if(isUsingObject) {
-            extraObjectDamageInfo = await GetObjectFromInputText(player.EquippedObject!.ObjectName)!.ObjectAttackAction(client, player);
-            extraObjectName = GetObjectFromInputText(player.EquippedObject!.ObjectName)!.ContextualName;
+            let obj = await GetObjectFromInputText(player.EquippedObject!.ObjectName)!;
+            if(obj !== undefined && obj.ObjectAttackAction !== undefined) {
+                extraObjectDamageInfo = await obj.ObjectAttackAction(client, player);
+                extraObjectName = GetObjectFromInputText(player.EquippedObject!.ObjectName)!.ContextualName;
 
-            player.EquippedObject!.RemainingDurability--;
-            if(player.EquippedObject!.RemainingDurability <= 0) {
-                TakeObjectFromPlayer(player.Username, player.EquippedObject!.ObjectName);
+                if(extraObjectDamageInfo.damage > 0) {
+                    player.EquippedObject!.RemainingDurability--;
+                    if(player.EquippedObject!.RemainingDurability <= 0) {
+                        TakeObjectFromPlayer(player.Username, player.EquippedObject!.ObjectName);
 
-                client.say(process.env.CHANNEL!, `@${username}, your ${player.EquippedObject!.ObjectName} ran out of durability and broke!`);
-                player.EquippedObject = undefined;
+                        client.say(process.env.CHANNEL!, `@${username}, your ${player.EquippedObject!.ObjectName} ran out of durability and broke!`);
+                        player.EquippedObject = undefined;
+                    }
+
+                    SavePlayer(player);
+                }
             }
-
-            SavePlayer(player);
         }
 
-        let damageTypeDealt: DamageType = GetRandomItem(moveAttempted.DamageTypes!)!;
+        let damageTypeDealt: DamageType = moveAttempted.DamageTypes === undefined ? DamageType.None : GetRandomItem(moveAttempted.DamageTypes!)!;
+
+        if(damageTypeDealt === DamageType.None) {
+            console.error("Did none damage type on move " + moveAttempted.Command)
+        }
 
         let allDamageTypesDealt: Array<DamageType> = [damageTypeDealt];
+
+        let drunkDamageModifier = 0.3;
+        let adjustedDrunkDamage = Math.floor(scaledDamage * drunkDamageModifier);
+        if(isDrunk) {
+            if(GetRandomIntI(1, 3) == 1) {
+                //If you're drunk, chance to hit self
+                await client.say(process.env.CHANNEL!, `@${username} was so drunk they hit themselves for ${DamageType[adjustedDrunkDamage]} ${damageTypeDealt} damage!`);
+
+                await ChangePlayerHealth(client, username, -adjustedDrunkDamage, damageTypeDealt);
+                return;
+            }
+            else {
+                scaledDamage += adjustedDrunkDamage;
+            }
+        }
 
         // Apply the damage
         let dragonDead = await DoDamage(client, username, Math.round(scaledDamage), damageTypeDealt, false);
@@ -979,7 +1129,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             }
         }
 
-        if(isUsingObject && extraObjectDamageInfo !== undefined) {
+        if(isUsingObject && extraObjectDamageInfo !== undefined && extraObjectDamageInfo.damage > 0) {
             if(!dragonDead) {
                 dragonDead = await DoDamage(client, username, Math.round(extraObjectDamageInfo.damage), extraObjectDamageInfo.damageType, false);
             }
@@ -1011,6 +1161,10 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
             finalSuccessText += ` Your attack with ${extraObjectName} did an extra ${damageDisplay} ${DamageType[extraObjectDamageInfo.damageType].toLowerCase()} damage!`;
         }
+
+        if(isDrunk) {
+            finalSuccessText += `Your drunk energy did an extra ${adjustedDrunkDamage} damage!`;
+        }
         
         if(wasCrit) {
             finalSuccessText = `It's a critical hit! ${finalSuccessText}`;
@@ -1018,6 +1172,12 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             if(gainHPOnCrit) {
                 await ChangePlayerHealth(client, player.Username, Math.round(scaledDamage), DamageType.None);
             }
+        }
+
+        ReduceDragonHits(client);
+
+        if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+            TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
         }
 
         client.say(process.env.CHANNEL!, finalSuccessText);
@@ -1085,6 +1245,7 @@ async function HandleMoveMonitorRotation(client: Client, moveAttempted: ClassMov
     }
 
     await SetMonitorRotationTemporarily(GetRandomItem(rotationOptions)!, 15);
+    await MakeRainbowLights(15);
 
     client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
 
@@ -1144,6 +1305,9 @@ async function HandleRandomCameraTeleport(client: Client, moveAttempted: ClassMo
     let newX = ogScale.x * xScale;
     let newY = ogScale.y * yScale;
 
+    await SetLightColor(1, 0.3, 1);
+    await SetLightBrightness(1);
+
     await SetObsSourceScale(itemToTeleport, newX, newY);
 
     setTimeout(async () => {
@@ -1156,12 +1320,19 @@ async function HandleRandomCameraTeleport(client: Client, moveAttempted: ClassMo
             await SetObsSourcePosition(itemToTeleport, ogPos.x, ogPos.y);
             await SetObsSourceScale(itemToTeleport, ogScale.x, ogScale.y);
 
+            await FadeOutLights();
+
         }, 1000 * 15)
     }, 50);
 }
 
 async function HandleMoveMonitorDarken(client: Client, moveAttempted: ClassMove, username: string, command: string) {
+    await SetLightBrightness(0);
     await SetMonitorBrightnessContrastTemporarily(0, 20);
+
+    setTimeout(async () => {
+        await FadeOutLights();
+    }, 20 * 1000)
 
     client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
 

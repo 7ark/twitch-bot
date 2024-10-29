@@ -9,7 +9,7 @@ import {
 } from "./utils/playerGameUtils";
 import {Broadcast} from "./bot";
 import {GetRandomIntI, GetRandomItem, IconType} from "./utils/utils";
-import {AttackDefinitions} from "./movesDefinitions";
+import {MoveDefinitions} from "./movesDefinitions";
 import {AddToActionQueue} from "./actionqueue";
 import {CurrentPollJoker} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
@@ -19,6 +19,7 @@ import {ObjectTier} from "./inventory";
 import {GivePlayerRandomQuest, HandleQuestProgress, QuestType} from "./utils/questUtils";
 import {DamageType} from "./utils/dragonUtils";
 import {AudioType} from "./streamSettings";
+import {SetDefaultLightColor, SetLightColor} from "./utils/lightsUtils";
 
 const REDEEM_GAIN_5_EXP = '2c1c1337-583b-4a51-a169-b79c3cdd3d08';
 const REDEEM_GAIN_20_EXP = '8ed9b9a2-89d3-48e5-9783-f12ae4fe2c61';
@@ -35,6 +36,11 @@ const REDEEM_CHAT_CHALLENGE = `37318946-604c-4b3a-8b84-21f2f8c7dd2b`;
 const REDEEM_FULL_HEAL = `2f11982a-179a-47cb-86d5-26478c186693`;
 const REDEEM_OFFER_SIDEQUEST = `4dba9b6d-dbe2-413e-b94c-04670c678561`;
 const REDEEM_REROLL_QUEST = `b6cf6ef8-88f5-44a0-91c1-cb5b051da55f`;
+const REDEEM_SETLIGHTCOLOR_BLUE = `2603a84a-f29b-416c-9f5c-603c7cceefc7`;
+const REDEEM_SETLIGHTCOLOR_RED = `60722ce3-5726-45ea-ae99-f450cd91a891`;
+const REDEEM_SETLIGHTCOLOR_PURPLE = `82b5bd8b-956d-43cb-a803-e4d221be6d88`;
+const REDEEM_SETLIGHTCOLOR_GREEN = `97d7a1e9-674d-46ed-9441-b010deadc7d2`;
+const REDEEM_SETLIGHTCOLOR_CUSTOM = `16cae48b-6bce-4fc8-a37f-f94473a1ce06`;
 
 export async function ProcessRedemptions(client: Client, username: string, rewardId: string, redemptionId: string, userInput: string) {
     console.log(`Redemption! from ${username}, a reward id of ${rewardId}`)
@@ -52,7 +58,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             break;
         case REDEEM_LEARN_A_MOVE:
 
-            let validDefs = AttackDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+            let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
 
             if(validDefs.length > 0) {
                 let chosenMove = GetRandomItem(validDefs);
@@ -169,6 +175,79 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             break;
         case REDEEM_REROLL_QUEST:
             await GivePlayerRandomQuest(client, player.Username);
+            break;
+        case REDEEM_SETLIGHTCOLOR_BLUE:
+            await SetDefaultLightColor({
+                r: 0,
+                g: 0,
+                b: 1,
+                brightness: 1
+            });
+            break;
+        case REDEEM_SETLIGHTCOLOR_RED:
+            await SetDefaultLightColor({
+                r: 1,
+                g: 0,
+                b: 0,
+                brightness: 1
+            });
+            break;
+        case REDEEM_SETLIGHTCOLOR_PURPLE:
+            await SetDefaultLightColor({
+                r: 1,
+                g: 0,
+                b: 1,
+                brightness: 1
+            });
+            break;
+        case REDEEM_SETLIGHTCOLOR_GREEN:
+            await SetDefaultLightColor({
+                r: 0,
+                g: 1,
+                b: 0,
+                brightness: 1
+            });
+            break;
+        case REDEEM_SETLIGHTCOLOR_CUSTOM:
+            let splitInput = userInput.replace(",", "").split(' ');
+            if(splitInput.length < 3) {
+                client.say(process.env.CHANNEL!, `@${username}, that is an incorrect input for RGB values`);
+            }
+            else {
+                let r = parseInt(splitInput[0]);
+                let g = parseInt(splitInput[1]);
+                let b = parseInt(splitInput[2]);
+                
+                if(r == NaN || r < 0) {
+                    r = 0;
+                }
+                else if(r > 255)
+                {
+                    r = 255;
+                }
+                if(g == NaN || g < 0) {
+                    g = 0;
+                }
+                else if(g > 255)
+                {
+                    g = 255;
+                }
+                if(b == NaN || b < 0) {
+                    b = 0;
+                }
+                else if(b > 255)
+                {
+                    b = 255;
+                }
+
+                await SetDefaultLightColor({
+                    r: r / 255,
+                    g: g / 255,
+                    b: b / 255,
+                    brightness: 1
+                });
+            }
+
             break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))

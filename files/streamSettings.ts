@@ -11,6 +11,7 @@ interface StreamSettings {
     doesRandomChatChallenges: boolean;
 }
 
+//Playing alone, casually
 const SOLO_SETTINGS: StreamSettings = {
     volume: new Map<AudioType, number>([
         [AudioType.UserTTS, 0.8],
@@ -21,6 +22,18 @@ const SOLO_SETTINGS: StreamSettings = {
     doesRandomChatChallenges: true
 }
 
+//Playing alone, but i wanna pay attention to story
+const SOLO_STORY_SETTINGS: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 0.8],
+        [AudioType.UserGameActions, 0.5],
+        [AudioType.GameAlerts, 0.3],
+        [AudioType.StreamInfrastructure, 1],
+    ]),
+    doesRandomChatChallenges: false
+}
+
+//Playing with others
 const COLLAB_SETTINGS: StreamSettings = {
     volume: new Map<AudioType, number>([
         [AudioType.UserTTS, 0.6],

@@ -24,6 +24,7 @@ import {IsDragonActive} from "./globals";
 import {DamageType, DoDamage, LoadDragonData} from "./utils/dragonUtils";
 import {SetSceneItemEnabled} from "./utils/obsutils";
 import {AudioType} from "./streamSettings";
+import {FadeOutLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
 
 export enum ObjectTier { Low, Mid, High }
 
@@ -46,6 +47,12 @@ export interface InventoryObject {
     ObjectAttackAction?: (client: Client, player: Player) => Promise<{
         damage: number,
         damageType: DamageType
+    }>;
+    ObjectOnAttackedAction?: (client: Client, player: Player) => Promise<{
+        resistances?: Array<DamageType>,
+        immunities?: Array<DamageType>,
+        vulnerabilities?: Array<DamageType>,
+        armorAdjustment?: number
     }>;
     Rarity: number;
 }
@@ -97,6 +104,21 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Rarity: 10
     },
     {
+        ObjectName: "healing amulet",
+        ContextualName: "a healing amulet",
+        PluralName: "healing amulets",
+        Info: "A healing amulet used by clerics to heal people",
+        ThrownDamage: { min: 2, max: 3 },
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you bask in the glow of the magical energy of the amulet`);
+
+            return true;
+        },
+        Consumable: false,
+        Rewardable: false,
+        Rarity: 10
+    },
+    {
         ObjectName: "wand",
         ContextualName: "a wand",
         PluralName: "wands",
@@ -122,13 +144,60 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         IconRep: IconType.Bottle,
         ThrownDamage: { min: -40, max: -20 },
         UseAction: async (client, player, afterText) => {
-            await ChangePlayerHealth(client, player.Username, GetRandomIntI(20, 40), DamageType.None);
+            let maxHealth = CalculateMaxHealth(player);
+            let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.1, 10), Math.max(maxHealth * 0.2, 30)))
+
+            await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 
             return true;
         },
         Consumable: true,
         Rewardable: true,
         Rarity: 10
+    },
+    {
+        ObjectName: "great healing potion",
+        Alias: ["great healing", "great healing potions", "great health potion"],
+        ContextualName: "a great healing potion",
+        PluralName: "great healing potions",
+        Info: "Heals whatever it touches!",
+        CostRange: {min: 1000, max: 2000 },
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.Bottle,
+        ThrownDamage: { min: -80, max: -300 },
+        UseAction: async (client, player, afterText) => {
+            let maxHealth = CalculateMaxHealth(player);
+            let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.3, 10), Math.max(maxHealth * 0.5, 30)))
+
+            await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 8
+    },
+    {
+        ObjectName: "legendary healing potion",
+        Alias: ["legendary healing", "legendary healing potions", "legendary health potion"],
+        ContextualName: "a legendary healing potion",
+        PluralName: "legendary healing potions",
+        Info: "Heals whatever it touches!",
+        CostRange: {min: 2000, max: 4000 },
+        Tier: ObjectTier.High,
+        IconRep: IconType.Bottle,
+        ThrownDamage: { min: -150, max: -500 },
+        UseAction: async (client, player, afterText) => {
+            let maxHealth = CalculateMaxHealth(player);
+            let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.7, 10), Math.max(maxHealth * 0.8, 30)))
+
+            await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 4
     },
     {
         ObjectName: "cheese",
@@ -170,6 +239,37 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Consumable: true,
         Rewardable: true,
         Rarity: 10
+    },
+    {
+        ObjectName: "cake",
+        Alias: ["cake", "portal cake"],
+        ContextualName: "a cake",
+        PluralName: "cakes",
+        Info: "A delicious cake! Right? Or is it a lie... Ex. !use cake",
+        CostRange: {min: 500, max: 1000 },
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.PortalCake,
+        ThrownDamage: { min: 20, max: 80 },
+        UseAction: async (client, player, afterText) => {
+            let good = GetRandomIntI(1, 2) == 1; //50/50 chance
+
+            let maxHealth = CalculateMaxHealth(player);
+            if(good) {
+                let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.5, 10), Math.max(maxHealth * 0.75, 30)))
+
+                await client.say(process.env.CHANNEL!, `@${player.Username}, the cake is as good as you imagined!`);
+                await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
+            }
+            else {
+                await client.say(process.env.CHANNEL!, `@${player.Username}... THE CAKE WAS A LIE!`);
+                await ChangePlayerHealth(client, player.Username, -maxHealth, DamageType.Poison);
+            }
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 7
     },
     {
         ObjectName: "beer",
@@ -425,12 +525,23 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
                 let wasBad = false;
 
-                setTimeout(() => {
-                    SetSceneItemEnabled("Explosion VFX", true);
+                await SetLightBrightness(0);
+
+                setTimeout(async() => {
+
+                    await SetSceneItemEnabled("Explosion VFX", true);
 
                     setTimeout(() => {
                         SetSceneItemEnabled("Explosion VFX", false);
                     }, 1000 * 17);
+
+                    await SetLightColor(1, 0, 0);
+                    await SetLightBrightness(1);
+
+                    setTimeout(async () => {
+                        await FadeOutLights();
+                    }, 1000 * 10);
+
                 }, 1000 * 2);
 
                 setTimeout(async () => {
@@ -552,6 +663,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Tier: ObjectTier.High,
         IconRep: IconType.Crystal,
         UseAction: async (client, player, afterText) => {
+            if(player.LevelUpAvailable){
+                await client.say(process.env.CHANNEL!, `@${player.Username}, you already have a level up available! You must level up before using the crystal`);
+                return false;
+            }
+
             let expNeeded = player.CurrentExpNeeded - player.CurrentExp;
             await client.say(process.env.CHANNEL!, `@${player.Username} has crushed a magic crystal!`);
             await GiveExp(client, player.Username, expNeeded);
@@ -755,7 +871,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pool noodle",
         ContextualName: "a pool noodle",
         PluralName: "pool noodles",
-        Info: "A pool noodle, from a pool. Great for some fun in the sun. Has a durability, and will break after several uses. Equip it using !equip obsidian dagger",
+        Info: "A pool noodle, from a pool. Great for some fun in the sun. Has a durability, and will break after several uses. Equip it using !equip pool noodle",
         CostRange: {min: 1000, max: 3500 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.PoolNoodle,
@@ -776,6 +892,108 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         },
         Durability: {min: 15, max: 20},
         Rarity: 10
+    },
+    {
+        ObjectName: "power helmet",
+        ContextualName: "a power helmet",
+        PluralName: "power helmets",
+        Info: "A power armor helmet! It'll help protect your face a bit more, but leaves you prone to overheating. Equip it using !equip power helmet",
+        CostRange: {min: 1000, max: 3500 },
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.PowerHelmet,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, GetRandomItem([
+                `@${player.Username} you take the helmet and wipe the insides a bit. It's all sweaty!`,
+                `@${player.Username} you look through the eyes... it's all tinted green, for some reason.`,
+                `@${player.Username} this makes your head look too big for your body.`,
+            ])!);
+
+            return false;
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Warrior, ClassType.Rogue, ClassType.Mage ],
+        ObjectOnAttackedAction: async (client, player) => {
+            return {
+                resistances: [DamageType.Cold, DamageType.Bludgeoning],
+                vulnerabilities: [DamageType.Fire]
+            };
+        },
+        Durability: {min: 5, max: 15},
+        Rarity: 6
+    },
+    {
+        ObjectName: "cardboard box",
+        ContextualName: "a cardboard box",
+        PluralName: "cardboard boxes",
+        Info: "A cardboard box! Wow! It's... a box. Your mind feels safer. Equip it using !equip cardboard box",
+        CostRange: {min: 500, max: 1500 },
+        Tier: ObjectTier.Low,
+        IconRep: IconType.CardboardBox,
+        UseAction: async (client, player, afterText) => {
+            if(GetRandomIntI(1, 3) == 1) {
+                let otherUser = LoadRandomPlayerSession([player.Username], true)!;
+
+                //Damage calc
+                let otherUserPlayer = LoadPlayer(otherUser.NameAsDisplayed);
+                let maxHealth = CalculateMaxHealth(otherUserPlayer);
+                let damage = Math.max(1, GetRandomIntI(maxHealth * 0.05, maxHealth * 0.2));
+
+                await client.say(process.env.CHANNEL!, `@${player.Username} you hide in your box until @${otherUserPlayer.Username} comes nearby and you JUMP OUT and SCARE them! What a funny prank.`);
+                await ChangePlayerHealth(client, otherUser.NameAsDisplayed, -damage, DamageType.Psychic);
+            }
+            else {
+                await client.say(process.env.CHANNEL!, GetRandomItem([
+                    `@${player.Username} you hide in your box, safe, alone, protected.`,
+                    `@${player.Username} you build a box fort. Wow, look how beautiful it is.`,
+                ])!);
+
+                return false;
+            }
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Warrior, ClassType.Rogue, ClassType.Mage ],
+        ObjectOnAttackedAction: async (client, player) => {
+            return {
+                resistances: [DamageType.Psychic],
+                armorAdjustment: 2
+            };
+        },
+        Durability: {min: 5, max: 15},
+        Rarity: 6
+    },
+    {
+        ObjectName: "duck hunt gun",
+        ContextualName: "a duck hunt gun",
+        PluralName: "duck hunt guns",
+        Info: "A gun from the game Duck Hunt. It's exceptional at shooting ducks, but works okay on other things. Equip it using !equip duck hunt gun",
+        CostRange: {min: 3000, max: 6000 },
+        Tier: ObjectTier.High,
+        IconRep: IconType.DuckHuntGun,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, GetRandomItem([
+                `@${player.Username} you aim for the nearest duck, but none are in sight`,
+                `@${player.Username} BANG! You got one.`,
+                `@${player.Username} BANG BANG BANG... oops. GAME OVER!`
+            ])!);
+
+            return false;
+        },
+        Consumable: false,
+        Rewardable: true,
+        Equippable: true,
+        ClassRestrictions: [ ClassType.Rogue ],
+        ObjectAttackAction: async (client, player) => {
+            return {
+                damage: GetRandomIntI(10, 25),
+                damageType: GetRandomItem([DamageType.Piercing, DamageType.Fire])!
+            };
+        },
+        Durability: {min: 10, max: 15},
+        Rarity: 7
     },
 ]
 
