@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx tsc&node ./dist/bot.js",
-    "auth": "npx tsc&node ./dist/oauth.js"
+    "auth": "npx tsc&node ./dist/oauth.js",
+    "authbot": "npx tsc&node ./dist/oauth.js --bot"
   },
   "keywords": [],
   "author": "",

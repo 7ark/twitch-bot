@@ -3,20 +3,29 @@ import fs from "fs";
 import {Client} from "tmi.js";
 import Process from "process";
 import ngrok from "ngrok";
-import {GetRandomItem} from "./utils";
+import {ConvertUnixToDateTime, GetRandomItem, GetSecondsBetweenDates} from "./utils";
 import {Broadcast, options} from "../bot";
-import {ProcessRedemptions} from "../redemptions";
+import {ProcessBits, ProcessRedemptions} from "../redemptions";
 import {MakeRainbowLights} from "./lightsUtils";
+import {ProcessAds} from "./adUtils";
+import {OnWhisper} from "./messageUtils";
+import {GetAllPlayerSessions} from "./playerSessionUtils";
+import {PlayHypeTrainAlert} from "./alertUtils";
 const ngrok = require('ngrok');
 
 let ngrokUrl: string = '';
 let mostRecentPollId: string = '';
 let pollStarted = false;
 let hasAuthBeenSet = false;
+let hasAuthBeenSetBot = false;
 let lastCheckedFollowerCount = -1;
 
 let authToken = process.env.TWITCH_OAUTH_TOKEN;
 let refreshToken = process.env.REFRESH_TOKEN;
+let authTokenBot = process.env.TWITCH_OAUTH_TOKEN;
+let refreshTokenBot = process.env.REFRESH_TOKEN;
+
+
 if(fs.existsSync('tokens.json')){
     const tokensData = JSON.parse(fs.readFileSync('tokens.json', 'utf-8'));
 
@@ -26,19 +35,40 @@ if(fs.existsSync('tokens.json')){
     hasAuthBeenSet = true;
 }
 
-export function GetAuthToken() {
-    if(!hasAuthBeenSet && fs.existsSync('tokens.json')){
-        const tokensData = JSON.parse(fs.readFileSync('tokens.json', 'utf-8'));
+if(fs.existsSync('tokensbot.json')){
+    const tokensData = JSON.parse(fs.readFileSync('tokensbot.json', 'utf-8'));
 
-        authToken = tokensData.OAUTH_TOKEN;
-        refreshToken = tokensData.REFRESH_TOKEN;
-    }
+    authTokenBot = tokensData.OAUTH_TOKEN;
+    refreshTokenBot = tokensData.REFRESH_TOKEN;
 
-    return authToken;
+    hasAuthBeenSetBot = true;
 }
 
-export function GetAuthBearerToken() {
-    let token = GetAuthToken();
+export function GetAuthToken(bot: boolean = false) {
+    if(bot){
+        if(!hasAuthBeenSetBot && fs.existsSync('tokensbot.json')){
+            const tokensData = JSON.parse(fs.readFileSync('tokensbot.json', 'utf-8'));
+
+            authTokenBot = tokensData.OAUTH_TOKEN;
+            refreshTokenBot = tokensData.REFRESH_TOKEN;
+        }
+
+        return authTokenBot;
+    }
+    else {
+        if(!hasAuthBeenSet && fs.existsSync('tokens.json')){
+            const tokensData = JSON.parse(fs.readFileSync('tokens.json', 'utf-8'));
+
+            authToken = tokensData.OAUTH_TOKEN;
+            refreshToken = tokensData.REFRESH_TOKEN;
+        }
+
+        return authToken;
+    }
+}
+
+export function GetAuthBearerToken(bot: boolean = false) {
+    let token = GetAuthToken(bot);
 
     return token!.replace('oauth:', '');
 }
@@ -47,14 +77,14 @@ export function GetNgrokURL() {
     return ngrokUrl;
 }
 
-async function RefreshAccessToken() {
+async function RefreshAccessToken(bot: boolean = false) {
     try {
         // Construct the request body as form data
         const params = new URLSearchParams();
         params.append('grant_type', 'refresh_token');
-        params.append('refresh_token', refreshToken!);
-        params.append('client_id', process.env.CLIENT_ID!);
-        params.append('client_secret', process.env.CLIENT_SECRET!);
+        params.append('refresh_token', bot ? refreshTokenBot! : refreshToken!);
+        params.append('client_id', bot ? process.env.BOT_CLIENT_ID : process.env.CLIENT_ID!);
+        params.append('client_secret', bot ? process.env.BOT_CLIENT_SECRET : process.env.CLIENT_SECRET!);
 
         // Make the POST request with axios
         const response = await axios.post('https://id.twitch.tv/oauth2/token', params.toString(), {
@@ -69,13 +99,24 @@ async function RefreshAccessToken() {
         // file_put_contents()
         // Here, update your environment variables, which is not actually possible in real-time
         // You would instead update these in your secure storage solution/database
-        authToken = `oauth:${access_token}`;
-        refreshToken = refresh_token;
+        if(bot) {
+            authTokenBot = `oauth:${access_token}`;
+            refreshTokenBot = refresh_token;
 
-        fs.writeFileSync('tokens.json', JSON.stringify({
-            OAUTH_TOKEN: authToken,
-            REFRESH_TOKEN: refreshToken,
-        }), 'utf-8')
+            fs.writeFileSync('tokensbot.json', JSON.stringify({
+                OAUTH_TOKEN: authTokenBot,
+                REFRESH_TOKEN: refreshTokenBot,
+            }), 'utf-8')
+        }
+        else {
+            authToken = `oauth:${access_token}`;
+            refreshToken = refresh_token;
+
+            fs.writeFileSync('tokens.json', JSON.stringify({
+                OAUTH_TOKEN: authToken,
+                REFRESH_TOKEN: refreshToken,
+            }), 'utf-8')
+        }
 
         // Update the client's token
         options.identity.password = `oauth:${access_token}`;
@@ -84,9 +125,9 @@ async function RefreshAccessToken() {
     }
 }
 
-export async function RefreshAccessTokenAndReconnect(client: Client) {
+export async function RefreshBotAccessTokenAndReconnect(client: Client) {
     try {
-        await RefreshAccessToken()
+        await RefreshAccessToken(true)
 
         await client.connect();
     } catch (error) {
@@ -95,12 +136,12 @@ export async function RefreshAccessTokenAndReconnect(client: Client) {
 }
 
 
-async function FetchEventSubSubscriptions() {
+async function FetchEventSubSubscriptions(bot: boolean = false) {
     try {
         const response = await axios.get('https://api.twitch.tv/helix/eventsub/subscriptions', {
             headers: {
-                "Authorization": `Bearer ${await GetAppAccessToken()}`,
-                "Client-Id": process.env.CLIENT_ID
+                "Authorization": `Bearer ${await GetAppAccessToken(bot)}`,
+                "Client-Id": bot ? process.env.BOT_CLIENT_ID : process.env.CLIENT_ID
             }
         });
 
@@ -112,12 +153,12 @@ async function FetchEventSubSubscriptions() {
     }
 }
 
-async function DeleteEventSubSubscription(subscriptionId: string) {
+async function DeleteEventSubSubscription(subscriptionId: string, bot: boolean = false) {
     try {
         await axios.delete(`https://api.twitch.tv/helix/eventsub/subscriptions?id=${subscriptionId}`, {
             headers: {
-                "Authorization": `Bearer ${await GetAppAccessToken()}`,
-                "Client-Id": process.env.CLIENT_ID
+                "Authorization": `Bearer ${await GetAppAccessToken(bot)}`,
+                "Client-Id": bot ? process.env.BOT_CLIENT_ID : process.env.CLIENT_ID
             }
         });
 
@@ -127,13 +168,13 @@ async function DeleteEventSubSubscription(subscriptionId: string) {
     }
 }
 
-async function GetAppAccessToken() {
+async function GetAppAccessToken(bot: boolean = false) {
     try {
         const params = new URLSearchParams({
-            client_id: process.env.CLIENT_ID || '',
-            client_secret: process.env.CLIENT_SECRET || '',
+            client_id: bot ? process.env.BOT_CLIENT_ID : process.env.CLIENT_ID || '',
+            client_secret: bot ? process.env.BOT_CLIENT_SECRET : process.env.CLIENT_SECRET || '',
             grant_type: 'client_credentials',
-            scope: 'channel:read:redemptions channel:manage:redemptions moderator:manage:banned_users channel:manage:vips' // Include any other scopes needed
+            scope: 'channel:read:redemptions channel:manage:redemptions moderator:manage:banned_users channel:manage:vips bits:read channel:read:ads user:manage:whispers channel:read:hype_train' // Include any other scopes needed
         }).toString();
 
         const response = await axios.post('https://id.twitch.tv/oauth2/token', params, {
@@ -155,6 +196,7 @@ export async function SubscribeToEventSub() {
 
     ngrokUrl = await ngrok.connect(3000);
     console.log("Started Ngrok")
+    console.log("Ngrok URL:", ngrokUrl);
 
     let existingSub = await FetchEventSubSubscriptions();
     if(existingSub !== null){
@@ -164,7 +206,16 @@ export async function SubscribeToEventSub() {
         }
     }
 
+    let existingSubBot = await FetchEventSubSubscriptions(true);
+    if(existingSubBot !== null){
+        for (let i = 0; i < existingSubBot.data.length; i++) {
+            console.log('Found existing bot subscription. Deleting it to use new ngrok url.');
+            await DeleteEventSubSubscription(existingSubBot.data[i].id, true);
+        }
+    }
+
     const appAccessToken = await GetAppAccessToken(); // Make sure this function is called to get a fresh app access token
+    const botAppAccessToken = await GetAppAccessToken(true); // Make sure this function is called to get a fresh app access token
     if (!appAccessToken) {
         console.log('Failed to obtain app access token. Cannot subscribe to EventSub.');
         return;
@@ -187,11 +238,43 @@ export async function SubscribeToEventSub() {
             "requiredScopes": ["channel:read:subscriptions"]
         },
         {
+            "type": "channel.subscription.message",
+            "condition": {
+                "broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": true,
+            "requiredScopes": ["channel:read:subscriptions"]
+        },
+        {
             "type": "channel.raid",
             "condition": {
                 "to_broadcaster_user_id": process.env.CHANNEL_ID
             },
             "requiresUserToken": false
+        },
+        {
+            "type": "channel.cheer",
+            "condition": {
+                "broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": true,
+            "requiredScopes": ["bits:read"]
+        },
+        {
+            "type": "channel.ad_break.begin",
+            "condition": {
+                "broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": true,
+            "requiredScopes": ["channel:read:ads"]
+        },
+        {
+            "type": "channel.hype_train.begin",
+            "condition": {
+                "broadcaster_user_id": process.env.CHANNEL_ID
+            },
+            "requiresUserToken": false,
+            "requiredScopes": ["channel:read:hype_train"]
         },
         // {
         //     "type": "channel.hype_train.begin",
@@ -229,6 +312,45 @@ export async function SubscribeToEventSub() {
             console.error("Error subscribing to EventSub:", error.response.data);
         }
     }
+
+    const botEventSubscriptions = [
+        {
+            "type": "user.whisper.message",
+            "condition": {
+                "user_id": process.env.BOT_CHANNEL_ID
+            },
+            "requiresUserToken": true,
+            "requiredScopes": ["user:read:whispers"]
+        },
+    ];
+
+    // Subscribe for the bot account
+    for (const botEventSub of botEventSubscriptions) {
+        const subscriptionBody = {
+            "type": botEventSub.type,
+            "version": "1",
+            "condition": botEventSub.condition,
+            "transport": {
+                "method": "webhook",
+                "callback": `${ngrokUrl}/twitch/callback`,
+                "secret": "botSecretString" // Used to generate a signature to verify Twitch notifications for the bot
+            }
+        };
+
+        try {
+            const response = await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', subscriptionBody, {
+                headers: {
+                    "Authorization": `Bearer ${botAppAccessToken}`,
+                    "Client-Id": process.env.BOT_CLIENT_ID,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            console.log(`Subscription to ${botEventSub.type} successful for bot`);
+        } catch (error: any) {
+            console.error("Error subscribing to bot EventSub:", error.response?.data || error.message);
+        }
+    }
 }
 
 export async function HandleEventSubResponse(client: Client, req: any) {
@@ -241,12 +363,23 @@ export async function HandleEventSubResponse(client: Client, req: any) {
             await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
             break;
         case "channel.subscribe":
+        case "channel.subscription.message":
             await MakeRainbowLights(10);
-            console.log("REGISTERING A SUB");
-            console.log(req.body);
             break;
         case "channel.raid":
             await MakeRainbowLights(15);
+            break;
+        case "channel.cheer":
+            await ProcessBits(client, req.body.event.user_name, req.body.event.message, req.body.event.bits);
+            break;
+        case "channel.ad_break.begin":
+            await ProcessAds(client, req.body.event.duration_seconds);
+            break;
+        case "user.whisper.message":
+            await OnWhisper(client, req.body.event.whisper.text, req.body.event.from_user_name);
+            break;
+        case "channel.hype_train.begin":
+            await PlayHypeTrainAlert();
             break;
     }
 
@@ -334,6 +467,63 @@ export async function RemoveUserVIP(client: Client, username: string) {
     }
 }
 
+export async function WhisperUser(client: Client, username: string, message: string) {
+    console.log(`Trying to whisper user ${username}: ${message}`)
+    // try {
+    //     // Fetch the target user's ID based on their username
+    //     const targetUserId = await GetUserId(username);
+    //     if (!targetUserId) {
+    //         console.error(`Could not fetch user ID for username: ${username}`);
+    //         return;
+    //     }
+    //
+    //     // Send the whisper using the Helix API
+    //     const response = await axios.post(
+    //         `https://api.twitch.tv/helix/whispers`,
+    //         { message },
+    //         {
+    //             params: {
+    //                 from_user_id: process.env.BOT_CHANNEL_ID!,
+    //                 to_user_id: targetUserId,
+    //             },
+    //             headers: {
+    //                 'Authorization': `Bearer ${GetAuthBearerToken(true)}`,
+    //                 'Client-Id': process.env.BOT_CLIENT_ID!,
+    //                 'Content-Type': 'application/json',
+    //             },
+    //         }
+    //     )
+    // } catch (error) {
+    //     console.error(`Failed to whisper to ${username}:`, error);
+    //     await  client.say(process.env.CHANNEL!, `@${username}, ${message[0].toLowerCase()}${message.substring(1)}`);
+    // }
+    await client.say(process.env.CHANNEL!, message);
+}
+
+export async function GetAdSchedule(broadcasterId: string) {
+    try {
+        const response = await axios.get(
+            `https://api.twitch.tv/helix/channels/ads`,
+            {
+                params: {
+                    broadcaster_id: broadcasterId,
+                },
+                headers: {
+                    'Authorization': `Bearer ${GetAuthBearerToken()}`,
+                    'Client-Id': process.env.CLIENT_ID!,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        // console.log("Ad schedule data:", response.data);
+        // console.log(ConvertUnixToDateTime(response.data.data[0].next_ad_at))
+        return response.data;
+    } catch (error: any) {
+        console.error("Error retrieving ad schedule data:", error.response?.data || error.message);
+    }
+}
+
 async function GetUserId(username: string): Promise<string | null> {
     const url = `https://api.twitch.tv/helix/users?login=${username}`;
     const headers = {
@@ -355,8 +545,55 @@ async function GetUserId(username: string): Promise<string | null> {
     }
 }
 
+export async function UpdateViewerCountInfo() {
+    let viewerCount = await GetViewerCount();
+    if(viewerCount !== null) {
+        let viewerNames: Array<string> = [];
+        let sessions = GetAllPlayerSessions();
+        sessions = sessions.sort((x,y) => {
+            let timeBetweenX = GetSecondsBetweenDates(x.LastMessageTime, new Date());
+            let timeBetweenY = GetSecondsBetweenDates(y.LastMessageTime, new Date());
 
-export async function CreatePoll(poll: { title: string, choices: Array<{title: string}>}, pollDuration: number = 60, repeatIfEmpty: boolean = true, callback?: (result: string) => void) {
+            return (timeBetweenX - timeBetweenY);// || (y.Messages.length - x.Messages.length);
+        });
+
+        // console.log(sessions);
+
+        for (let i = 0; i < Math.min(sessions.length, viewerCount); i++) {
+            viewerNames.push(sessions[i].NameAsDisplayed);
+        }
+        
+        Broadcast(JSON.stringify({ type: 'viewerCount', count: viewerCount, names: viewerNames }));
+    }
+}
+
+export async function GetViewerCount() {
+    try {
+        const response = await axios.get('https://api.twitch.tv/helix/streams', {
+            params: {
+                user_id: process.env.CHANNEL_ID, // Twitch user ID of your channel
+            },
+            headers: {
+                'Authorization': `Bearer ${GetAuthBearerToken()}`, // Use the appropriate token
+                'Client-Id': process.env.CLIENT_ID, // Use your app's Client ID
+            },
+        });
+
+        if (response.data.data && response.data.data.length > 0) {
+            const streamData = response.data.data[0];
+            console.log(`Current viewer count: ${streamData.viewer_count}`);
+            return streamData.viewer_count;
+        } else {
+            console.log('Stream is offline or viewer count not available.');
+            return 0;
+        }
+    } catch (error: any) {
+        console.error('Error fetching viewer count:', error.response?.data || error.message);
+        return null;
+    }
+}
+
+export async function CreateTwitchPoll(poll: { title: string, choices: Array<{title: string}>}, pollDuration: number = 60, repeatIfEmpty: boolean = true, callback?: (result: string) => void) {
     if(pollStarted){
         return;
     }
@@ -372,7 +609,7 @@ export async function CreatePoll(poll: { title: string, choices: Array<{title: s
         broadcaster_id: process.env.CHANNEL_ID!,
         title: poll.title,
         choices: poll.choices,
-        duration: pollDuration, // 120 Duration in seconds (2 minutes in this example)
+        duration: pollDuration,
     };
 
     try {
@@ -382,7 +619,11 @@ export async function CreatePoll(poll: { title: string, choices: Array<{title: s
 
         setTimeout(async () => {
             pollStarted = false;
-            let results = await GetPollResults(mostRecentPollId);
+            let results = await GetTwitchPollResults(mostRecentPollId);
+
+            if(results == null) {
+                return;
+            }
 
             let winners: Array<string> = [];
             let winnerVotes = 0;
@@ -399,7 +640,7 @@ export async function CreatePoll(poll: { title: string, choices: Array<{title: s
 
             if(repeatIfEmpty && winnerVotes === 0) {
                 setTimeout(() => {
-                    CreatePoll(poll);
+                    CreateTwitchPoll(poll);
                 }, 500);
             }
             else {
@@ -419,13 +660,13 @@ export async function CreatePoll(poll: { title: string, choices: Array<{title: s
         if(error.response.data.message === 'Invalid OAuth token') {
             await RefreshAccessToken();
 
-            await CreatePoll(poll);
+            await CreateTwitchPoll(poll);
         }
 
     }
 }
 
-async function GetPollResults(pollId?: string) {
+async function GetTwitchPollResults(pollId?: string) {
     const url = `https://api.twitch.tv/helix/polls?broadcaster_id=${process.env.CHANNEL_ID!}${pollId ? `&id=${pollId}` : ''}`;
     const headers = {
         'Authorization': `Bearer ${GetAuthBearerToken()}`,
@@ -436,7 +677,7 @@ async function GetPollResults(pollId?: string) {
         const response = await axios.get(url, {headers});
 
         console.log('Received Poll Results');
-        // console.log('Poll results:', response.data);
+        console.log('Poll results:', response.data);
         // for (let i = 0; i < response.data.data[0].choices.length; i++) {
         //     console.log(`Choice #${i}: `, response.data.data[0].choices[i]);
         // }
@@ -483,5 +724,43 @@ export async function CheckNewFollowers(client?: Client) {
         else {
             console.trace("Couldnt refresh token because client is undefined");
         }
+    }
+}
+
+export async function CompleteRedemption(rewardId: string, redemptionId: string) {
+    try {
+        const response = await axios.patch(
+            `https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${process.env.CHANNEL_ID}&reward_id=${rewardId}&id=${redemptionId}`,
+            { status: "FULFILLED" },
+            {
+                headers: {
+                    "Authorization": `Bearer ${GetAuthBearerToken()}`,
+                    "Client-Id": process.env.CLIENT_ID!,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+        console.log(`Redemption ${redemptionId} completed successfully`, response.data);
+    } catch (error: any) {
+        console.error("Error completing redemption:", error.response ? error.response.data : error.message);
+    }
+}
+
+export async function RejectRedemption(rewardId: string, redemptionId: string) {
+    try {
+        const response = await axios.patch(
+            `https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${process.env.CHANNEL_ID}&reward_id=${rewardId}&id=${redemptionId}`,
+            { status: "CANCELED" },
+            {
+                headers: {
+                    "Authorization": `Bearer ${GetAuthBearerToken()}`,
+                    "Client-Id": process.env.CLIENT_ID!,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+        console.log(`Redemption ${redemptionId} rejected successfully`, response.data);
+    } catch (error) {
+        console.error("Error rejecting redemption:", error.response ? error.response.data : error.message);
     }
 }

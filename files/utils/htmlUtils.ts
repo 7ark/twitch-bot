@@ -1,10 +1,11 @@
-import {IsDragonActive} from "../globals";
+import {IsMonsterActive} from "../globals";
 import {SetSceneItemEnabled} from "./obsutils";
 import {Broadcast} from "../bot";
-import {LoadDragonData, SaveDragonData} from "./dragonUtils";
+import {LoadMonsterData, SaveMonsterData, MonsterInfo, GenerateNewMonster} from "./monsterUtils";
 import {PlayTextToSpeech} from "./audioUtils";
-import {CreatePoll} from "./twitchUtils";
+import {CreateTwitchPoll} from "./twitchUtils";
 import {AudioType} from "../streamSettings";
+import {UpdateProgressBar} from "./progressBarUtils";
 
 
 export async function ReceiveMessageFromHTML(message: string) {
@@ -14,37 +15,38 @@ export async function ReceiveMessageFromHTML(message: string) {
         case 'startup':
             let startupData: { type: string, pageType: string } = JSON.parse(message);
             if(startupData.pageType === 'berightback') {
-                IsDragonActive = true;
+                IsMonsterActive = true;
 
-                let dragonInfo: DragonInfo = LoadDragonData();
+                let monsterInfo: MonsterInfo = LoadMonsterData();
 
-                Broadcast(JSON.stringify({ type: 'dragonSetup', info: dragonInfo }));
+                Broadcast(JSON.stringify({ type: 'monsterSetup', monsterType: monsterInfo.Stats.Type, health: monsterInfo.Health, maxHealth: monsterInfo.Stats.MaxHealth }));
             }
             break;
         case 'shutdown':
             let shutdownData: { type: string, pageType: string } = JSON.parse(message);
             if(shutdownData.pageType === 'berightback') {
-                IsDragonActive = false;
+                IsMonsterActive = false;
             }
             break;
         case 'poll':
             let pollData: { type: string, poll: { title: string, choices: Array<{title: string}>}, pollDuration?: number } = JSON.parse(message);
-            await CreatePoll(pollData.poll, pollData.pollDuration ?? 60);
+            await CreateTwitchPoll(pollData.poll, pollData.pollDuration ?? 60);
             break;
         case 'tts':
             let ttsData: { type: string, text: string } =  JSON.parse(message);
             PlayTextToSpeech(ttsData.text, AudioType.GameAlerts);
             break;
-        case 'restartdragon':
-            let dragonData = LoadDragonData();
-
-            dragonData.Health = dragonData.MaxHealth;
-            SaveDragonData(dragonData);
+        case 'restartMonster':
+            GenerateNewMonster();
 
             await SetSceneItemEnabled("Dragon Fight", true);
             await SetSceneItemEnabled("Dragon Fight Instructions", true);
             await SetSceneItemEnabled("Text Adventure", false);
 
+            break;
+        case `updateProgressBar`:
+            console.log("Updating Progress Bar")
+            UpdateProgressBar();
             break;
     }
 }

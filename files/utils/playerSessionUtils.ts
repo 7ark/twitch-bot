@@ -9,6 +9,9 @@ export interface PlayerSessionData {
     NameColor?: string;
     IsSubscribed: boolean;
     TimesDied: number;
+    AttackedEnemySinceDeath: boolean;
+    LastMessageTime: Date;
+    SeenChristmasMessage: boolean;
 }
 let allPlayerSessionData: Map<string, PlayerSessionData> = new Map<string, PlayerSessionData>();
 let timestamp: Date;
@@ -81,7 +84,10 @@ export function LoadPlayerSession(displayName: string) {
         TimesAttackedEnemy: 0,
         NameColor: undefined,
         TimesDied: 0,
-        IsSubscribed: false
+        IsSubscribed: false,
+        AttackedEnemySinceDeath: false,
+        LastMessageTime: new Date(),
+        SeenChristmasMessage: false
     }
     displayName = displayName.toLowerCase();
 
@@ -97,6 +103,9 @@ export function LoadPlayerSession(displayName: string) {
 export function SavePlayerSession(displayName: string, session: PlayerSessionData) {
     displayName = displayName.toLowerCase();
     allPlayerSessionData.set(displayName, session);
+
+    // console.trace("SAVING " + displayName);
+    // console.log(session.AttackedEnemySinceDeath);
 
     timestamp = new Date();
 

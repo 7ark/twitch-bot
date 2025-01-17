@@ -3,6 +3,21 @@ const brbWS: WebSocket = new WebSocket('ws://localhost:3000');
 brbWS.onopen = () => console.log("BRB Connected to WS server");
 brbWS.onerror = (error) => console.log("WebSocket error:", error);
 
+brbWS.onmessage = (event: MessageEvent) => {
+    const dataType: any = JSON.parse(event.data).type;
+
+    if(dataType === 'init') {
+        brbWS.send(JSON.stringify({ type: 'startup', pageType: 'berightback'}));
+    }
+    if(dataType === 'monsterSetup') {
+        CreateMonster(JSON.parse(event.data));
+        ConstructMonsterHealthBar();
+    }
+    else if (dataType === 'attack') {
+        HandleMonsterAttack(JSON.parse(event.data));
+    }
+};
+
 const dragon = `
                                                  /===-_---~~~~~~~~~------____
                                                 |===-~___                _,-'
@@ -34,69 +49,84 @@ const dragon = `
     '   '  \`
 `;
 
-interface DragonInfo {
+enum MonsterType { Dragon, Loaf, Tank, Santa }
+
+interface MonsterInfoHtml {
+    Type: MonsterType,
     Health: number;
     MaxHealth: number;
 }
 
-let dragonInfo: DragonInfo;
+let MonsterInfoHtml: MonsterInfoHtml;
 
-function createDragon(data: { type: string; info: DragonInfo; }) {
-    const dragonContainer: HTMLElement | null = document.getElementById('dragon');
-    const dragonHtml: HTMLPreElement = document.createElement('pre');
+function CreateMonster(data: { type: string; monsterType: MonsterType; health: number; maxHealth: number }) {
+    const monsterImage: HTMLImageElement = document.getElementById('monster') as HTMLImageElement;
+    // const monsterHtml: HTMLPreElement = document.createElement('pre');
 
-    dragonHtml.id = 'dragon';
-    dragonHtml.textContent = dragon;
-    dragonHtml.style.color = '#f59342';
-    dragonContainer?.appendChild(dragonHtml);
+    switch (data.monsterType) {
+        case MonsterType.Dragon:
+            monsterImage.src = `extras/bytefire.png`;
+            break;
+        case MonsterType.Loaf:
+            monsterImage.src = `extras/loafswipe.png`;
+            break;
+        case MonsterType.Tank:
+            monsterImage.src = `extras/tank.png`;
+            break;
+        case MonsterType.Santa:
+            monsterImage.src = `extras/santa.png`;
+            break;
+    }
 
-    dragonInfo = {
-        Health: data.info.Health,
-        MaxHealth: data.info.MaxHealth
+    // monsterHtml.id = 'monster';
+    // // monsterHtml.textContent = dragon;
+    // monsterHtml.sr
+    // monsterHtml.style.color = '#f59342';
+    // monsterContainer?.appendChild(monsterHtml);
+
+    MonsterInfoHtml = {
+        Type: data.monsterType,
+        Health: data.health,
+        MaxHealth: data.maxHealth
     };
 }
 
-function constructHealthBar() {
-    const healthBarContainer = document.getElementById('healthbarcontainer')!;
-    const healthBarPositive = document.getElementById('healthbarPositive')!;
-    const healthBarNegative = document.getElementById('healthbarNegative')!;
-    healthBarContainer.style.color = '#57a64a';
+function ConstructMonsterHealthBar() {
+    // const healthBarContainer = document.getElementById('healthbarcontainer')!;
+    // const healthBarPositive = document.getElementById('healthbarPositive')!;
+    // const healthBarNegative = document.getElementById('healthbarNegative')!;
+    // healthBarContainer.style.color = '#57a64a';
+    //
+    // let healthBarSize = 50;
+    // let ratio = MonsterInfoHtml.Health / MonsterInfoHtml.MaxHealth;
+    // let posVal = Math.max(1, Math.floor(healthBarSize * ratio));
+    // healthBarPositive.textContent = '█'.repeat(posVal);
+    // healthBarNegative.textContent = '█'.repeat(healthBarSize - posVal);
+    //
+    // healthBarPositive.style.color = '#31a92d';
+    // healthBarNegative.style.color = '#d53751';
 
-    let healthBarSize = 50;
-    let ratio = dragonInfo.Health / dragonInfo.MaxHealth;
-    let posVal = Math.max(1, Math.floor(healthBarSize * ratio));
-    healthBarPositive.textContent = '█'.repeat(posVal);
-    healthBarNegative.textContent = '█'.repeat(healthBarSize - posVal);
+    const progressBar = document.getElementById("progressBar");
+    const progressBarText = document.getElementById("progressText");
 
-    healthBarPositive.style.color = '#31a92d';
-    healthBarNegative.style.color = '#d53751';
+    let ratio = MonsterInfoHtml.Health / MonsterInfoHtml.MaxHealth;
+
+    const widthPercentage = ratio * 100;
+    progressBar.style.width = `${Math.min(widthPercentage, 100)}%`;
+
+    progressBarText.textContent = `${MonsterInfoHtml.Health}/${MonsterInfoHtml.MaxHealth}`;
 }
 
-brbWS.onmessage = (event: MessageEvent) => {
-    const dataType: any = JSON.parse(event.data).type;
+function HandleMonsterAttack(data: { type: string; health: number }) {
+    MonsterInfoHtml.Health = data.health;
 
-    if(dataType === 'init') {
-        brbWS.send(JSON.stringify({ type: 'startup', pageType: 'berightback'}));
-    }
-    if(dataType === 'dragonSetup') {
-        createDragon(JSON.parse(event.data));
-        constructHealthBar();
-    }
-    else if (dataType === 'attack') {
-        handleAttackDragon(JSON.parse(event.data));
-    }
-};
-
-function handleAttackDragon(data: { type: string; info: DragonInfo }) {
-    dragonInfo = data.info;
-
-    if(dragonInfo.Health === 0) {
-        const dragonContainer: HTMLElement | null = document.getElementById('dragon');
-        dragonContainer?.removeChild(document.getElementById('dragon')!);
+    if(MonsterInfoHtml.Health === 0) {
+        const monsterImage: HTMLImageElement = document.getElementById('monster') as HTMLImageElement;
+        monsterImage.src = ``;
         return;
     }
 
-    constructHealthBar();
+    ConstructMonsterHealthBar();
 }
 window.addEventListener('beforeunload', (event) => {
     brbWS.send(JSON.stringify({ type: 'shutdown', pageType: 'berightback'}));

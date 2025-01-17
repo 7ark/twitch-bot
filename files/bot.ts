@@ -4,24 +4,30 @@ import * as WebSocket from 'ws';
 import express from "express";
 import path from 'path';
 import * as http from "http";
-import {ProcessRedemptions} from "./redemptions";
-const ngrok = require('ngrok');
 import {ConnectToObs, DisconnectFromObs, ToggleObject} from "./utils/obsutils";
 import {OnMessage, PostNewRegularMessage} from "./utils/messageUtils";
 import {
     CheckNewFollowers,
-    GetAuthToken, GetNgrokURL, HandleEventSubResponse,
-    RefreshAccessTokenAndReconnect,
-    SubscribeToEventSub
+    GetAuthToken,
+    GetNgrokURL,
+    HandleEventSubResponse,
+    RefreshBotAccessTokenAndReconnect,
+    SubscribeToEventSub,
+    UpdateViewerCountInfo
 } from "./utils/twitchUtils";
 import {ReceiveMessageFromHTML} from "./utils/htmlUtils";
 import {GetAllPlayerSessions, HandleLoadingSession, UpdateSessionTimestamp} from "./utils/playerSessionUtils";
 import {TryToStartRandomChatChallenge} from "./utils/alertUtils";
 import {InitializeShop} from "./utils/minigameUtils";
 import {TickAllCozyPoints} from "./utils/playerGameUtils";
-import {SetupMonsterDamageTypes} from "./utils/dragonUtils";
-import {CurrentStreamSettings} from "./streamSettings";
-import {FadeOutLights, SetLightBrightness, SetLightColor, SetLightVisible} from "./utils/lightsUtils";
+import {LoadMonsterData, SetupMonsterDamageTypes} from "./utils/monsterUtils";
+import {AudioType, CurrentStreamSettings} from "./streamSettings";
+import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
+import {LoadProgressBar} from "./utils/progressBarUtils";
+import {SetupNextAdsTime} from "./utils/adUtils";
+import {PlaySound} from "./utils/audioUtils";
+
+const ngrok = require('ngrok');
 
 dotenv.config();
 
@@ -33,7 +39,7 @@ export const options = {
     },
     identity: {
         username: process.env.TWITCH_USERNAME,
-        password: GetAuthToken(),
+        password: GetAuthToken(true),
     },
     channels: ['The7ark'],
 };
@@ -67,8 +73,8 @@ app.get('/specialDisplay', (req, res) => {
 app.get('/minigame', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'files', 'html', 'minigame.html'));
 });
-app.get('/extension', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'files', 'html', 'extension.html'));
+app.get('/progressBar', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'files', 'html', 'progressBar.html'));
 });
 
 // Setup WebSocket Server
@@ -104,6 +110,8 @@ export function Broadcast(message: string) {
     });
 }
 
+let initialized = false;
+
 async function InitializeBot() {
 
     app.post('/twitch/callback', express.json(), async (req, res) => {
@@ -113,6 +121,12 @@ async function InitializeBot() {
             console.log('Verifying Webhook');
             // Respond with the challenge token provided by Twitch
             res.status(200).send(req.body.challenge);
+
+            if(initialized){
+                return;
+            }
+
+            initialized = true;
 
             // console.log(await getSubscriptions());
 
@@ -127,22 +141,31 @@ async function InitializeBot() {
                 await ToggleObject("Credits")
                 await ToggleObject("Special Display")
                 await ToggleObject("Minigames")
+                await ToggleObject("Progress Bar")
+                await ToggleObject("ProgressBar")
                 // await ToggleObject("Chat")
 
+                //Broadcast delay
                 setTimeout(() => {
                     let sessions = GetAllPlayerSessions();
                     for (let i = 0; i < sessions.length; i++) {
                         Broadcast(JSON.stringify({ type: 'addstickman', displayName: sessions[i].NameAsDisplayed, color: sessions[i].NameColor }));
                     }
+
+                    LoadProgressBar();
+
                 }, 200);
+
+                await SetLightVisible(true);
+                await FadeOutLights();
+                await SetupNextAdsTime();
             }
             catch (error) {
                 console.error(error)
             }
 
             console.log("Initialized");
-            await SetLightVisible(true);
-            await FadeOutLights();
+
         } else {
             // For all other notifications, you can acknowledge the receipt
             res.sendStatus(200);
@@ -162,7 +185,7 @@ async function InitializeBot() {
 
         console.error('attempting to refresh token');
 
-        await RefreshAccessTokenAndReconnect(client);
+        await RefreshBotAccessTokenAndReconnect(client);
 
     });
 
@@ -173,7 +196,7 @@ async function InitializeBot() {
     async function MessageHandler(channel: string, userstate: ChatUserstate, message: string, self: boolean) {
         if (self) return; // Ignore messages from the bot
 
-        await OnMessage(client, channel, userstate, message, userstate);
+        await OnMessage(client, userstate, message);
     }
     // client.on('redeem', redeemHandler);
 
@@ -185,6 +208,7 @@ async function InitializeBot() {
     }
 
     setInterval(CheckNewFollowersInterval, 60000); //1 minute
+    setInterval(UpdateViewerCountInfo, 10000); //10 seconds
 
     setInterval(() => {
         PostNewRegularMessage(client);
@@ -203,9 +227,19 @@ async function InitializeBot() {
     setInterval(() => {
         SetupMonsterDamageTypes();
 
-        client.say(process.env.CHANNEL!, `Bytefire is adapting! He has changed his resistances, vulnerabilities, and immunities. Watch out!`);
-    }, 1800000); //30 minutes
+        let monsterStats = LoadMonsterData().Stats;
+        client.say(process.env.CHANNEL!, `${monsterStats.Name} is adapting! Resistances, vulnerabilities, and immunities have all changed. Watch out!`);
+
+        // PlaySound("santa", AudioType.ImportantStreamEffects);
+        // client.say(process.env.CHANNEL!, `The sounds of jingle bells can be heard flying overhead... SANTA IS COMING! Gifts are falling from the sky! Type !gift in the next 60 seconds to get a gift!`);
+        // CanGrabGifts = true;
+        // setTimeout(() => {
+        //     CanGrabGifts = false;
+        // }, 1000 * 60)
+        }, 1800000); //30 minutes
 }
+
+// export let CanGrabGifts: boolean = false;
 
 HandleLoadingSession();
 InitializeShop();

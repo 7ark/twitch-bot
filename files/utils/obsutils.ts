@@ -161,7 +161,7 @@ export async function GetSceneItemEnabled(name: string): Promise<boolean> {
     let sceneName = await GetOpenScene();
 
     if(!await DoesSceneContainItem(sceneName, name)) {
-        return;
+        return false;
     }
 
     const response = await obs.call('GetSceneItemEnabled', {

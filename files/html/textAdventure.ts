@@ -2452,7 +2452,7 @@ function playAdventureModule() {
         handleAdventureModule(randomModule)//getRandomItem(randomModule.Choices[0].Result)!);
     }
     else {
-        taWS.send(JSON.stringify({ type: 'restartdragon' }));
+        taWS.send(JSON.stringify({ type: 'restartMonster' }));
     }
 
     playAdventure = !playAdventure;

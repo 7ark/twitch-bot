@@ -13,74 +13,78 @@ sdWS.onmessage = (event: MessageEvent) => {
     }
 };
 
-enum IconType {
+enum IconTypeHtml {
     Info, Scroll, Pencil, Coins,
     Bottle, Box, Fruit, Bomb,
     Bananas, CheeseWheel, Beer, Letter,
     Rabbit, Crystal, BottleBlue, PureNail,
     Hammer, DiamondAxe, Wabbajack, ObsidianDagger,
     PoolNoodle, PortalCake, PowerHelmet, DuckHuntGun,
-    CardboardBox
+    CardboardBox, Candy, Present
 }
 
-function getIcon(icon: IconType) {
+function getIcon(icon: IconTypeHtml) {
     switch (icon) {
-        case IconType.Info:
+        case IconTypeHtml.Info:
             return 'extras/dialog_t.png';
-        case IconType.Scroll:
+        case IconTypeHtml.Scroll:
             return 'extras/scroll_t.png';
-        case IconType.Pencil:
+        case IconTypeHtml.Pencil:
             return 'extras/pencil_t.png';
-        case IconType.Coins:
+        case IconTypeHtml.Coins:
             return 'extras/gold_t.png';
-        case IconType.Bottle:
+        case IconTypeHtml.Bottle:
             return 'extras/bottle_t.png';
-        case IconType.Box:
+        case IconTypeHtml.Box:
             return 'extras/box_t.png';
-        case IconType.Fruit:
+        case IconTypeHtml.Fruit:
             return 'extras/fruit_t.png';
-        case IconType.Bomb:
+        case IconTypeHtml.Bomb:
             return 'extras/bomb_t.png';
-        case IconType.Bananas:
+        case IconTypeHtml.Bananas:
             return 'extras/bananas.png';
-        case IconType.CheeseWheel:
+        case IconTypeHtml.CheeseWheel:
             return 'extras/cheesewheel.png';
-        case IconType.Beer:
+        case IconTypeHtml.Beer:
             return 'extras/beer_t.png';
-        case IconType.Letter:
+        case IconTypeHtml.Letter:
             return 'extras/mail_t.png';
-        case IconType.Rabbit:
+        case IconTypeHtml.Rabbit:
             return 'extras/rabbit_t.png';
-        case IconType.Crystal:
+        case IconTypeHtml.Crystal:
             return 'extras/crystal_t.png';
-        case IconType.BottleBlue:
+        case IconTypeHtml.BottleBlue:
             return 'extras/bottle_blue_t.png';
-        case IconType.PureNail:
+        case IconTypeHtml.PureNail:
             return 'extras/purenail.png';
-        case IconType.Hammer:
+        case IconTypeHtml.Hammer:
             return 'extras/hammer_t.png';
-        case IconType.DiamondAxe:
+        case IconTypeHtml.DiamondAxe:
             return 'extras/diamondaxe.png';
-        case IconType.Wabbajack:
+        case IconTypeHtml.Wabbajack:
             return 'extras/wabbajack.png';
-        case IconType.ObsidianDagger:
+        case IconTypeHtml.ObsidianDagger:
             return 'extras/obsidiandagger.png';
-        case IconType.PoolNoodle:
+        case IconTypeHtml.PoolNoodle:
             return 'extras/poolnoodle.png';
-        case IconType.PortalCake:
+        case IconTypeHtml.PortalCake:
             return 'extras/cake.png';
-        case IconType.PowerHelmet:
+        case IconTypeHtml.PowerHelmet:
             return 'extras/fallouthelm.png';
-        case IconType.DuckHuntGun:
+        case IconTypeHtml.DuckHuntGun:
             return 'extras/duckhuntgun.png';
-        case IconType.CardboardBox:
+        case IconTypeHtml.CardboardBox:
             return 'extras/cardboardbox.png';
+        case IconTypeHtml.Candy:
+            return 'extras/candy.png';
+        case IconTypeHtml.Present:
+            return 'extras/present.png';
     }
 
     return "";
 }
 
-function showDisplay(data: { type: string, title: string, message: string, icon: IconType }) {
+function showDisplay(data: { type: string, title: string, message: string, icon: IconTypeHtml }) {
     let display = document.getElementById('Display');
 
     display.style.opacity = '1';
@@ -102,7 +106,7 @@ function hideDisplay() {
     display.style.opacity = '0';
 }
 
-function gambleDisplay(data: { type: string, title: string, slot1: Array<IconType>, slot2: Array<IconType>, slot3: Array<IconType> }) {
+function gambleDisplay(data: { type: string, title: string, slot1: Array<IconTypeHtml>, slot2: Array<IconTypeHtml>, slot3: Array<IconTypeHtml> }) {
     let display = document.getElementById('Display');
 
     display.style.opacity = '1';
@@ -113,7 +117,7 @@ function gambleDisplay(data: { type: string, title: string, slot1: Array<IconTyp
 
     title.textContent = data.title;
     text.textContent = "";
-    icon.src = getIcon(IconType.Coins);
+    icon.src = getIcon(IconTypeHtml.Coins);
 
     const slots = [document.getElementById('slot1'), document.getElementById('slot2'), document.getElementById('slot3')];
     const iconsSlot1 = data.slot1.map(x => getIcon(x)); //shuffle(['extras/dialog_t.png', 'extras/scroll_t.png','extras/pencil_t.png','extras/gold_t.png','extras/pencil_t.png', 'extras/gold_t.png','extras/dialog_t.png', 'extras/scroll_t.png', 'extras/pencil_t.png', 'extras/gold_t.png']);

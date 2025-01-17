@@ -8,18 +8,20 @@ import {
     SavePlayer
 } from "./utils/playerGameUtils";
 import {Broadcast} from "./bot";
-import {GetRandomIntI, GetRandomItem, IconType} from "./utils/utils";
+import {GetRandomIntI, GetRandomItem} from "./utils/utils";
 import {MoveDefinitions} from "./movesDefinitions";
 import {AddToActionQueue} from "./actionqueue";
 import {CurrentPollJoker} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
-import {BanUser, CreatePoll} from "./utils/twitchUtils";
+import {BanUser, CreateTwitchPoll} from "./utils/twitchUtils";
 import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/alertUtils";
 import {ObjectTier} from "./inventory";
-import {GivePlayerRandomQuest, HandleQuestProgress, QuestType} from "./utils/questUtils";
-import {DamageType} from "./utils/dragonUtils";
+import {GivePlayerRandomQuest, HandleQuestProgress} from "./utils/questUtils";
+import {DamageType, LoadMonsterData} from "./utils/monsterUtils";
 import {AudioType} from "./streamSettings";
-import {SetDefaultLightColor, SetLightColor} from "./utils/lightsUtils";
+import {MakeRainbowLights, SetDefaultLightColor} from "./utils/lightsUtils";
+import {TrickOrTreat} from "./utils/scareUtils";
+import {IconType, QuestType} from "./valueDefinitions";
 
 const REDEEM_GAIN_5_EXP = '2c1c1337-583b-4a51-a169-b79c3cdd3d08';
 const REDEEM_GAIN_20_EXP = '8ed9b9a2-89d3-48e5-9783-f12ae4fe2c61';
@@ -41,6 +43,7 @@ const REDEEM_SETLIGHTCOLOR_RED = `60722ce3-5726-45ea-ae99-f450cd91a891`;
 const REDEEM_SETLIGHTCOLOR_PURPLE = `82b5bd8b-956d-43cb-a803-e4d221be6d88`;
 const REDEEM_SETLIGHTCOLOR_GREEN = `97d7a1e9-674d-46ed-9441-b010deadc7d2`;
 const REDEEM_SETLIGHTCOLOR_CUSTOM = `16cae48b-6bce-4fc8-a37f-f94473a1ce06`;
+const REDEEM_TRICKORTREAT = `e5fd3064-ef28-4048-afb4-7c91928c0574`;
 
 export async function ProcessRedemptions(client: Client, username: string, rewardId: string, redemptionId: string, userInput: string) {
     console.log(`Redemption! from ${username}, a reward id of ${rewardId}`)
@@ -48,13 +51,11 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
     switch (rewardId) {
         case REDEEM_GAIN_5_EXP:
             await GiveExp(client, username, 5);
-
-            // await completeRedemption(rewardId, redemptionId, accessToken);
             break;
         case REDEEM_GAIN_20_EXP:
             await GiveExp(client, username, 20);
 
-            // await completeRedemption(rewardId, redemptionId, accessToken);
+            // await CompleteRedemption(rewardId, redemptionId);
             break;
         case REDEEM_LEARN_A_MOVE:
 
@@ -64,28 +65,28 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 let chosenMove = GetRandomItem(validDefs);
 
                 player.KnownMoves.push(chosenMove!.Command);
-                client.say(process.env.CHANNEL!, `@${username}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description}`);
+                let monsterStats = LoadMonsterData().Stats;
+                await client.say(process.env.CHANNEL!, `@${username}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description.replace("{monster}", monsterStats.Name)}`);
 
                 SavePlayer(player);
             }
             else {
-                client.say(process.env.CHANNEL!, `@${username}, you have no moves left to be found. Level up, or try a new class!`);
+                await client.say(process.env.CHANNEL!, `@${username}, you have no moves left to be found. Level up, or try a new class!`);
             }
 
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))
             break;
         case REDEEM_PLAY_CHEERING:
-            // playSound("credits");
-            PlaySound("cheering", AudioType.GameAlerts);
+            PlaySound("cheering", AudioType.ImportantStreamEffects);
             break;
         case REDEEM_PLAY_BOOING:
-            PlaySound("booing", AudioType.GameAlerts);
+            PlaySound("booing", AudioType.ImportantStreamEffects);
             break;
         case REDEEM_PLAY_CRICKETS:
-            PlaySound("crickets", AudioType.GameAlerts);
+            PlaySound("crickets", AudioType.ImportantStreamEffects);
             break;
         case REDEEM_PLAY_LAUGHTER:
-            PlaySound("laughing", AudioType.GameAlerts);
+            PlaySound("laughing", AudioType.ImportantStreamEffects);
             break;
         case REDEEM_TELL_A_JOKE:
             let textToSay = userInput;
@@ -103,7 +104,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 PlayTextToSpeech(textToSay, AudioType.GameAlerts, TryGetPlayerVoice(player), () => {
                     PlaySound("badumtiss", AudioType.GameAlerts);
                     CurrentPollJoker = username;
-                    CreatePoll({
+                    CreateTwitchPoll({
                         title: "Was that joke funny?",
                         choices: [
                             { title: "Yes" },
@@ -114,12 +115,12 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                         PlayTextToSpeech(`Chat has found the joke of ${player.Username} to be... ${wasFunny ? `FUNNY` : `NOT FUNNY`}`, AudioType.GameAlerts, "en-US-BrianNeural", async () => {
                             if(wasFunny) {
                                 PlaySound("cheering", AudioType.GameAlerts);
-                                GivePlayerRandomObject(client, player.Username);
+                                await GivePlayerRandomObject(client, player.Username);
                                 await GiveExp(client, player.Username, 50);
                             }
                             else {
                                 PlaySound("booing", AudioType.GameAlerts, "wav", () => {
-                                    PlayTextToSpeech("They have been temporarily banned for 5 minutes.");
+                                    PlayTextToSpeech("They have been temporarily banned for 5 minutes.", AudioType.GameAlerts);
                                 });
                                 await BanUser(client, player.Username, 5 * 60, "Being unfunny");
                             }
@@ -217,6 +218,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 let r = parseInt(splitInput[0]);
                 let g = parseInt(splitInput[1]);
                 let b = parseInt(splitInput[2]);
+                let bright = parseInt(splitInput[3]);
                 
                 if(r == NaN || r < 0) {
                     r = 0;
@@ -239,15 +241,25 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 {
                     b = 255;
                 }
+                if(bright == NaN || bright > 255) {
+                    bright = 255;
+                }
+                else if(bright < 0)
+                {
+                    bright = 0;
+                }
 
                 await SetDefaultLightColor({
                     r: r / 255,
                     g: g / 255,
                     b: b / 255,
-                    brightness: 1
+                    brightness: splitInput.length == 3 ? 1 : bright / 255
                 });
             }
 
+            break;
+        case REDEEM_TRICKORTREAT:
+            await TrickOrTreat(client, username);
             break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))
@@ -255,42 +267,23 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
     }
 }
 
-// async function completeRedemption(rewardId: string, redemptionId: string, accessToken: string) {
-//     const url = `https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${process.env.CHANNEL_ID}&reward_id=${rewardId}&id=${redemptionId}`;
-//
-//     try {
-//         const response = await axios.patch(url, {
-//             status: 'FULFILLED'
-//         }, {
-//             headers: {
-//                 'Client-Id': process.env.CLIENT_ID,
-//                 'Authorization': `Bearer ${accessToken}`,
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-//
-//         console.log("Redemption completed:", response.data);
-//     } catch (error: any) {
-//         console.error("Error completing redemption:", error.response ? error.response.data : error);
-//     }
-// }
-//
-// async function rejectRedemption(rewardId: string, redemptionId: string, accessToken: string) {
-//     const url = `https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${process.env.CHANNEL_ID}&reward_id=${rewardId}&id=${redemptionId}`;
-//
-//     try {
-//         const response = await axios.patch(url, {
-//             status: 'CANCELED'
-//         }, {
-//             headers: {
-//                 'Client-Id': process.env.CLIENT_ID,
-//                 'Authorization': `Bearer ${accessToken}`,
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-//
-//         console.log("Redemption rejected:", response.data);
-//     } catch (error: any) {
-//         console.error("Error rejecting redemption:", error.response ? error.response.data : error);
-//     }
-// }
+export async function ProcessBits(client: Client, username: string, message: string, bitAmount: number) {
+    console.log(`Processing bits received from ${username} for ${bitAmount}`);
+
+    if(bitAmount > 50) {
+        await MakeRainbowLights(Math.ceil(bitAmount / 50));
+    }
+
+    // let convertRatio = 5;
+    // let frightMeterPoints = Math.ceil(bitAmount / convertRatio);
+    //
+    // if(GetCurrentProgress() + frightMeterPoints >= ProgressBarMax) {
+    //     await client.say(process.env.CHANNEL!, `@${username} maxed out the fright meter!`);
+    // }
+    // else {
+    //     await client.say(process.env.CHANNEL!, `${bitAmount} converted into ${frightMeterPoints} fright points!`);
+    // }
+    //
+    // await ChangeProgressBar(client, frightMeterPoints);
+
+}

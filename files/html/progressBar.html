@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vertical Progress Bar</title>
+    <style>
+        /* Center the progress container */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Style for the outer progress container */
+        #progressContainer {
+            width: 30px;
+            height: 200px;
+            background-color: lightgray;
+            position: relative;
+            border: 1px solid #000;
+        }
+
+        /* Style for the inner progress bar */
+        #progressBar {
+            width: 100%;
+            background-color: #ec7016;
+            position: absolute;
+            bottom: 0;
+            height: 0; /* Start with height 0 */
+            transition: height 1s ease; /* Animate height changes over 1 second */
+        }
+    </style>
+</head>
+<body>
+
+<div id="progressContainer">
+    <div id="progressBar"></div>
+</div>
+
+<!-- Ensure the script path is correct -->
+<script src="html/progressBar.js"></script>
+</body>
+</html>

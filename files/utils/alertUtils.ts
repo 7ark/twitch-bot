@@ -1,5 +1,5 @@
 import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventory";
-import {GetRandomInt, GetRandomIntI, GetRandomItem, IconType, Shuffle} from "./utils";
+import {GetRandomInt, GetRandomIntI, GetRandomItem, Shuffle} from "./utils";
 import {Broadcast} from "../bot";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
 import {Client} from "tmi.js";
@@ -16,6 +16,14 @@ import {LoadRandomPlayerSession} from "./playerSessionUtils";
 import {AudioType} from "../streamSettings";
 import {GetMinutesSinceLastMessage} from "./messageUtils";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
+import {IconType} from "../valueDefinitions";
+import {
+    DoesSceneContainItem,
+    GetObsSourcePosition,
+    GetOpenScene,
+    SetObsSourcePosition,
+    SetSceneItemEnabled
+} from "./obsutils";
 
 export function CreateAndBuildGambleAlert(client: Client, username: string, tier: ObjectTier) {
     const SLOT_LENGTH = 8;
@@ -148,7 +156,7 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
                     }, 2000);
 
                     setTimeout(async () => {
-                        GivePlayerObject(client, username, objWon.ObjectName);
+                        await GivePlayerObject(client, username, objWon.ObjectName);
 
                         await GiveExp(client, username, expToGet);
                         await client.say(process.env.CHANNEL!, `@${username} has gotten ${expToGet} EXP from the jackpot!`);
@@ -161,8 +169,8 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
                         PlaySound("cheering", AudioType.GameAlerts);
                     }, 2000);
 
-                    setTimeout(() => {
-                        GivePlayerObject(client, username, objWon.ObjectName)
+                    setTimeout(async () => {
+                        await GivePlayerObject(client, username, objWon.ObjectName)
                     }, 4000);
                     break;
                 case WinType.None:
@@ -243,7 +251,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let someoneGotIt = false;
 
-                    function PlayerResponse(responseName: string, message: string) {
+                    async function PlayerResponse(responseName: string, message: string) {
                         if(message.toLowerCase() == numberToGuess.toString()) {
                             let index = MessageDelegate.indexOf(PlayerResponse);
                             if(index != -1) {
@@ -252,8 +260,8 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} has guessed the correct number of ${numberToGuess}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct number of ${numberToGuess}!`);
-                            GivePlayerRandomObject(client, responseName);
-                            GiveExp(client, responseName, 5);
+                            await GivePlayerRandomObject(client, responseName);
+                            await GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -318,7 +326,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let someoneGotIt = false;
 
-                    function PlayerResponse(responseName: string, message: string) {
+                    async function PlayerResponse(responseName: string, message: string) {
                         if(message.toLowerCase() == result.toString()) {
                             let index = MessageDelegate.indexOf(PlayerResponse);
                             if(index != -1) {
@@ -327,8 +335,8 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} has gotten the correct number of ${result}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${result}!`);
-                            GivePlayerRandomObject(client, responseName);
-                            GiveExp(client, responseName, 5);
+                            await GivePlayerRandomObject(client, responseName);
+                            await GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -381,7 +389,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let someoneGotIt = false;
 
-                    function PlayerResponse(responseName: string, message: string) {
+                    async function PlayerResponse(responseName: string, message: string) {
                         if(message.toLowerCase() == randomWord) {
                             let index = MessageDelegate.indexOf(PlayerResponse);
                             if(index != -1) {
@@ -390,8 +398,8 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} has guessed the correct word of ${randomWord}!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct word of ${randomWord}!`);
-                            GivePlayerRandomObject(client, responseName);
-                            GiveExp(client, responseName, 5);
+                            await GivePlayerRandomObject(client, responseName);
+                            await GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -444,7 +452,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let someoneGotIt = false;
 
-                    function PlayerResponse(responseName: string, message: string) {
+                    async function PlayerResponse(responseName: string, message: string) {
                         let userMessage = message.replace("@", "").toLowerCase().trim();
                         if(userMessage.length >= 4 && user.toLowerCase().includes(userMessage)) {
                             let index = MessageDelegate.indexOf(PlayerResponse);
@@ -453,9 +461,9 @@ export function StartChatChallenge(client: Client, username: string) {
                             }
 
                             PlayTextToSpeech(`${responseName} has guessed the correct user of ${user}!`, AudioType.GameAlerts);
-                            client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
-                            GivePlayerRandomObject(client, responseName);
-                            GiveExp(client, responseName, 5);
+                            await client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
+                            await GivePlayerRandomObject(client, responseName);
+                            await GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -521,7 +529,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} has gotten the correct letter of "${randomLetterAnswer}!"`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct letter of "${randomLetterAnswer}"!`);
-                            GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
@@ -583,7 +591,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} has gotten the correct number of ${randomNumber}!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${randomNumber}!`);
-                            GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
                             someoneGotIt = true;
 
@@ -623,59 +631,82 @@ export function StartChatChallenge(client: Client, username: string) {
         },
         {
             challenge:  () => {
-                //Sequence guessing
-                let sequenceSpecialState = GetRandomIntI(1, 4);
-                let additionSubtraction = GetRandomIntI(1, 3) == 1 ? GetRandomIntI(-5, 5) : GetRandomIntI(1, 2) == 1 ? GetRandomIntI(1, 8) : GetRandomIntI(-8, -1);
-                let multiplication = GetRandomIntI(1, 3) == 1 ? GetRandomIntI(1, 5) : GetRandomIntI(2, 5);
-                let power = sequenceSpecialState == 3 ? 1 : GetRandomIntI(1, 3) == 1 ? GetRandomIntI(1, 3) : 1; //Likely changes we don't add a power, cause its harder
+                let answer: number = 0;
+                let sequenceDisplay = ``;
+                let safety = 0;
+                let sequenceSpecialState = 0;
+                let additionSubtraction = 0;
+                let multiplication = 0;
+                let power = 0;
+                let startingNumber = 0;
+                let increaseAmount = 0;
+                let sequenceLength = 5;
 
                 function GetSequence(num: number) {
                     return (Math.pow(num, power) * multiplication) + additionSubtraction;
                 }
 
-                console.log("Power: " + power);
-                console.log("Mult: " + multiplication);
-                console.log("Add/sub: " + additionSubtraction);
-                console.log("Special state: " + sequenceSpecialState);
+                while (true) {
+                    //Sequence guessing
+                    sequenceSpecialState = GetRandomIntI(1, 4);
+                    additionSubtraction = GetRandomIntI(1, 3) == 1 ? GetRandomIntI(-5, 5) : GetRandomIntI(1, 2) == 1 ? GetRandomIntI(1, 8) : GetRandomIntI(-8, -1);
+                    multiplication = GetRandomIntI(1, 3) == 1 ? GetRandomIntI(1, 5) : GetRandomIntI(2, 5);
+                    power = sequenceSpecialState == 3 ? 1 : GetRandomIntI(1, 3) == 1 ? GetRandomIntI(1, 3) : 1; //Likely changes we don't add a power, cause its harder
 
-                let startingNumber = GetRandomIntI(1, 5);
-                let increaseAmount = GetRandomIntI(1, 3);
+
+                    console.log("Power: " + power);
+                    console.log("Mult: " + multiplication);
+                    console.log("Add/sub: " + additionSubtraction);
+                    console.log("Special state: " + sequenceSpecialState);
+
+                    startingNumber = GetRandomIntI(1, 5);
+                    increaseAmount = GetRandomIntI(1, 3);
 
 
-                let sequence = [];
-                let sequenceLength = 5;
-                let currentValue = startingNumber;
-                for (let i = 0; i < sequenceLength; i++) {
-                    if(sequenceSpecialState == 1 || i == 0) {
-                        sequence.push(GetSequence(currentValue));
-                    }
-                    else if(sequenceSpecialState == 2) {
-                        sequence.push(GetSequence(sequence[i - 1]));
-                    }
-                    else if(sequenceSpecialState == 3) {
-                        let allAdded = 0;
-                        for (let j = 0; j < sequence.length; j++) {
-                            allAdded += sequence[j];
+                    let sequence: Array<number> = [];
+                    let currentValue = startingNumber;
+                    for (let i = 0; i < sequenceLength; i++) {
+                        if(sequenceSpecialState == 1 || i == 0) {
+                            sequence.push(GetSequence(currentValue));
+                        }
+                        else if(sequenceSpecialState == 2) {
+                            sequence.push(GetSequence(sequence[i - 1]));
+                        }
+                        else if(sequenceSpecialState == 3) {
+                            let allAdded = 0;
+                            for (let j = 0; j < sequence.length; j++) {
+                                allAdded += sequence[j];
+                            }
+
+                            sequence.push(GetSequence(allAdded));
+                        }
+                        else if(sequenceSpecialState == 4) {
+                            let lastSequence = sequence[i - 1];
+                            let lastLastSequence = sequence.length == 1 ? 0 : sequence[i - 2];
+
+                            sequence.push(GetSequence(lastSequence + lastLastSequence));
                         }
 
-                        sequence.push(GetSequence(allAdded));
-                    }
-                    else if(sequenceSpecialState == 4) {
-                        let lastSequence = sequence[i - 1];
-                        let lastLastSequence = sequence.length == 1 ? 0 : sequence[i - 2];
-
-                        sequence.push(GetSequence(lastSequence + lastLastSequence));
+                        currentValue += increaseAmount;
                     }
 
-                    currentValue += increaseAmount;
-                }
+                    answer = sequence[sequence.length - 1];
 
-                let answer = sequence[sequence.length - 1];
+                    sequenceDisplay = ``;
 
-                let sequenceDisplay = ``;
-                //don't do the last one
-                for (let i = 0; i < sequence.length - 1; i++) {
-                    sequenceDisplay += `${sequence[i]}, `;
+                    //don't do the last one
+                    for (let i = 0; i < sequence.length - 1; i++) {
+                        sequenceDisplay += `${sequence[i]}, `;
+                    }
+
+                    if(answer <= 5000) {
+                        break;
+                    }
+
+                    safety++;
+                    if(safety >= 100) {
+                        break;
+                    }
                 }
 
                 sequenceDisplay += `_`;
@@ -761,7 +792,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} has gotten the correct number of ${answer}!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${answer}! Explanation: ${explanation}`);
-                            GivePlayerRandomObjectInTier(client, responseName, [ObjectTier.Mid, ObjectTier.High]);
+                            await GivePlayerRandomObjectInTier(client, responseName, [ObjectTier.Mid, ObjectTier.High]);
                             await GiveExp(client, responseName, 50);
                             someoneGotIt = true;
 
@@ -802,5 +833,40 @@ export function StartChatChallenge(client: Client, username: string) {
     let randomChallenge = GetRandomItem(challenges.filter(x => x.valid()))!;
 
     randomChallenge.challenge();
+
+}
+
+export async function PlayHypeTrainAlert() {
+    const train = "Train";
+    const camera = "Small Camera";
+
+    let sceneName = await GetOpenScene();
+
+    if(!await DoesSceneContainItem(sceneName, train) || !await DoesSceneContainItem(sceneName, camera)) {
+        return;
+    }
+
+    PlaySound("train", AudioType.ImportantStreamEffects);
+
+    setTimeout(async () => {
+        await SetSceneItemEnabled(train, true);
+
+        let originalPosition = await GetObsSourcePosition(camera);
+
+        setTimeout(async () => {
+            await SetObsSourcePosition(camera, originalPosition.x - 200, originalPosition.y);
+            setTimeout(async () => {
+                await SetObsSourcePosition(camera, originalPosition.x - 400, originalPosition.y);
+            }, 100);
+            setTimeout(async () => {
+                await SetObsSourcePosition(camera, originalPosition.x - 600, originalPosition.y);
+            }, 200);
+
+            setTimeout(async () => {
+                await SetObsSourcePosition(camera, originalPosition.x, originalPosition.y);
+                await SetSceneItemEnabled(train, false);
+            }, 13500);
+        }, 450);
+    }, 1000);
 
 }

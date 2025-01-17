@@ -5,13 +5,15 @@ import fs from "fs";
 
 dotenv.config();
 
+const isBotMode = process.argv.includes('--bot');
+
 const app = express();
 const port = 3000; // Port where your local server will run
 
-const clientID = process.env.CLIENT_ID as string;
-const clientSecret = process.env.CLIENT_SECRET as string;
+const clientID = isBotMode ? process.env.BOT_CLIENT_ID : process.env.CLIENT_ID as string;
+const clientSecret = isBotMode ? process.env.BOT_CLIENT_SECRET : process.env.CLIENT_SECRET as string;
 const redirectURI = 'http://localhost:3000/auth/twitch/callback'; // Must match one of the redirect URIs registered in Twitch Developer Console
-const scopes = 'chat:read chat:edit channel:read:redemptions channel:manage:redemptions channel:manage:polls channel:read:subscriptions moderator:manage:banned_users channel:manage:vips'; // Add other scopes as needed
+const scopes = 'chat:read chat:edit channel:read:redemptions channel:manage:redemptions channel:manage:polls channel:read:subscriptions moderator:manage:banned_users channel:manage:vips bits:read channel:read:ads user:manage:whispers channel:read:hype_train'; // Add other scopes as needed
 
 // Redirect users to Twitch for authorization
 app.get('/auth/twitch', (req: any, res: any) => {
@@ -37,7 +39,9 @@ app.get('/auth/twitch/callback', async (req: any, res: any) => {
         // console.log('Access Token:', accessToken);
         // console.log('Refresh Token:', refreshToken);
         // console.log(response.data);
-        fs.writeFileSync('tokens.json', JSON.stringify({
+        let tokensPath = isBotMode ? `tokensbot.json` : `tokens.json`;
+
+        fs.writeFileSync(tokensPath, JSON.stringify({
             OAUTH_TOKEN: `oauth:${accessToken}`,
             REFRESH_TOKEN: refreshToken
         }), 'utf-8')

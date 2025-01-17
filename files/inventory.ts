@@ -8,23 +8,27 @@ import {
     GivePlayerObject,
     GivePlayerRandomObject,
     LoadPlayer,
-    Player,
     SavePlayer,
-    StatusEffect,
     TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {Client} from "tmi.js";
 import {Broadcast} from "./bot";
-import {ClassType, GetRandomIntI, GetRandomItem, GetRandomNumber, IconType} from "./utils/utils";
+import {GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils/utils";
 import {AddToActionQueue} from "./actionqueue";
-import {GetAllPlayerSessions, LoadPlayerSession, LoadRandomPlayerSession} from "./utils/playerSessionUtils";
+import {
+    GetAllPlayerSessions,
+    LoadPlayerSession,
+    LoadRandomPlayerSession,
+    SavePlayerSession
+} from "./utils/playerSessionUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
-import {BanUser, CreatePoll} from "./utils/twitchUtils";
-import {IsDragonActive} from "./globals";
-import {DamageType, DoDamage, LoadDragonData} from "./utils/dragonUtils";
+import {BanUser, CreateTwitchPoll} from "./utils/twitchUtils";
+import {IsMonsterActive} from "./globals";
+import {DamageType, DoDamageToMonster, LoadMonsterData} from "./utils/monsterUtils";
 import {SetSceneItemEnabled} from "./utils/obsutils";
 import {AudioType} from "./streamSettings";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
+import {ClassType, IconType, Player, StatusEffect} from "./valueDefinitions";
 
 export enum ObjectTier { Low, Mid, High }
 
@@ -403,7 +407,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                     PlayTextToSpeech(`${player.Username} has proclaimed`, AudioType.GameAlerts, "en-US-BrianNeural", () => {
                         PlayTextToSpeech(afterText, AudioType.GameAlerts, TryGetPlayerVoice(player), () => {
                             PlayTextToSpeech(`Chat, do you agree? Starting a poll.`, AudioType.GameAlerts, "en-US-BrianNeural", () => {
-                                CreatePoll({
+                                CreateTwitchPoll({
                                     title: `Do you agree with ${player.Username}?`,
                                     choices: [
                                         { title: "Yes" },
@@ -414,7 +418,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                                     PlayTextToSpeech(`Chat ${chatAgreed ? `agrees` : `disagrees`} with ${player.Username} that "${afterText}.`, AudioType.GameAlerts, "en-US-BrianNeural", async () => {
                                         if(chatAgreed) {
                                             PlaySound("cheering", AudioType.GameAlerts);
-                                            GivePlayerRandomObject(client, player.Username);
+                                            await GivePlayerRandomObject(client, player.Username);
                                             await GiveExp(client, player.Username, 50);
                                         }
                                         else {
@@ -466,7 +470,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                             PlayTextToSpeech(`For the next minute`, AudioType.GameAlerts, "en-US-BrianNeural", () => {
                                 setTimeout(() => {
                                     PlayTextToSpeech(`Cory's challenge is complete. Chat you may now judge how well Cory accomplished the challenge.`, AudioType.GameAlerts, "en-US-BrianNeural")
-                                    CreatePoll({
+                                    CreateTwitchPoll({
                                         title: `Did Cory complete the challenge?`,
                                         choices: [
                                             { title: "Yes" },
@@ -509,7 +513,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Alias: ["nuke"],
         ContextualName: "a magic nuke",
         PluralName: "magic nukes",
-        Info: "Let's you nuke Bytefire, though also hurts yourself and other people. Ex. !use nuke",
+        Info: "Let's you nuke the current monster, though also hurts yourself and other people. Ex. !use nuke",
         CostRange: {min: 5000, max: 10000 },
         Tier: ObjectTier.High,
         IconRep: IconType.Bomb,
@@ -519,7 +523,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                 return false;
             }
 
-            if(IsDragonActive) {
+            if(IsMonsterActive) {
                 PlaySound("nuke", AudioType.UserGameActions);
                 await client.say(process.env.CHANNEL!, `@${player.Username} has deployed a magic nuke!`);
 
@@ -546,11 +550,12 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
                 setTimeout(async () => {
                     if(!afterText.includes("chat")) {
-                        let dragonMaxHealth = LoadDragonData().MaxHealth;
-                        let damageToBytefire = GetRandomIntI(dragonMaxHealth * 0.5, dragonMaxHealth * 0.7);
+                        let monster = LoadMonsterData();
+                        let monsterMaxHealth = monster.Stats.MaxHealth;
+                        let damageToMonster = GetRandomIntI(monsterMaxHealth * 0.5, monsterMaxHealth * 0.7);
 
-                        await client.say(process.env.CHANNEL!, `Bytefire has been nuked for ${damageToBytefire} fire damage!`);
-                        await DoDamage(client, player.Username, damageToBytefire, DamageType.Fire);
+                        await client.say(process.env.CHANNEL!, `${monster.Stats.Name} has been nuked for ${damageToMonster} fire damage!`);
+                        await DoDamageToMonster(client, player.Username, damageToMonster, DamageType.Fire);
                     }
 
                     let damageRatioToPlayer = GetRandomNumber(0.6, 0.9);
@@ -586,7 +591,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                 return true;
             }
             else {
-                await client.say(process.env.CHANNEL!, `@${player.Username}, you cannot fire a magic nuke until Bytefire is awake.`);
+                await client.say(process.env.CHANNEL!, `@${player.Username}, you cannot fire a magic nuke until a monster is out.`);
 
                 return false;
             }
@@ -734,6 +739,302 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Consumable: true,
         Rewardable: true,
         Rarity: 10
+    },
+    {
+        ObjectName: "present",
+        ContextualName: "a present",
+        PluralName: "presents",
+        Alias: [],
+        Info: "A present! Gave you been naughty or nice? Open it to find out! Ex. !use present",
+        CostRange: {min: 1000, max: 1500 },
+        Tier: ObjectTier.Mid,
+        IconRep: IconType.Present,
+        UseAction: async (client, player, afterText) => {
+            let nice = GetRandomIntI(1, 5) >= 3;
+            let txt = `@${player.Username}, Santa has deemed you... `;
+            if(nice) {
+                txt += `NICE! As you open your present, you find `;
+                switch (GetRandomIntI(1, 4)) {
+                    case 1:
+                    case 2:
+                        let obj = await GivePlayerRandomObject(client, player.Username);
+                        txt += obj.ContextualName;
+                        break;
+                    case 3:
+                        let expToGet = Math.max(30, GetRandomIntI(player.CurrentExpNeeded * 0.1, player.CurrentExpNeeded * 0.3));
+                        await GiveExp(client, player.Username, expToGet);
+                        txt += `${expToGet} EXP!`;
+                        break;
+                    case 4:
+                        let randomStatusEffect = GetRandomItem([
+                            StatusEffect.AllResistance,
+                            StatusEffect.Drunk,
+                            StatusEffect.IncreaseACBy3,
+                            StatusEffect.DoubleExp,
+                            StatusEffect.DoubleDamage
+                        ])!;
+                        AddStatusEffectToPlayer(player.Username, randomStatusEffect, 60 * 5);
+                        switch (randomStatusEffect) {
+                            case StatusEffect.AllResistance:
+                                txt += `a magic spell that gives you resistance to all damage for 5 minutes`;
+                                break;
+                            case StatusEffect.Drunk:
+                                txt += `BOOZE! You get drunk for 5 minutes`;
+                                break;
+                            case StatusEffect.IncreaseACBy3:
+                                txt += `a magic spell that gives you +3 armor for 5 minutes`;
+                                break;
+                            case StatusEffect.DoubleExp:
+                                txt += `a magic spell that gives you double EXP for 5 minutes`;
+                                break;
+                            case StatusEffect.DoubleDamage:
+                                txt += `a magic spell that gives you double damage for 5 minutes`;
+                                break;
+                        }
+                        break;
+                }
+
+                let playerSession = LoadPlayerSession(player.Username);
+                if(!playerSession.SeenChristmasMessage) {
+                    playerSession.SeenChristmasMessage = true;
+
+                    switch (player.Username.toLowerCase()) {
+                        case `one_1egged_duck`:
+                            txt += `. Additionally you find a letter, it says: "Duck! I appreciate you, even when you constantly make fun of me. I hope you know that I do enjoy your presence in streams. Even if it's just to cook."`
+                            break;
+                        case `leva_p`:
+                            txt += `. Additionally you find a letter, it says: "Leva! You're one of my oldest viewers, I appreciate with you have the time to hang out, chat, or whatever else. I'm always happy to see you in chat."`;
+                            break;
+                        case `anonym0us3_otaku`:
+                            txt += `. Additionally you find a letter, it says: "Otaku! You're always great to have in streams, I hope you're doing well, and appreciate you. Even when it's just to bully me in Crowd Control."`;
+                            break;
+                        case `findingfocusdev`:
+                            txt += `. Additionally you find a letter, it says: "Focus! I don't see you much anymore, but it's always nice to see you when you pop in."`;
+                            break;
+                        case `perplexingmaurelle`:
+                            txt += `. Additionally you find a letter, it says: "You're my real life friend! And I mean that!"`;
+                            break;
+                        case `sakimcgee`:
+                            txt += `. Additionally you find a letter, it says: "Love you, asshole"`;
+                            break;
+                        case `mic00f_the_protogen`:
+                            txt += `. Additionally you find a letter, it says: "Mic! You've been in my streams near-constantly lately, and I appreciate you. You have a lot of ideas and suggestions, and I hope you know I value the thoughts and ideas, even if I don't always have the energy to act on them immediately. Thanks for being around!"`;
+                            break;
+                        case `i_am_linda_`:
+                            txt += `. Additionally you find a letter, it says: "Linda! I only see you occasionally, but it's always a nice surprise to see you in a stream."`;
+                            break;
+                        case `elliejoypanic`:
+                            txt += `. Additionally you find a letter, it says: "Ellie! Wow! Thanks for being here, and being one of the reasons I decided to start streaming again at all!"`;
+                            break;
+                        case `fatelsunset5`:
+                            txt += `. Additionally you find a letter, it says: "Fatel! I see you only occasionally, but it's always nice when you come in."`;
+                            break;
+                        case `chillgreenbean`:
+                            txt += `. Additionally you find a letter, it says: "Greenbean!!! You hung out with me for a long time in some very chill streams, especially the Hollow Knight ones. I appreciate you tons."`;
+                            break;
+                        case `notbella`:
+                            txt += `. Additionally you find a letter, it says: "Bella! Omg hi. I appreciate you as a friend, and have enjoyed playing D&D with you. Plus, I value you listened to me yap about Youtube and growth stuff."`;
+                            break;
+                        case `livinglifewithserenity`:
+                            txt += `. Additionally you find a letter, it says: "Serenity! You're cool! You're rad! Thanks for being here."`;
+                            break;
+                        case `gamerjoecoffee`:
+                            txt += `. Additionally you find a letter, it says: "Joe! Thanks for hanging out, I enjoy being in your streams when I can!"`;
+                            break;
+                        case `texas_machinist`:
+                            txt += `. Additionally you find a letter, it says: "Texas! Thanks for popping into my streams! You're a recent addition, but a valued one. You come by often, and that is remembered."`;
+                            break;
+                        case `pizza_zah_hutt`:
+                            txt += `. Additionally you find a letter, it says: "Pizzzzzzza! So glad I popped into your stream a while ago, you have a consistent uplifting energy. Thanks for being around, not to mention playing and enjoying my game so much!"`;
+                            break;
+                        case `kilian_original`:
+                            txt += `. Additionally you find a letter, it says: "Kilian! Thanks for murdering me (in Crowd Control) every time you join my stream."`;
+                            break;
+                        case `thelindenbookie`:
+                            txt += `. Additionally you find a letter, it says: "Bookie! You're a recent addition to streams, but you've been so nice! You're consistently around and active, and it's been so refreshing. Thanks for being here!"`;
+                            break;
+                        case `wolfythelurker`:
+                            txt += `. Additionally you find a letter, it says: "Wolfy! I appreciate you lurking, and Crowd Controlling my ass. You've been great to have around."`;
+                            break;
+                        case `tgg_rock`:
+                            txt += `. Additionally you find a letter, it says: "Rock! You rock! Thanks for being around, you're a joy to have around."`;
+                            break;
+                        case `justbearsgames`:
+                            txt += `. Additionally you find a letter, it says: "Girllll, you already know you're one of my best friends in the world, thanks for existing and I hope to come visit you in the new year."`;
+                            break;
+                        case `berzerk404`:
+                            txt += `. Additionally you find a letter, it says: "Bezerk! Thanks for being around, contributing ideas, and all the other things. You've been lovely to have around."`;
+                            break;
+                        case `gofurbroke69`:
+                            txt += `. Additionally you find a letter, it says: "Ayyy! Thanks for being here Gofurbroke. I appreciate you! And I'm amazed how much you enjoy my game. Thanks!"`;
+                            break;
+                        case `kgu111`:
+                            txt += `. Additionally you find a letter, it says: "KGU! I've only recently started watching you, but it's been great to hang out. Thanks for hanging out :)"`;
+                            break;
+                        default:
+                            txt += `. Additionally, you find a generic Hallmark christmas card, it says "${GetRandomItem([
+                                `Merry Christmas and a Happy New Year!`,
+                                `Seasons Greetings!`,
+                                `Warmest wishes!`,
+                                `Wow, you're so cool`,
+                                `You are totally rad`
+                            ])}"`
+                            break;
+                    }
+
+                    SavePlayerSession(player.Username, playerSession);
+                }
+            }
+            else {
+                txt += `NAUGHTY! As you open your present, you find `;
+                switch (GetRandomIntI(1, 3)) {
+                    case 1:
+                    case 2:
+                        await GivePlayerObject(client, player.Username, "coal");
+                        txt += "a big lump of COAL";
+                        break;
+                    case 3:
+                        let randomStatusEffect = GetRandomItem([
+                            StatusEffect.AllVulnerability,
+                            StatusEffect.Poisoned
+                        ])!;
+                        AddStatusEffectToPlayer(player.Username, randomStatusEffect, 60 * 5);
+                        switch (randomStatusEffect) {
+                            case StatusEffect.AllVulnerability:
+                                txt += `a magic spell that makes you vulnerable to all damage for 5 minutes`;
+                                break;
+                            case StatusEffect.Poisoned:
+                                txt += `some Santa magic that poisons you for 5 minutes`;
+                                break;
+                        }
+                        break;
+                }
+            }
+
+            await client.say(process.env.CHANNEL!, txt);
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 0
+    },
+    {
+        ObjectName: "coal",
+        ContextualName: "a chunk of coal",
+        PluralName: "coal chunks",
+        Alias: [],
+        Info: "IT'S COAL! Wow, guess you've been naughty.",
+        CostRange: {min: 1000, max: 1500 },
+        Tier: ObjectTier.Low,
+        IconRep: IconType.BottleBlue,
+        UseAction: async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} did you just eat coal?? Serves you right for being naughty. Well, you've been poisoned for 5 minutes.`);
+            AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 0
+    },
+    {
+        ObjectName: "candy",
+        Alias: [],
+        ContextualName: "a piece of candy",
+        PluralName: "candies",
+        Info: "Happy Halloween! Some lovely candy, let's hope its the good stuff. Ex. !use candy",
+        CostRange: {min: 50, max: 100 },
+        Tier: ObjectTier.Low,
+        IconRep: IconType.Candy,
+        ThrownDamage: { min: -9, max: -5 },
+        UseAction: async (client, player, afterText) => {
+            let candyType = [
+                {
+                    candy: `a mini chocolate bar`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a gummy eyeball`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `some candy corn`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a full-sized chocolate bar`,
+                    healthChange: GetRandomIntI(15, 50)
+                },
+                {
+                    candy: `a lollipop`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a caramel`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a jawbreaker`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `an apple... BOO!`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a sour gummy worm`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a piece of licorice`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a peanut butter cup`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a bubble gum ball`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a chocolate coin`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a strawberry hard candy`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a mint`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a new toothbrush... ugh`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a granola bar... who wanted this?`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+                {
+                    candy: `a carrot... why??`,
+                    healthChange: GetRandomIntI(5, 10)
+                },
+            ];
+
+            let randomCandy = GetRandomItem(candyType);
+
+            await client.say(process.env.CHANNEL!, `@${player.Username} you open your candy and find it's... ${randomCandy?.candy}`);
+            await ChangePlayerHealth(client, player.Username, randomCandy!.healthChange, DamageType.Psychic, "Bad candy");
+
+
+            return true;
+        },
+        Consumable: true,
+        Rewardable: true,
+        Rarity: 0 //0 rarity, no candy when its not halloween
     },
 
 

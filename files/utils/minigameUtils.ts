@@ -1,15 +1,16 @@
 import {Client} from "tmi.js";
 import {IsCommand} from "../commands";
 import {Broadcast} from "../bot";
-import {ClassType, GetRandomIntI, GetRandomItem, RemoveFromArray} from "./utils";
-import {GiveExp, GivePlayerRandomObjectInTier, LoadAllPlayers, LoadPlayer, Player, SavePlayer} from "./playerGameUtils";
+import {GetRandomIntI, GetRandomItem, RemoveFromArray} from "./utils";
+import {GiveExp, GivePlayerRandomObjectInTier, LoadAllPlayers, LoadPlayer, SavePlayer} from "./playerGameUtils";
 import {AddToMinigameQueue, IsMinigameQueueEmpty} from "../actionqueue";
 import {AllInventoryObjects, ObjectTier} from "../inventory";
-import {HandleQuestProgress, QuestType} from "./questUtils";
+import {HandleQuestProgress} from "./questUtils";
 import {GiveUserVIP, RemoveUserVIP} from "./twitchUtils";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
+import {Player, QuestType} from "../valueDefinitions";
 
 //Come up with our effects
 // - Feel unique from one another; noticeably different outputs from game to game
@@ -35,7 +36,7 @@ export function IsCommandMinigame(command: string): boolean {
 
     let result = false;
     stringKeys.forEach((key, index) => {
-        if(IsCommand(command, key.toLowerCase())) {
+        if(IsCommand(command, key.toLowerCase()) || command.includes(`the7ar${key}`)) {
             result = true;
         }
     });
@@ -46,9 +47,9 @@ export function IsCommandMinigame(command: string): boolean {
 let currentShop: Array<{obj: string, cost: number}> = [];
 
 export function InitializeShop() {
-    let lowObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.Low && x.CostRange !== undefined);
-    let midObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.Mid && x.CostRange !== undefined);
-    let highObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.High && x.CostRange !== undefined);
+    let lowObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.Low && x.CostRange !== undefined && x.Rarity > 0);
+    let midObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.Mid && x.CostRange !== undefined && x.Rarity > 0);
+    let highObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.High && x.CostRange !== undefined && x.Rarity > 0);
 
     const lowAmount = 3;
     const midAmount = 2;
@@ -230,82 +231,82 @@ export async function HandleMinigames(client: Client, username: string, command:
             .filter((v) => isNaN(Number(v)))
 
         stringKeys.forEach((key, index) => {
-            if(IsCommand(command, key.toLowerCase())) {
+            if(IsCommand(command, key.toLowerCase()) || command.includes(`the7ar${key}`)) {
                 minigameType = index;
             }
         });
 
         let adjectives = [
-            // "a stinky",
-            // "a gross",
-            // "a glimmering",
-            // "a shiny",
-            // "a colorful",
-            // "an old",
-            // "a huge",
-            // "a tiny",
-            // "a slimy",
-            // "a sparkling",
-            // "a dingy",
-            // "a worn",
-            // "a sleek",
-            // "a jagged",
-            // "a smooth",
-            // "a vibrant",
-            // "a dull",
-            // "a massive",
-            // "a minuscule",
-            // "a sticky",
-            // "a fragrant",
-            // "a pungent",
-            // "a shadowy",
-            // "a grotesque",
-            // "a dazzling",
-            // "a tarnished",
-            // "a gleaming",
-            // "a grimy",
-            // "a slick",
-            // "a fuzzy",
-            // "a fluffy",
-            // "a questionable",
-            // "a sentient",
-
-            "a cursed",
-            "a haunted",
-            "a ghoulish",
-            "an eerie",
-            "a ghostly",
-            "a moldy",
-            "a ghastly",
-            "a shrunken",
+            "a stinky",
+            "a gross",
+            "a glimmering",
+            "a shiny",
+            "a colorful",
+            "an old",
+            "a huge",
+            "a tiny",
             "a slimy",
-            "a wicked",
-            "a murky",
-            "a rotten",
-            "a sinister",
+            "a sparkling",
+            "a dingy",
+            "a worn",
+            "a sleek",
             "a jagged",
-            "a phantom-like",
-            "a decayed",
+            "a smooth",
+            "a vibrant",
             "a dull",
-            "an ominous",
-            "a shriveled",
+            "a massive",
+            "a minuscule",
             "a sticky",
-            "a rancid",
-            "a foul",
+            "a fragrant",
+            "a pungent",
             "a shadowy",
             "a grotesque",
-            "a shimmering",
-            "a corroded",
-            "a spectral",
+            "a dazzling",
+            "a tarnished",
+            "a gleaming",
             "a grimy",
-            "a blood-soaked",
-            "a hairy",
-            "a bewitched",
+            "a slick",
+            "a fuzzy",
+            "a fluffy",
+            "a questionable",
             "a sentient",
+
+            // "a cursed",
+            // "a haunted",
+            // "a ghoulish",
+            // "an eerie",
+            // "a ghostly",
+            // "a moldy",
+            // "a ghastly",
+            // "a shrunken",
+            // "a slimy",
+            // "a wicked",
+            // "a murky",
+            // "a rotten",
+            // "a sinister",
+            // "a jagged",
+            // "a phantom-like",
+            // "a decayed",
+            // "a dull",
+            // "an ominous",
+            // "a shriveled",
+            // "a sticky",
+            // "a rancid",
+            // "a foul",
+            // "a shadowy",
+            // "a grotesque",
+            // "a shimmering",
+            // "a corroded",
+            // "a spectral",
+            // "a grimy",
+            // "a blood-soaked",
+            // "a hairy",
+            // "a bewitched",
+            // "a sentient",
         ];
 
         let randomAdj = GetRandomItem(adjectives)!;
-        let randomAdjSome = randomAdj.replace(`a`, `some`).replace(`an`, `some`)
+        let randomAdjSome = randomAdj.replace(`a `, `some `).replace(`an `, `some `)
 
         let reward = `${username} `;
         let options: Array<MinigameReward> = [];
@@ -315,559 +316,564 @@ export async function HandleMinigames(client: Client, username: string, command:
             case MinigameType.Fish:
                 //DECIDE
                 options = [
+                    // //Halloween
+                    // {
+                    //     name: `caught ${randomAdj} zombie head`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} witch hat`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} jack-o-lantern`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} jar of eyeballs`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} skull`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} fish skeleton`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} doll head`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} black candle, still lit`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} skeletal hand gripping the hook`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} petrified bat wing`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} rotten apple core`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `caught ${randomAdj} amulet that screams`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+
+                    //Garbage
                     {
-                        name: `caught ${randomAdj} zombie head`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `caught ${randomAdj} boot`,
+                        gems: GetRandomIntI(1, 5),
                         rarity: 10
                     },
                     {
-                        name: `caught ${randomAdj} witch hat`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `caught ${randomAdj} bottle`,
+                        gems: GetRandomIntI(1, 5),
                         rarity: 10
                     },
                     {
-                        name: `caught ${randomAdj} jack-o-lantern`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `caught ${randomAdj} plastic bag`,
+                        gems: GetRandomIntI(1, 5),
                         rarity: 10
                     },
                     {
-                        name: `caught ${randomAdj} jar of eyeballs`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `caught ${randomAdj} sock`,
+                        gems: GetRandomIntI(1, 5),
                         rarity: 10
                     },
                     {
-                        name: `caught ${randomAdj} skull`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} fish skeleton`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} doll head`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} black candle, still lit`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} skeletal hand gripping the hook`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} petrified bat wing`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} rotten apple core`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} amulet that screams`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `caught ${randomAdj} tin can`,
+                        gems: GetRandomIntI(1, 5),
                         rarity: 10
                     },
 
-                    // //Garbage
-                    // {
-                    //     name: `caught ${randomAdj} boot`,
-                    //     gems: GetRandomIntI(1, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} bottle`,
-                    //     gems: GetRandomIntI(1, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} plastic bag`,
-                    //     gems: GetRandomIntI(1, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} sock`,
-                    //     gems: GetRandomIntI(1, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} tin can`,
-                    //     gems: GetRandomIntI(1, 5),
-                    //     rarity: 10
-                    // },
-                    //
-                    // //Common
-                    // {
-                    //     name: `caught ${randomAdj} bass`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} cod`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} salmon`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} goldfish`,
-                    //     gems: GetRandomIntI(2, 10),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} pike`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} flounder`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} tuna`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} snapping turtle`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} carp`,
-                    //     gems: GetRandomIntI(2, 15),
-                    //     rarity: 10
-                    // },
-                    //
-                    // //Uncommon
-                    // {
-                    //     name: `caught ${randomAdj} crab`,
-                    //     gems: GetRandomIntI(10, 30),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} lobster`,
-                    //     gems: GetRandomIntI(10, 30),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} catfish`,
-                    //     gems: GetRandomIntI(10, 30),
-                    //     rarity: 8
-                    // },
-                    //
-                    // //Rare
-                    // {
-                    //     name: `caught ${randomAdj} rubber duck`,
-                    //     gems: GetRandomIntI(20, 50),
-                    //     rarity: 5
-                    // },
-                    //
-                    // //Legendary
-                    // {
-                    //     name: `caught ${randomAdj} shark`,
-                    //     gems: GetRandomIntI(40, 75),
-                    //     rarity: 2
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} jellyfish`,
-                    //     gems: GetRandomIntI(40, 75),
-                    //     rarity: 2
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} electric eel`,
-                    //     gems: GetRandomIntI(40, 75),
-                    //     rarity: 2
-                    // },
+                    //Common
+                    {
+                        name: `caught ${randomAdj} bass`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} cod`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} salmon`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} goldfish`,
+                        gems: GetRandomIntI(2, 10),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} pike`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} flounder`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} tuna`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} snapping turtle`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught ${randomAdj} carp`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+
+                    //Uncommon
+                    {
+                        name: `caught ${randomAdj} crab`,
+                        gems: GetRandomIntI(10, 30),
+                        rarity: 8
+                    },
+                    {
+                        name: `caught ${randomAdj} lobster`,
+                        gems: GetRandomIntI(10, 30),
+                        rarity: 8
+                    },
+                    {
+                        name: `caught ${randomAdj} catfish`,
+                        gems: GetRandomIntI(10, 30),
+                        rarity: 8
+                    },
+
+                    //Rare
+                    {
+                        name: `caught ${randomAdj} rubber duck`,
+                        gems: GetRandomIntI(20, 50),
+                        rarity: 5
+                    },
+
+                    //Legendary
+                    {
+                        name: `caught ${randomAdj} shark`,
+                        gems: GetRandomIntI(40, 75),
+                        rarity: 2
+                    },
+                    {
+                        name: `caught ${randomAdj} jellyfish`,
+                        gems: GetRandomIntI(40, 75),
+                        rarity: 2
+                    },
+                    {
+                        name: `caught ${randomAdj} electric eel`,
+                        gems: GetRandomIntI(40, 75),
+                        rarity: 2
+                    },
                 ];
                 break;
             case MinigameType.Cook:
                 //DECIDE
                 options = [
-                    {
-                        name: `baked ${randomAdjSome} pumpkin seeds`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `broiled ${randomAdj} witchs stew`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `stuff ${randomAdj} spider egg sack`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `skewered ${randomAdj} demon claw on a stick`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `pickled ${randomAdjSome} tentacles`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `tossed ${randomAdj} salad of eyeballs`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `baked ${randomAdjSome} toenail shavings`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `brewed ${randomAdj} pumpkin spice potion`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `blended ${randomAdj} bone broth`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `sauteed ${randomAdj} zombie toe`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    {
-                        name: `squeezed ${randomAdj} bat blood juice`,
-                        gems: GetRandomIntI(5, 50),
-                        rarity: 10
-                    },
-                    // //Garbage
+                    //Halloween
                     // {
-                    //     name: `burnt some eggs`,
-                    //     gems: GetRandomIntI(2, 5),
+                    //     name: `baked ${randomAdjSome} pumpkin seeds`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `caught the oven on fire`,
-                    //     gems: GetRandomIntI(2, 5),
+                    //     name: `broiled ${randomAdj} witchs stew`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `got eggshells in their pancakes`,
-                    //     gems: GetRandomIntI(2, 5),
+                    //     name: `stuff ${randomAdj} spider egg sack`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `ruined their brownies`,
-                    //     gems: GetRandomIntI(2, 5),
-                    //     rarity: 10
-                    // },
-                    //
-                    // //Common
-                    // {
-                    //     name: `baked ${randomAdj} pie`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `skewered ${randomAdj} demon claw on a stick`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `roasted ${randomAdj} ham`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `pickled ${randomAdjSome} tentacles`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `tossed ${randomAdj} salad`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `tossed ${randomAdj} salad of eyeballs`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `flipped ${randomAdj} pancake`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `baked ${randomAdjSome} toenail shavings`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `cooked ${randomAdj} grilled cheese`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `brewed ${randomAdj} pumpkin spice potion`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `stirred ${randomAdj} soup`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `blended ${randomAdj} bone broth`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
                     // {
-                    //     name: `baked ${randomAdj} chicken`,
-                    //     gems: GetRandomIntI(2, 15),
+                    //     name: `sauteed ${randomAdj} zombie toe`,
+                    //     gems: GetRandomIntI(5, 50),
                     //     rarity: 10
                     // },
-                    //
-                    // //Uncommon
                     // {
-                    //     name: `made ${randomAdj} taco`,
-                    //     gems: GetRandomIntI(10, 25),
-                    //     rarity: 8
+                    //     name: `squeezed ${randomAdj} bat blood juice`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
                     // },
-                    // {
-                    //     name: `made ${randomAdjSome} shrimp scampi`,
-                    //     gems: GetRandomIntI(10, 25),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `made ${randomAdj} beef wellington`,
-                    //     gems: GetRandomIntI(10, 25),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `made ${randomAdjSome} spaghetti`,
-                    //     gems: GetRandomIntI(10, 25),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `made ${randomAdjSome} chicken alfredo`,
-                    //     gems: GetRandomIntI(10, 25),
-                    //     rarity: 8
-                    // },
-                    //
-                    // //Rare
-                    // {
-                    //     name: `made ${randomAdj} ratatouille`,
-                    //     gems: GetRandomIntI(25, 60),
-                    //     rarity: 5
-                    // },
-                    // {
-                    //     name: `roasted ${randomAdjSome} duck`,
-                    //     gems: GetRandomIntI(25, 60),
-                    //     rarity: 5
-                    // },
-                    // {
-                    //     name: `made ${randomAdjSome} sushi`,
-                    //     gems: GetRandomIntI(25, 60),
-                    //     rarity: 5
-                    // },
-                    // {
-                    //     name: `made ${randomAdjSome} lobster`,
-                    //     gems: GetRandomIntI(25, 60),
-                    //     rarity: 5
-                    // },
-                    //
-                    // //Legendary
-                    // {
-                    //     name: `made ${randomAdjSome} wagyu beef`,
-                    //     gems: GetRandomIntI(75, 100),
-                    //     rarity: 2
-                    // },
-                    // {
-                    //     name: `made ${randomAdjSome} chocolate mousse`,
-                    //     gems: GetRandomIntI(75, 100),
-                    //     rarity: 2
-                    // },
-                    // {
-                    //     name: `made ${randomAdjSome} steak`,
-                    //     gems: GetRandomIntI(75, 100),
-                    //     rarity: 2
-                    // },
+
+                    //Garbage
+                    {
+                        name: `burnt some eggs`,
+                        gems: GetRandomIntI(2, 5),
+                        rarity: 10
+                    },
+                    {
+                        name: `caught the oven on fire`,
+                        gems: GetRandomIntI(2, 5),
+                        rarity: 10
+                    },
+                    {
+                        name: `got eggshells in their pancakes`,
+                        gems: GetRandomIntI(2, 5),
+                        rarity: 10
+                    },
+                    {
+                        name: `ruined their brownies`,
+                        gems: GetRandomIntI(2, 5),
+                        rarity: 10
+                    },
+
+                    //Common
+                    {
+                        name: `baked ${randomAdj} pie`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `roasted ${randomAdj} ham`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `tossed ${randomAdj} salad`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `flipped ${randomAdj} pancake`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `cooked ${randomAdj} grilled cheese`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `stirred ${randomAdj} soup`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+                    {
+                        name: `baked ${randomAdj} chicken`,
+                        gems: GetRandomIntI(2, 15),
+                        rarity: 10
+                    },
+
+                    //Uncommon
+                    {
+                        name: `made ${randomAdj} taco`,
+                        gems: GetRandomIntI(10, 25),
+                        rarity: 8
+                    },
+                    {
+                        name: `made ${randomAdjSome} shrimp scampi`,
+                        gems: GetRandomIntI(10, 25),
+                        rarity: 8
+                    },
+                    {
+                        name: `made ${randomAdj} beef wellington`,
+                        gems: GetRandomIntI(10, 25),
+                        rarity: 8
+                    },
+                    {
+                        name: `made ${randomAdjSome} spaghetti`,
+                        gems: GetRandomIntI(10, 25),
+                        rarity: 8
+                    },
+                    {
+                        name: `made ${randomAdjSome} chicken alfredo`,
+                        gems: GetRandomIntI(10, 25),
+                        rarity: 8
+                    },
+
+                    //Rare
+                    {
+                        name: `made ${randomAdj} ratatouille`,
+                        gems: GetRandomIntI(25, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `roasted ${randomAdjSome} duck`,
+                        gems: GetRandomIntI(25, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `made ${randomAdjSome} sushi`,
+                        gems: GetRandomIntI(25, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `made ${randomAdjSome} lobster`,
+                        gems: GetRandomIntI(25, 60),
+                        rarity: 5
+                    },
+
+                    //Legendary
+                    {
+                        name: `made ${randomAdjSome} wagyu beef`,
+                        gems: GetRandomIntI(75, 100),
+                        rarity: 2
+                    },
+                    {
+                        name: `made ${randomAdjSome} chocolate mousse`,
+                        gems: GetRandomIntI(75, 100),
+                        rarity: 2
+                    },
+                    {
+                        name: `made ${randomAdjSome} steak`,
+                        gems: GetRandomIntI(75, 100),
+                        rarity: 2
+                    },
                 ];
                 break;
             case MinigameType.Mine:
                 //DECIDE
                 options = [
+                    // //Halloween
+                    // {
+                    //     name: `mined ${randomAdj} cursed crystal`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `found ${randomAdj} tomb`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `mined ${randomAdj} tombstone`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `mined ${randomAdj} cursed crystal`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `unearthed ${randomAdj} skull`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `unearthed ${randomAdj} zombie hand`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `found ${randomAdj} nest of spiders`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `found ${randomAdj} cursed ring`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `found ${randomAdj} jar of pickled eyeballs`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `unearthed ${randomAdj} black tomb with a skull on it`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+                    // {
+                    //     name: `mined ${randomAdj} petrified vampire dust`,
+                    //     gems: GetRandomIntI(5, 50),
+                    //     rarity: 10
+                    // },
+
+                    //Garbage
                     {
-                        name: `mined ${randomAdj} cursed crystal`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `found ${randomAdj} helmet`,
+                        gems: GetRandomIntI(2, 5),
                         rarity: 10
                     },
                     {
-                        name: `found ${randomAdj} tomb`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `found ${randomAdj} pickaxe`,
+                        gems: GetRandomIntI(2, 5),
                         rarity: 10
                     },
                     {
-                        name: `mined ${randomAdj} tombstone`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `found ${randomAdj} torch`,
+                        gems: GetRandomIntI(2, 5),
                         rarity: 10
                     },
                     {
-                        name: `mined ${randomAdj} cursed crystal`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `found ${randomAdj} scrap of wood`,
+                        gems: GetRandomIntI(2, 5),
+                        rarity: 10
+                    },
+
+                    //Common
+                    {
+                        name: `mined ${randomAdj} garnet`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `unearthed ${randomAdj} skull`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdj} amethyst`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `unearthed ${randomAdj} zombie hand`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdj} citrine`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `found ${randomAdj} nest of spiders`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdj} peridot`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `found ${randomAdj} cursed ring`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdjSome} iron ore`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `found ${randomAdj} jar of pickled eyeballs`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdjSome} coal`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `unearthed ${randomAdj} black tomb with a skull on it`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdjSome} copper ore`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
                     {
-                        name: `mined ${randomAdj} petrified vampire dust`,
-                        gems: GetRandomIntI(5, 50),
+                        name: `mined ${randomAdjSome} tin ore`,
+                        gems: GetRandomIntI(2, 20),
                         rarity: 10
                     },
-                    // //Garbage
-                    // {
-                    //     name: `found ${randomAdj} helmet`,
-                    //     gems: GetRandomIntI(2, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} pickaxe`,
-                    //     gems: GetRandomIntI(2, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} torch`,
-                    //     gems: GetRandomIntI(2, 5),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} scrap of wood`,
-                    //     gems: GetRandomIntI(2, 5),
-                    //     rarity: 10
-                    // },
-                    //
-                    // //Common
-                    // {
-                    //     name: `mined ${randomAdj} garnet`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} amethyst`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} citrine`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} peridot`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} iron ore`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} coal`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} copper ore`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} tin ore`,
-                    //     gems: GetRandomIntI(2, 20),
-                    //     rarity: 10
-                    // },
-                    //
-                    // //Uncommon
-                    // {
-                    //     name: `mined ${randomAdj} topaz`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} opal`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} jade`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} onyx`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} silver ore`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} lead ore`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} nickel ore`,
-                    //     gems: GetRandomIntI(10, 40),
-                    //     rarity: 8
-                    // },
-                    //
-                    // //Rare
-                    // {
-                    //     name: `mined ${randomAdj} sapphire`,
-                    //     gems: GetRandomIntI(30, 50),
-                    //     rarity: 5
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} ruby`,
-                    //     gems: GetRandomIntI(30, 50),
-                    //     rarity: 5
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} gold ore`,
-                    //     gems: GetRandomIntI(30, 50),
-                    //     rarity: 5
-                    // },
-                    //
-                    // //Legendary
-                    // {
-                    //     name: `mined ${randomAdj} diamond`,
-                    //     gems: GetRandomIntI(40, 75),
-                    //     rarity: 2
-                    // },
-                    // {
-                    //     name: `mined ${randomAdjSome} platinum ore`,
-                    //     gems: GetRandomIntI(40, 75),
-                    //     rarity: 2
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} emerald`,
-                    //     gems: GetRandomIntI(40, 75),
-                    //     rarity: 2
-                    // },
+
+                    //Uncommon
+                    {
+                        name: `mined ${randomAdj} topaz`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdj} opal`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdj} jade`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdj} onyx`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdjSome} silver ore`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdjSome} lead ore`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdjSome} nickel ore`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+
+                    //Rare
+                    {
+                        name: `mined ${randomAdj} sapphire`,
+                        gems: GetRandomIntI(30, 50),
+                        rarity: 5
+                    },
+                    {
+                        name: `mined ${randomAdj} ruby`,
+                        gems: GetRandomIntI(30, 50),
+                        rarity: 5
+                    },
+                    {
+                        name: `mined ${randomAdjSome} gold ore`,
+                        gems: GetRandomIntI(30, 50),
+                        rarity: 5
+                    },
+
+                    //Legendary
+                    {
+                        name: `mined ${randomAdj} diamond`,
+                        gems: GetRandomIntI(40, 75),
+                        rarity: 2
+                    },
+                    {
+                        name: `mined ${randomAdjSome} platinum ore`,
+                        gems: GetRandomIntI(40, 75),
+                        rarity: 2
+                    },
+                    {
+                        name: `mined ${randomAdj} emerald`,
+                        gems: GetRandomIntI(40, 75),
+                        rarity: 2
+                    },
                 ];
                 break;
         }

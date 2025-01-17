@@ -19,7 +19,7 @@ mWS.onmessage = (event: MessageEvent) => {
     }
 };
 
-enum MinigameType {
+enum MinigameTypeHtml {
     Fish,
     Cook,
     Mine,
@@ -28,15 +28,15 @@ enum MinigameType {
 
 const animationContainer: HTMLElement | null = document.getElementById('animation');
 
-function GetMinigameName(minigameType: MinigameType): string {
+function GetMinigameName(minigameType: MinigameTypeHtml): string {
     switch (minigameType) {
-        case MinigameType.Fish:
+        case MinigameTypeHtml.Fish:
             return "fishing";
-        case MinigameType.Cook:
+        case MinigameTypeHtml.Cook:
             return "cooking";
-        // case MinigameType.Chop:
+        // case MinigameTypeHtml.Chop:
         //     return "chopping";
-        case MinigameType.Mine:
+        case MinigameTypeHtml.Mine:
             return "mining";
     }
 
@@ -49,7 +49,7 @@ animationContainer?.appendChild(textAnimation);
 function HandlePassiveDisplay() {
     let text = `Play minigames! You can use:\n`;
     const minigameKeys = Object
-        .keys(MinigameType)
+        .keys(MinigameTypeHtml)
         .filter((v) => isNaN(Number(v)))
     text += minigameKeys.map(x => ` !${x.toLowerCase()}`)
 
@@ -180,7 +180,7 @@ function HandleShopDisplay(data: { type: string; text: string }) {
     styleTag.textContent += keyframes;
 }
 
-function HandlePlayerMinigame(data: { type: string; displayName: string; minigameType: MinigameType; reward: string }) {
+function HandlePlayerMinigame(data: { type: string; displayName: string; minigameType: MinigameTypeHtml; reward: string }) {
     textAnimation.textContent = `${data.displayName} is ${GetMinigameName(data.minigameType)}`;
 
     // Generate dynamic animation

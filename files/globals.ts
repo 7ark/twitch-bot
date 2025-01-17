@@ -1,4 +1,4 @@
-export let IsDragonActive: boolean = false;
+export let IsMonsterActive: boolean = false;
 export let SayAllChat: boolean = false;
 
 export let CurrentPollJoker: string = "";

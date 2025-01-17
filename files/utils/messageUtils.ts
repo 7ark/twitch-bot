@@ -1,14 +1,17 @@
-import {ChatUserstate, Client} from "tmi.js";
+import {ChatUserstate, client, Client} from "tmi.js";
 import {MessageDelegate, SayAllChat} from "../globals";
-import {DoesPlayerHaveStatusEffect, LoadPlayer, RandomlyGiveExp, StatusEffect} from "./playerGameUtils";
-import {GetRandomInt, GetRandomIntI, GetRandomItem,} from "./utils";
-import {ProcessCommands} from "../commands";
+import {DoesPlayerHaveStatusEffect, GivePlayerObject, LoadPlayer, RandomlyGiveExp} from "./playerGameUtils";
+import {CheckMessageSimilarity, GetRandomInt, GetRandomIntI, GetRandomItem,} from "./utils";
+import {ProcessCommands, ProcessUniqueCommands} from "../commands";
 import {Broadcast} from "../bot";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {PlayTextToSpeech, TryGetPlayerVoice} from "./audioUtils";
 import {MinigameType} from "./minigameUtils";
 import {DoesPlayerHaveQuest, GivePlayerRandomQuest} from "./questUtils";
 import {AudioType} from "../streamSettings";
+import {CheckForScare} from "./scareUtils";
+import {StatusEffect} from "../valueDefinitions";
+import {WhisperUser} from "./twitchUtils";
 
 let lastMessageTimestamp = new Date();
 
@@ -39,8 +42,18 @@ function CleanMessage(input: string): string {
     return input;
 }
 
-export async function OnMessage(client: Client, channel: string, userstate: ChatUserstate, message: string, userState: ChatUserstate){
-    let displayName = userstate['display-name']!;
+export async function OnWhisper(client: Client, message: string, username: string) {
+    console.log(`Whisper: ${username}: ${message}`);
+    if(message[0] === '!' && !message.includes("!yell")){
+        await ProcessCommands(client, username, message);
+    }
+    else {
+        await WhisperUser(client, username, "You can only send commands here!");
+    }
+}
+
+export async function OnMessage(client: Client, userState: ChatUserstate, message: string){
+    let displayName = userState['display-name']!;
     message = CleanMessage(message);
     console.log(`${displayName}: ${message}`);
 
@@ -48,11 +61,12 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         MessageDelegate[i](displayName, message);
     }
 
-
     if(!displayName.includes("the7ark")) {
         hasBeenMessageSinceLastRegularMessage = true;
         lastMessageTimestamp = new Date();
     }
+    let col = userState.color;
+    Broadcast(JSON.stringify({ type: 'message', displayName, message, color: col }));
 
     let player = LoadPlayer(userState['display-name']!);
     if(message[0] != '!' && !message.includes("!yell")) {
@@ -73,6 +87,10 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         }
     }
 
+    // if(message.includes(`!yell`) || message[0] != `!`) {
+    //     await CheckForScare(client, player.Username, message.replace(`!yell`, ``));
+    // }
+
     //Must be level 5 to get quests, not have a quest already, and a 1 in 5 chance with each message
     if(player.Level >= 5 &&
         !DoesPlayerHaveQuest(player.Username) &&
@@ -81,26 +99,52 @@ export async function OnMessage(client: Client, channel: string, userstate: Chat
         await GivePlayerRandomQuest(client, player.Username);
     }
 
-    let col = userState.color;
-    Broadcast(JSON.stringify({ type: 'message', displayName, message, color: col }));
+    // Broadcast(JSON.stringify({ type: 'message', displayName, message, color: col }));
 
     let session = LoadPlayerSession(displayName);
     session.NameColor = col;
     session.IsSubscribed = userState.subscriber ?? false;
+    let addedFirstMessage = false;
     if(message[0] === '!'){
         if(message.includes("!yell")) {
+            if(session.Messages.length == 0) {
+                addedFirstMessage = true;
+            }
             session.Messages.push(message.replace("!yell", "").trim());
         }
 
-        await ProcessCommands(client, userState, message);
+        await ProcessCommands(client, userState['display-name']!, message);
     }
-    else {
+    else if(!await ProcessUniqueCommands(client, userState['display-name']!, message)) {
         //EXP
         await RandomlyGiveExp(client, displayName, 5, GetRandomIntI(1, 2))
 
+        if(session.Messages.length == 0) {
+            addedFirstMessage = true;
+        }
         session.Messages.push(message.trim());
     }
+
+    // if(addedFirstMessage) {
+    //     await GivePlayerObject(client, displayName, "present");
+    // }
+
+    //Do not activate until birthday
+    // await CheckForBirthday(client, displayName, message)
+
+    session.LastMessageTime = new Date();
     SavePlayerSession(displayName, session);
+}
+
+async function CheckForBirthday(client: Client, username: string, message: string) {
+    if(message.toLowerCase().includes("birthday")) {
+        //Check if this has been sent, by this user before
+        let userSession = LoadPlayerSession(username);
+        if(userSession.Messages.length == 0 || !CheckMessageSimilarity(message, userSession.Messages)) {
+            await client.say(process.env.CHANNEL!, `@${username} has said a unique birthday message... SPAWNING A BIRTHDAY PRESENT FOR CORY!`);
+            Broadcast(JSON.stringify({ type: 'birthday' }));
+        }
+    }
 }
 
 const minigameKeys = Object
@@ -109,8 +153,8 @@ const minigameKeys = Object
 
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
-    "Check out my socials - Discord to chat discord.gg/A7R5wFFUWG & Twitter to see more about my personal projects twitter.com/The7ark",
-    `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting our dragon, Bytefire. You can use !moves to see what you can do. Use the (Learn a Move) channel point redeem to learn more moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
+    "Check out my socials - Discord: discord.gg/A7R5wFFUWG, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
+    `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Use the (Learn a Move) channel point redeem to learn more moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
     "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus",
     "Check what stuff you have with !inventory. You can !info [item] to learn more about it. You can also use !info [move name] to learn about what it does",
     `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`
@@ -133,33 +177,46 @@ export async function PostNewRegularMessage(client: Client) {
 }
 
 export function DrunkifyText(sentence: string): string {
-    const drunkBlips = [' *burp* ', ' *hic*', '...'];
+    const drunkBlips = [' *burp* ', ' *hic* ', '... uh...', ' *shh*'];
+    const slurSounds = ['sh', 's', 'r', 'l', 'ss', 'z'];
+
     const words = sentence.split(" ");
     const drunkWords = words.map(word => {
-        // Randomly repeat letters and syllables
-        let result = word.split("").map(char => Math.random() > 0.4 ? char + char : char).join("");
+        // Slightly distort the word by adding slurs or stretching vowels
+        let result = word;
 
-        // Slur modifications by randomly doubling vowels
-        result = result.replace(/[aeiou]/gi, match => Math.random() > 0.3 ? match + match : match);
+        // Stretch vowels without excessive repetition
+        result = result.replace(/[aeiou]/gi, match => Math.random() > 0.6 ? match + (Math.random() > 0.5 ? 'h' : '') : match);
 
-        // Randomly insert slurred sounds
-        if (Math.random() > 0.7) {
-            const slurSounds = ["h", "m", "r", "l"];
+        // Randomly inject slur-like sounds into words
+        if (Math.random() > 0.6) {
             const randomSlur = slurSounds[Math.floor(Math.random() * slurSounds.length)];
             const insertPosition = Math.floor(Math.random() * result.length);
             result = result.slice(0, insertPosition) + randomSlur + result.slice(insertPosition);
         }
 
+        // Occasionally mispronounce by swapping or duplicating sounds
+        if (Math.random() > 0.7) {
+            result = result.replace(/s/gi, 'sh').replace(/r/gi, 'rr').replace(/l/gi, 'll');
+        }
+
         return result;
     });
 
-    if(GetRandomIntI(1, 2) == 1) {
+    // Add a drunken blip occasionally
+    if (Math.random() > 0.5) {
         drunkWords.push(GetRandomItem(drunkBlips)!);
+    } else {
+        // Trail off with ellipses or stretch the last word slightly
+        const lastWord = drunkWords.pop()!;
+        drunkWords.push(lastWord + (Math.random() > 0.7 ? '...' : ''));
     }
 
-    // Randomly stretch out spaces between words
-    return drunkWords.join(" ");
+    // Add irregular spacing but keep it readable for TTS
+    return drunkWords.join(" ".repeat(Math.random() > 0.7 ? 2 : 1));
 }
+
+
 
 // function DrunkifyText(text: string): string {
 //     const slurs = [' *burp* ', ' *hic*', '...'];

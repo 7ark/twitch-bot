@@ -3,13 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <title>Twitch Overlay</title>
-<!--  <link rel="stylesheet" href="berightback.css">-->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    /* Center the entire container */
+    body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: 'JetBrains Mono', monospace; /* Set default font */
+    }
+
+    /* Style for the outer progress container to fill width */
+    #progressContainer {
+      width: 100%; /* Full width */
+      max-width: 600px; /* Optional max width */
+      height: 50px;
+      background-color: #932424;
+      /*border: 1px solid #000;*/
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      /*box-sizing: border-box; !* Ensure padding and borders are included in the element's dimensions *!*/
+      overflow: hidden; /* Ensure any overflow from child elements is hidden */
+      bottom: 20px;
+    }
+
+    /* Style for the inner progress bar */
+    #progressBar {
+      height: 51px;
+      background-color: #468818;
+      position: absolute;
+      top: -2px;
+      left: 0;
+      width: 0; /* Start with width 0 */
+      transition: width 1s ease; /* Animate width changes over 1 second */
+    }
+
+    /* Style for the text inside the progress bar */
+    #progressText {
+      color: white;
+      font-weight: bold;
+      font-size: 48px; /* Increased font size */
+      text-shadow: 1px 1px 2px black; /* Black outline */
+      z-index: 1; /* Ensure text is above the progress bar */
+      position: relative;
+      font-family: 'JetBrains Mono', monospace; /* Specific font for progress text */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      bottom: 3px;
+    }
+
+    /* Center and add spacing around the monster image */
+    #monster {
+      display: block;
+      margin: 0 auto 10px; /* Center image and add space below */
+    }
+  </style>
 </head>
 <body>
-<span id="healthbarcontainer">    <span id="healthbarPositive"></span><span id="healthbarNegative"></span></span>
-<div id="dragon"></div>
-<canvas id="overlayCanvas"></canvas>
-
+<div id="progressContainer">
+  <div id="progressBar"></div>
+  <span id="progressText">0%</span> <!-- Initial text, can be updated dynamically -->
+</div>
+<img id="monster" src="monster.png" width="500" />
 <script src="html/berightback.js"></script>
 </body>
 </html>

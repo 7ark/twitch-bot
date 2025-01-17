@@ -2,23 +2,8 @@ import {GiveExp, GivePlayerRandomObjectInTier, LoadPlayer, SavePlayer} from "./p
 import {GetRandomEnum, GetRandomIntI, GetRandomItem} from "./utils";
 import {Client} from "tmi.js";
 import {ObjectTier} from "../inventory";
+import {Quest, QuestType} from "../valueDefinitions";
 
-export enum QuestType {
-    DoCook,
-    DoMine,
-    DoFish,
-    DealDamage,
-    TellJoke,
-    GetItem,
-    Gamble
-}
-
-export interface Quest {
-    Type: QuestType;
-    Progress: number;
-    Goal: number;
-    FiveStarDifficulty: number;
-}
 
 export function GetQuestText(type: QuestType, goalValue: number): string {
     let timesText = goalValue == 1 ? `time` : `times`;
@@ -38,6 +23,8 @@ export function GetQuestText(type: QuestType, goalValue: number): string {
             return `Gain ${goalValue} ${goalValue == 1 ? `item` : `items`}`;
         case QuestType.Gamble:
             return `Gamble ${goalValue} ${goalValue == 1 ? `time` : `times`}`
+        case QuestType.LevelUp:
+            return `Level up ${goalValue} times`;
     }
 }
 
@@ -69,19 +56,49 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
 
             return GetRandomIntI(difficulty, difficulty + 3) * GetRandomItem(multiplyArray);
         case QuestType.DealDamage:
-            multiplyArray = [ 20, 25, 30, 40, 50 ];
-            return GetRandomIntI(difficulty, difficulty * 5) * GetRandomItem(multiplyArray);
+            switch (difficulty) {
+                case 1:
+                    multiplyArray = [ 5, 10, 20 ];
+                    break;
+                case 2:
+                    multiplyArray = [ 20, 25, 30 ];
+                    break;
+                case 3:
+                    multiplyArray = [ 30, 40];
+                    break;
+                case 4:
+                    multiplyArray = [ 40, 50 ];
+                    break;
+                case 5:
+                    multiplyArray = [ 50, 75, 100 ];
+                    break;
+            }
+            return GetRandomIntI(difficulty, difficulty * 2) * GetRandomItem(multiplyArray);
         case QuestType.TellJoke:
             return GetRandomIntI(2, difficulty) * GetRandomItem(multiplyArray);
         case QuestType.GetItem:
             return GetRandomIntI(difficulty, difficulty * 2) * GetRandomItem(multiplyArray);
         case QuestType.Gamble:
             return GetRandomIntI(difficulty, difficulty * 3) * GetRandomItem(multiplyArray);
+        case QuestType.LevelUp:
+            return difficulty;
     }
 }
 
+function GetRandomQuestType(): QuestType {
+    return GetRandomItem<QuestType>([
+        QuestType.DoCook,
+        QuestType.DoMine,
+        QuestType.DoFish,
+        QuestType.DealDamage,
+        QuestType.GetItem,
+        QuestType.Gamble,
+        QuestType.LevelUp
+    ])!;
+}
+
 export function GetRandomQuest(difficultyOverride: number = -1): Quest {
-    let type = GetRandomEnum(QuestType);
+    let type = GetRandomQuestType();
 
     let difficulty = difficultyOverride != -1 ? difficultyOverride : GetRandomIntI(1, 5);
     let goalValue = GetRandomGoalValue(type, difficulty);
@@ -103,7 +120,20 @@ export function DoesPlayerHaveQuest(username: string): boolean {
 export async function GivePlayerRandomQuest(client: Client, username: string) {
     let player = LoadPlayer(username);
 
-    player.CurrentQuest = GetRandomQuest(player.Level <= 1 ? GetRandomIntI(1, 2) : -1);
+    let safety = 0;
+    while (true) {
+        let previousType = player.CurrentQuest == undefined ? undefined : player.CurrentQuest?.Type
+        player.CurrentQuest = GetRandomQuest(player.Level <= 1 ? GetRandomIntI(1, 2) : -1);
+
+        if(previousType == undefined || player.CurrentQuest.Type != previousType || player.Level <= 1) {
+            break;
+        }
+
+        safety++;
+        if(safety >= 100) {
+            break;
+        }
+    }
 
     await client.say(process.env.CHANNEL!, `@${username}, you've been given a QUEST: ${GetQuestText(player.CurrentQuest.Type, player.CurrentQuest.Goal)}. This is a difficulty ${player.CurrentQuest.FiveStarDifficulty} quest.`);
 
@@ -119,22 +149,22 @@ async function GiveQuestRewards(client: Client, username: string, difficulty: nu
         case 2:
             exp = GetRandomIntI(25, 50);
             if(GetRandomIntI(1, 3) == 1) {
-                GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low]);
+                await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low]);
             }
             break;
         case 3:
             exp = GetRandomIntI(50, 75);
             if(GetRandomIntI(1, 2) == 1) {
-                GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid]);
+                await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid]);
             }
             break;
         case 4:
             exp = GetRandomIntI(100, 150);
-            GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid]);
+            await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid]);
             break;
         case 5:
             exp = GetRandomIntI(150, 300)
-            GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid, ObjectTier.High]);
+            await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid, ObjectTier.High]);
             break;
     }
 

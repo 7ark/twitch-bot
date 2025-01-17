@@ -3,9 +3,11 @@ import play, {AudioPlayHandle} from "audio-play";
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import {Client} from "tmi.js";
-import {LoadPlayer, Player, SavePlayer} from "./playerGameUtils";
+import {LoadPlayer, SavePlayer} from "./playerGameUtils";
 import {GetRandomItem} from "./utils";
 import {AudioType, CurrentStreamSettings} from "../streamSettings";
+import {Player} from "../valueDefinitions";
+import fs from "fs";
 
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
@@ -57,8 +59,14 @@ function convertMp3ToWav(mp3FilePath: string, wavFilePath: string): Promise<void
 
 export function PlaySound(soundName: string, type: AudioType, extension: string = "wav", callback?: () => void) {
     try {
+        let fileLoc = `files/extras/${soundName}.${extension}`;
+        console.log(`Playing audio at: ${fileLoc}`);
+        if(!fs.existsSync(fileLoc)) {
+            console.log(`COULD NOT FIND FILE, WE'RE ABORTING OH GOD`);
+            return;
+        }
 
-        let audioBuffer = load(`files/extras/${soundName}.${extension}`);//.then(play);
+        let audioBuffer = load(fileLoc);//.then(play);
 
         audioBuffer.then((buffer) => {
             let playHandle: AudioPlayHandle = play(buffer, {
@@ -222,6 +230,16 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
             voice: voiceToUse,
             rate: 1
         }
+    }
+
+    //Trim text
+    let terms = ["the7arcook", "the7arfish","the7armine","the7arcode","the7arhug","the7arcode","the7arwave","the7arloaf","the7arthink"];
+    for (let i = 0; i < terms.length; i++) {
+        text = text.toLowerCase().replace(terms[i], "");
+    }
+
+    if(text.trim() == "") {
+        return;
     }
 
     const audioConfig = SpeechSDK.AudioConfig.fromAudioFileOutput(outputFile) //fromDefaultSpeakerOutput();

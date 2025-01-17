@@ -2,62 +2,18 @@ import fs from "fs";
 import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
 import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventory";
-import {ClassType, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates} from "./utils";
-import {BanUser} from "./twitchUtils";
+import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates} from "./utils";
+import {BanUser,WhisperUser} from "./twitchUtils";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
-import {HandleQuestProgress, Quest, QuestType} from "./questUtils";
-import {DamageType} from "./dragonUtils";
+import {HandleQuestProgress} from "./questUtils";
+import {DamageType} from "./monsterUtils";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
+import {CurrentStreamSettings} from "../streamSettings";
+import {AdsRunning} from "./adUtils";
+import {ClassType, Player, QuestType, StatusEffect} from "../valueDefinitions";
 
 const COZY_POINT_HEALTH_CONVERSION = 5;
 
-export enum StatusEffect { DoubleExp, Drunk, DoubleAccuracy, FireResistance, ColdResistance }
-
-export interface StatusEffectModule {
-    Effect: StatusEffect;
-    WhenEffectStarted: Date;
-    EffectTimeInSeconds: number;
-}
-
-export interface CommandCooldown {
-    Command: string;
-    WhenDidCommand: Date;
-    CommandCooldownInSeconds: number;
-}
-
-export interface EquippableObjectReference {
-    ObjectName: string;
-    RemainingDurability: number;
-}
-
-export interface Player {
-    Username: string;
-    Level: number;
-    CurrentHealth: number; //Max calculated based on level
-    Classes: Array<Class>;
-    LevelUpAvailable: boolean;
-    CurrentExp: number;
-    CurrentExpNeeded: number;
-    KnownMoves: Array<string>;
-    Voice?: string;
-    Inventory: Array<string>;
-    PassiveModeEnabled: boolean;
-    Deaths: number;
-    StatusEffects: Array<StatusEffectModule>;
-    CommandCooldowns: Array<CommandCooldown>;
-    EquippedObject?: EquippableObjectReference | undefined;
-    EquippedBacklog?: Array<EquippableObjectReference>;
-    Gems: number;
-    SpendableGems: number;
-    CurrentQuest: Quest | undefined;
-    CozyPoints: number;
-    HasVip: boolean;
-}
-
-export interface Class {
-    Type: ClassType;
-    Level: number;
-}
 
 export function TryLoadPlayer(displayName: string): Player | null {
     displayName = displayName.toLowerCase();
@@ -130,7 +86,8 @@ export function LoadPlayer(displayName: string): Player {
         SpendableGems: 0,
         CurrentQuest: undefined,
         CozyPoints: 0,
-        HasVip: false
+        HasVip: false,
+        MovePoints: 0
     }
 
     if(fs.existsSync('playerData.json')) {
@@ -147,6 +104,10 @@ export function LoadPlayer(displayName: string): Player {
 
     if(player.KnownMoves === undefined || player.KnownMoves === null || player.KnownMoves.length === 0) {
         player.KnownMoves = ["punch"];
+    }
+
+    if(!player.KnownMoves.includes("punch")) {
+        player.KnownMoves.push("punch");
     }
 
     if(player.Inventory === undefined) {
@@ -288,7 +249,35 @@ export function CalculateExpNeeded(level: number) {
     return 5 + (level * (3 + level));
 }
 
-export function GivePlayerRandomObjectInTier(client: Client, playerName: string, tier: Array<ObjectTier>) {
+export function GetScaledValueFromMaxHealth(player: Player, value: number, min: number = 0): number {
+    return Math.max(min, CalculateMaxHealth(player) * value);
+}
+
+// export function LearnNewMoveForPlayer(client: Client, playerName: string) {
+//     let player = LoadPlayer(playerName);
+//
+//     let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+//
+//     if(validDefs.length > 0) {
+//         let validDefsWithPoints = validDefs.filter(def => player.MovePoints >= def.MovePointsToUnlock);player
+//
+//         if(validDefsWithPoints.length > 0) {
+//
+//         }
+//
+//         let chosenMove = GetRandomItem(validDefs);
+//
+//         player.KnownMoves.push(chosenMove!.Command);
+//         client.say(process.env.CHANNEL!, `@${playerName}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description}`);
+//
+//         SavePlayer(player);
+//     }
+//     else {
+//         client.say(process.env.CHANNEL!, `@${playerName}, you have no moves left to be found. Level up, or try a new class!`);
+//     }
+// }
+
+export async function GivePlayerRandomObjectInTier(client: Client, playerName: string, tier: Array<ObjectTier>) {
     let player = LoadPlayer(playerName);
     let options: Array<InventoryObject> = [];
     for (let i = 0; i < AllInventoryObjects.length; i++) {
@@ -303,10 +292,10 @@ export function GivePlayerRandomObjectInTier(client: Client, playerName: string,
 
     let obj = GetRandomItem(options)!;
 
-    GivePlayerObject(client, playerName, obj.ObjectName);
+    await GivePlayerObject(client, playerName, obj.ObjectName);
 }
 
-export function GivePlayerRandomObject(client: Client, playerName: string) {
+export async function GivePlayerRandomObject(client: Client, playerName: string): Promise<InventoryObject> {
     let player = LoadPlayer(playerName);
     let options: Array<InventoryObject> = [];
     for (let i = 0; i < AllInventoryObjects.length; i++) {
@@ -321,16 +310,22 @@ export function GivePlayerRandomObject(client: Client, playerName: string) {
 
     let obj = GetRandomItem(options)!;
 
-    GivePlayerObject(client, playerName, obj.ObjectName);
+    await GivePlayerObject(client, playerName, obj.ObjectName);
+
+    return obj;
 }
 
-export function GivePlayerObject(client: Client, playerName: string, object: string) {
+export async function GivePlayerObject(client: Client, playerName: string, object: string) {
     let player = LoadPlayer(playerName);
     player.Inventory.push(object);
     SavePlayer(player);
 
     let obj = AllInventoryObjects.find(x => x.ObjectName === object);
-    client.say(process.env.CHANNEL!, `@${playerName} has gained ${obj.ContextualName}. ${obj.Info}`);
+    if(obj === undefined) {
+        console.error(`Could not find ${object}`)
+        return;
+    }
+    await WhisperUser(client, playerName, `@${playerName}, You've gained ${obj.ContextualName}. ${obj.Info}`);
 
     setTimeout(async () => {
         await HandleQuestProgress(client, playerName, QuestType.GetItem, 1);
@@ -367,6 +362,77 @@ export function GetRandomRewardableObjectFromPlayer(playerName: string, exclusio
     return GetRandomItem(options);
 }
 
+async function CalculateDamageAmountForPlayer(client: Client, player: Player, amount: number, damageType: DamageType): Promise<number> {
+    //Make amount positive just for each math
+    amount = Math.abs(amount);
+
+    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.FireResistance) && damageType == DamageType.Fire) {
+        amount = Math.floor(amount * 0.5);
+        await client.say(process.env.CHANNEL!, `${player.Username} resisted the fire damage and only took half damage!`);
+    }
+    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.ColdResistance) && damageType == DamageType.Cold) {
+        amount = Math.floor(amount * 0.5);
+        await client.say(process.env.CHANNEL!, `${player.Username} resisted the cold damage and only took half damage!`);
+    }
+
+    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllVulnerability)) {
+        amount = Math.ceil(amount * 2);
+        await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to the ${DamageType[damageType]} and took double damage!`);
+    }
+
+    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllResistance)) {
+        amount = Math.floor(amount * 0.5);
+        await client.say(process.env.CHANNEL!, `${player.Username} is resistant to the ${DamageType[damageType]} and only took half damage!`);
+    }
+
+    let isUsingObject = false
+    if(player.EquippedObject !== undefined) {
+        let obj = GetObjectFromInputText(player.EquippedObject.ObjectName);
+        if(obj !== undefined) {
+            let hasAtLeastOne = false;
+            for (let i = 0; i < player.Classes.length; i++) {
+                if(obj!.ClassRestrictions?.includes(player.Classes[i].Type)) {
+                    hasAtLeastOne = true;
+                    break;
+                }
+            }
+
+            isUsingObject = hasAtLeastOne;
+        }
+    }
+
+    if(isUsingObject) {
+        let obj = await GetObjectFromInputText(player.EquippedObject!.ObjectName);
+        if(obj !== undefined && obj.ObjectOnAttackedAction !== undefined) {
+            let defenseObjectInfo: {
+                resistances?: Array<DamageType>,
+                immunities?: Array<DamageType>,
+                vulnerabilities?: Array<DamageType>,
+                armorAdjustment?: number
+            } = obj?.ObjectOnAttackedAction(client, player);
+            for (let i = 0; i < defenseObjectInfo.resistances?.length ?? 0; i++) {
+                if(damageType == defenseObjectInfo.resistances![i]) {
+                    amount = Math.floor(amount * 0.5);
+                    await client.say(process.env.CHANNEL!, `${player.Username} resisted the ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and only took half damage!`);
+                }
+                if(damageType == defenseObjectInfo.immunities![i]) {
+                    amount = 0;
+                    await client.say(process.env.CHANNEL!, `${player.Username} is immune to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took NO damage!`);
+                }
+                if(damageType == defenseObjectInfo.vulnerabilities![i]) {
+                    amount = Math.floor(amount * 2);
+                    await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took DOUBLE damage!`);
+                }
+            }
+        }
+    }
+
+    //Set amount negative again
+    amount = -amount;
+
+    return amount;
+}
+
 export async function ChangePlayerHealth(client: Client, playerName: string, amount: number, damageType: DamageType, deathReason?: string) {
     let player = LoadPlayer(playerName);
     let maxHealth = CalculateMaxHealth(player);
@@ -375,63 +441,15 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
         return;
     }
 
+    let poisonDamage = 0;
     if(amount < 0) {
-        //Make amount positive just for each math
-        amount = Math.abs(amount);
+        amount = await CalculateDamageAmountForPlayer(client, player, amount, damageType);
 
-        if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.FireResistance) && damageType == DamageType.Fire) {
-            amount = Math.floor(amount * 0.5);
-            await client.say(process.env.CHANNEL!, `${player.Username} resisted the fire damage and only took half damage!`);
+        if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.Poisoned)) {
+            poisonDamage = await CalculateDamageAmountForPlayer(client, player, GetScaledValueFromMaxHealth(player, 0.05, 5), DamageType.Poison);
+
+            amount -= poisonDamage;
         }
-        if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.ColdResistance) && damageType == DamageType.Cold) {
-            amount = Math.floor(amount * 0.5);
-            await client.say(process.env.CHANNEL!, `${player.Username} resisted the cold damage and only took half damage!`);
-        }
-
-        let isUsingObject = false
-        if(player.EquippedObject !== undefined) {
-            let obj = GetObjectFromInputText(player.EquippedObject.ObjectName);
-            if(obj !== undefined) {
-                let hasAtLeastOne = false;
-                for (let i = 0; i < player.Classes.length; i++) {
-                    if(obj!.ClassRestrictions?.includes(player.Classes[i].Type)) {
-                        hasAtLeastOne = true;
-                        break;
-                    }
-                }
-
-                isUsingObject = hasAtLeastOne;
-            }
-        }
-
-        if(isUsingObject) {
-            let obj = await GetObjectFromInputText(player.EquippedObject!.ObjectName);
-            if(obj !== undefined && obj.ObjectOnAttackedAction !== undefined) {
-                let defenseObjectInfo: {
-                    resistances?: Array<DamageType>,
-                    immunities?: Array<DamageType>,
-                    vulnerabilities?: Array<DamageType>,
-                    armorAdjustment?: number
-                } = obj?.ObjectOnAttackedAction(client, player);
-                for (let i = 0; i < defenseObjectInfo.resistances?.length ?? 0; i++) {
-                    if(damageType == defenseObjectInfo.resistances![i]) {
-                        amount = Math.floor(amount * 0.5);
-                        await client.say(process.env.CHANNEL!, `${player.Username} resisted the ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and only took half damage!`);
-                    }
-                    if(damageType == defenseObjectInfo.immunities![i]) {
-                        amount = 0;
-                        await client.say(process.env.CHANNEL!, `${player.Username} is immune to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took NO damage!`);
-                    }
-                    if(damageType == defenseObjectInfo.vulnerabilities![i]) {
-                        amount = Math.floor(amount * 2);
-                        await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took DOUBLE damage!`);
-                    }
-                }
-            }
-        }
-
-        //Set amount negative again
-        amount = -amount;
 
         if(amount == 0) {
             return;
@@ -446,6 +464,9 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
         player.CurrentHealth = 0
         SavePlayer(player);
 
+        if(poisonDamage > 0) {
+            await client.say(process.env.CHANNEL!, `${player.Username} is poisoned and took an additional ${poisonDamage} poison damage!`);
+        }
         await client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} ${DamageType[damageType]} damage and DIED! They've been banned for 5 minutes.`);
         player = LoadPlayer(playerName);
         player.CurrentHealth = maxHealth;
@@ -483,6 +504,10 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     }
     else {
         client.say(process.env.CHANNEL!, `@${playerName} has ${amount > 0 ? `healed by ${amount}` : `taken ${Math.abs(amount)} ${DamageType[damageType]} damage`}! [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`);
+
+        if(poisonDamage > 0) {
+            await client.say(process.env.CHANNEL!, `${player.Username} is poisoned and took an additional ${poisonDamage} poison damage!`);
+        }
     }
     
     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: playerName, display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`, }));
@@ -490,7 +515,7 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
 
 
 export async function GiveExp(client: Client, username: string, amount: number) {
-    if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp)) {
+    if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp) || AdsRunning) {
         amount *= 2;
     }
 
@@ -533,6 +558,105 @@ export async function GiveExp(client: Client, username: string, amount: number) 
 
 }
 
+export async function LevelUpPlayer(client: Client, username: string, classType: ClassType) {
+    let player = LoadPlayer(username);
+
+    if(player.LevelUpAvailable) {
+        let playerClass = player.Classes.find(c => c.Type === classType);
+
+        let final = "";
+
+        if(playerClass && playerClass.Level === 0) {
+            switch (classType) {
+                case ClassType.Warrior:
+                    GivePlayerObject(client, player.Username, "sword");
+                    GivePlayerObject(client, player.Username, "hammer");
+                    break;
+                case ClassType.Mage:
+                    GivePlayerObject(client, player.Username, "wand");
+                    break;
+                case ClassType.Rogue:
+                    GivePlayerObject(client, player.Username, "dagger");
+                    break;
+                case ClassType.Cleric:
+                    GivePlayerObject(client, player.Username, "healing amulet");
+                    break;
+            }
+
+            // player.MovePoints += 10;
+            // final += `You've become a ${ClassType[classType]}! You've been given 10 free move points. Use !learnmove or !learnmove ${ClassType[classType].toLowerCase()} to learn a new move for this class!`
+        }
+
+        setTimeout(async () => {
+            await HandleQuestProgress(client, player.Username, QuestType.LevelUp, 1);
+        }, 10);
+        player.CurrentExp -= player.CurrentExpNeeded;
+        player.Level++;
+        player.CurrentExpNeeded = CalculateExpNeeded(player.Level);
+        if(player.CurrentExp < player.CurrentExpNeeded) {
+            player.LevelUpAvailable = false;
+        }
+
+        for (let i = 0; i < player.Classes.length; i++) {
+            if(player.Classes[i].Type == classType) {
+                player.Classes[i].Level++;
+            }
+        }
+
+        final += GetPlayerStatsDisplay(player);
+
+        SavePlayer(player);
+
+        await client.say(process.env.CHANNEL!, final);
+    }
+    else {
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you have no level ups available.`);
+    }
+}
+
+export function GetPlayerStatsDisplay(player: Player): string {
+    let classesAbove0 = 0;
+    for (let i = 0; i < player.Classes.length; i++) {
+        if(player.Classes[i].Level > 0) {
+            classesAbove0++;
+        }
+    }
+
+    let currClassCount = 0;
+    let final = `@${player.Username} is level ${player.Level}.`;
+    if(player.Level > 0) {
+        final += " They are ";
+    }
+    for (let i = 0; i < player.Classes.length; i++) {
+        if(player.Classes[i].Level > 0) {
+            final += `a ${GetNumberWithOrdinal(player.Classes[i].Level)} level ${ClassType[player.Classes[i].Type]}`;
+            currClassCount++;
+
+            if(currClassCount < classesAbove0 - 1) {
+                final += ", ";
+            }
+            else if(currClassCount == classesAbove0 - 1) {
+                final += " and ";
+            }
+            else {
+                final += ".";
+            }
+        }
+    }
+
+    if(player.LevelUpAvailable) {
+        final += ` They have a level up available.`;
+    }
+
+    if(player.EquippedObject !== undefined) {
+        final += ` Their equipped ${player.EquippedObject!.ObjectName} has a durability left of ${player.EquippedObject!.RemainingDurability}.`;
+    }
+
+    final += ` They've died ${player.Deaths} times! [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`;
+
+    return final;
+}
+
 export async function RandomlyGiveExp(client: Client, username: string, chanceOutOfTen: number, exp: number) {
     let chance = Math.round(Math.random() * 10);
     if(chance <= chanceOutOfTen) {
@@ -541,7 +665,7 @@ export async function RandomlyGiveExp(client: Client, username: string, chanceOu
 }
 
 export function GetObjectFromInputText(text: string): InventoryObject | undefined {
-    let pieces = text.trim().split(' ');
+    let pieces = text.toLowerCase().trim().split(' ');
     for (let i = 0; i < pieces.length; i++) {
         let textPiece = "";
         for (let j = i; j < pieces.length; j++) {
@@ -577,7 +701,7 @@ export function TriggerCommandCooldownOnPlayer(username: string, command: string
         player.CommandCooldowns.push({
             Command: command,
             WhenDidCommand: new Date(),
-            CommandCooldownInSeconds: timeInSeconds
+            CommandCooldownInSeconds: timeInSeconds * CurrentStreamSettings.cooldownMultiplier
         })
     }
     else {

@@ -1,14 +1,4 @@
-export enum IconType {
-    Info, Scroll, Pencil, Coins,
-    Bottle, Box, Fruit, Bomb,
-    Bananas, CheeseWheel, Beer, Letter,
-    Rabbit, Crystal, BottleBlue, PureNail,
-    Hammer, DiamondAxe, Wabbajack, ObsidianDagger,
-    PoolNoodle, PortalCake, PowerHelmet , DuckHuntGun,
-    CardboardBox
-}
-
-export enum ClassType { Mage, Warrior, Rogue, Cleric }
+import {Client} from "tmi.js";
 
 export function GetRandomNumber(min: number, max: number): number {
     // The maximum is inclusive and the minimum is inclusive
@@ -29,13 +19,22 @@ export function GetRandomItem<T>(array: T[]): T | undefined {
     return array[randomIndex];
 }
 
-export function GetRandomEnum<T>(enumObj: T): number {
-    const enumValues = Object.keys(enumObj)
-        .filter(k => !isNaN(Number(k))) // Filter out non-numeric keys
-        .map(k => enumObj[k as keyof T]);
+export function GetRandomEnum<T>(enumObj: T, excludeValues: Array<T[keyof T]> = []): T[keyof T] | undefined {
+    const enumValues = [];
+
+    for (const key in enumObj) {
+        if (typeof enumObj[key] === 'number') {
+            const value = enumObj[key] as T[keyof T];
+            if (!excludeValues.includes(value)) {
+                enumValues.push(value);
+            }
+        }
+    }
+
+    if (enumValues.length === 0) return undefined; // Return undefined if no valid values are left
 
     const randomIndex = Math.floor(Math.random() * enumValues.length);
-    return randomIndex;
+    return enumValues[randomIndex];
 }
 
 export function GetNumberWithOrdinal(n: number) {
@@ -68,4 +67,75 @@ export function AddSpacesBeforeCapitals(string: string) {
     string = string.replace(/([a-z])([A-Z])/g, '$1 $2');
     string = string.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
     return string;
+}
+
+export function Delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
+export function ConvertUnixToDateTime(unixTimestamp: number): Date {
+    // Convert the Unix timestamp from seconds to milliseconds
+    const date = new Date(unixTimestamp * 1000);
+
+    return date;
+}
+
+//Check text for instances of another text
+export function GetTextInstances(fullText: string, textInstance: string): number {
+    if (!textInstance) return 0; // Avoid edge case for empty textInstance
+    return fullText.toLowerCase().split(textInstance.toLowerCase()).length - 1;
+}
+
+export function LevenshteinDistance(a: string, b: string): number {
+    const an = a.length;
+    const bn = b.length;
+    if (an === 0) return bn;
+    if (bn === 0) return an;
+
+    const matrix: number[][] = [];
+
+    // Initialize the first row and column of the matrix
+    for (let i = 0; i <= bn; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= an; j++) {
+        matrix[0][j] = j;
+    }
+
+    // Populate the matrix
+    for (let i = 1; i <= bn; i++) {
+        for (let j = 1; j <= an; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // Substitution
+                    matrix[i][j - 1] + 1,     // Insertion
+                    matrix[i - 1][j] + 1      // Deletion
+                );
+            }
+        }
+    }
+
+    return matrix[bn][an];
+}
+
+export function CheckMessageSimilarity(text: string, previousMessages: Array<string>): boolean {
+    for (let i = 0; i < previousMessages.length; i++) {
+        let previousText = previousMessages[i];
+
+        // Calculate the Levenshtein distance
+        let distance = LevenshteinDistance(text, previousText);
+
+        // Calculate similarity percentage
+        let maxLength = Math.max(text.length, previousText.length);
+        let similarity = (maxLength - distance) / maxLength;
+
+        // If similarity is above 80%, consider it too similar
+        if (similarity >= 0.8) {
+            return true;
+        }
+    }
+
+    return false;
 }
