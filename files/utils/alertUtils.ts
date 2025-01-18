@@ -243,7 +243,7 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -258,7 +258,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has guessed the correct number of ${numberToGuess}!`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct number of ${numberToGuess}!`);
                             await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
@@ -277,7 +277,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${numberToGuess}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${numberToGuess}.`);
                         }
 
@@ -318,7 +318,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let textButForSpeech = text.replace("+", "plus").replace("-", "minus").replace("*", "multiplied by");
 
-                    PlayTextToSpeech(textButForSpeech, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -333,7 +333,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has gotten the correct number of ${result}!`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${result}!`);
                             await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
@@ -352,7 +352,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${result}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${result}.`);
                         }
 
@@ -381,7 +381,7 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -396,7 +396,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has guessed the correct word of ${randomWord}!`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct word of ${randomWord}!`);
                             await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
@@ -415,7 +415,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the word in time! It was ${randomWord}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the word in time! It was ${randomWord}.`);
                         }
 
@@ -444,7 +444,7 @@ export function StartChatChallenge(client: Client, username: string) {
                     else {
                         s = "'s";
                     }
-                    PlayTextToSpeech(text, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -460,7 +460,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has guessed the correct user of ${user}!`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
                             await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
@@ -479,7 +479,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the user in time! It was ${user}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the user in time! It was @${user}.`);
                         }
 
@@ -512,7 +512,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let textButForSpeech = text.replace("+", "plus").replace("-", "minus").replace("*", "multiplied by");
 
-                    PlayTextToSpeech(textButForSpeech, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -527,7 +527,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has gotten the correct letter of "${randomLetterAnswer}!"`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct letter of "${randomLetterAnswer}"!`);
                             await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
@@ -546,7 +546,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the letter in time! It was ${randomLetterAnswer}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the letter in time! It was ${randomLetterAnswer}.`);
                         }
 
@@ -574,7 +574,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let textButForSpeech = text.replace("+", "plus").replace("-", "minus").replace("*", "multiplied by");
 
-                    PlayTextToSpeech(textButForSpeech, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -589,7 +589,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has gotten the correct number of ${randomNumber}!`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${randomNumber}!`);
                             await GivePlayerRandomObject(client, responseName);
                             await GiveExp(client, responseName, 5);
@@ -619,7 +619,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${randomNumber}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${randomNumber}.`);
                         }
 
@@ -699,7 +699,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         sequenceDisplay += `${sequence[i]}, `;
                     }
 
-                    if(answer <= 5000) {
+                    if(answer <= 1000) {
                         break;
                     }
 
@@ -724,7 +724,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                     let textButForSpeech = text.replace("+", "plus").replace("-", "minus").replace("*", "multiplied by");
 
-                    PlayTextToSpeech(textButForSpeech, AudioType.GameAlerts);
+                    PlayTextToSpeech("A new chat challenge has begun", AudioType.GameAlerts);
                     Broadcast(JSON.stringify({ type: 'showDisplay', title: `${username}${s} Challenge`, message: text, icon: (IconType.Pencil) }));
                     client.say(process.env.CHANNEL!, text);
 
@@ -790,7 +790,7 @@ export function StartChatChallenge(client: Client, username: string) {
                                 MessageDelegate.splice(index, 1);
                             }
 
-                            PlayTextToSpeech(`${responseName} has gotten the correct number of ${answer}!`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${answer}! Explanation: ${explanation}`);
                             await GivePlayerRandomObjectInTier(client, responseName, [ObjectTier.Mid, ObjectTier.High]);
                             await GiveExp(client, responseName, 50);
@@ -809,7 +809,7 @@ export function StartChatChallenge(client: Client, username: string) {
                         }
 
                         if(!someoneGotIt) {
-                            PlayTextToSpeech(`Challenge over. Nobody got the number in time! It was ${answer}.`, AudioType.GameAlerts);
+                            PlayTextToSpeech(`Challenge over.`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `Challenge over. Nobody got the number in time! It was ${answer}. Explanation: ${explanation}`);
                         }
 

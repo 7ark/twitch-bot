@@ -146,6 +146,23 @@ export async function RotateOBSSource(name: string, rotationDegrees: number) {
     });
 }
 
+export async function SetTextValue(sourceName: string, text: string) {
+    const response = await obs.call('SetInputSettings', {
+        inputName: sourceName,
+        inputSettings: {
+            text: text
+        }
+    });
+}
+
+export async function GetTextValue(sourceName: string): Promise<string> {
+    const response = await obs.call('GetInputSettings', {
+        inputName: sourceName
+    });
+
+    return response.inputSettings.text;
+}
+
 export async function ToggleObject(name: string) {
     if(!await GetSceneItemEnabled(name)) {
         return;

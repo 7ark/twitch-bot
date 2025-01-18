@@ -238,6 +238,8 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
         text = text.toLowerCase().replace(terms[i], "");
     }
 
+    text = text.replace("&", "and");
+
     if(text.trim() == "") {
         return;
     }

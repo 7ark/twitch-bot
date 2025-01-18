@@ -1,27 +1,27 @@
-import {ChatUserstate, Client} from "tmi.js";
+import {Client} from "tmi.js";
 import {
     AddStatusEffectToPlayer,
-    CalculateExpNeeded,
-    CalculateMaxHealth,
     ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
     GetCommandCooldownTimeLeftInSeconds,
     GetObjectFromInputText,
+    GetPlayerStatsDisplay,
     GiveExp,
     GivePlayerObject,
-    IsCommandOnCooldown, LevelUpPlayer,
+    IsCommandOnCooldown,
+    LevelUpPlayer,
     LoadAllPlayers,
     LoadPlayer,
     SavePlayer,
     TakeObjectFromPlayer,
     TriggerCommandCooldownOnPlayer,
-    TryLoadPlayer,
-    GetPlayerStatsDisplay
+    TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {Broadcast} from "./bot";
 import {
     AddSpacesBeforeCapitals,
     GetNumberWithOrdinal,
+    GetRandomInt,
     GetRandomIntI,
     GetRandomItem,
     GetRandomNumber,
@@ -35,26 +35,35 @@ import {
     GetObsSourcePosition,
     GetObsSourceScale,
     GetOpenScene,
+    GetSceneItemEnabled,
     SCENE_HEIGHT,
     SCENE_WIDTH,
     SetAudioMute,
     SetFilterEnabled,
     SetObsSourcePosition,
-    SetObsSourceScale
+    SetObsSourceScale,
+    SetSceneItemEnabled,
+    SetTextValue
 } from "./utils/obsutils";
 import {IsMonsterActive, SayAllChat} from "./globals";
-import {GetStringifiedSessionData, LoadPlayerSession, SavePlayerSession, PlayerSessionData} from "./utils/playerSessionUtils";
+import {
+    GetStringifiedSessionData,
+    LoadPlayerSession,
+    PlayerSessionData,
+    SavePlayerSession
+} from "./utils/playerSessionUtils";
 import {
     DamageType,
     DoDamageToMonster,
     GetAdjustedDamage,
-    GetDamageTypeText, LoadMonsterData,
+    GetDamageTypeText,
+    LoadMonsterData,
     ReduceMonsterHits,
     StunMonster
 } from "./utils/monsterUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
-import {DrunkifyText} from "./utils/messageUtils";
+import {CurrentGTARider, DrunkifyText} from "./utils/messageUtils";
 import {
     GetCurrentShopItems,
     HandleMinigames,
@@ -64,77 +73,68 @@ import {
     ShowLeaderboard,
     ShowShop
 } from "./utils/minigameUtils";
-import {DoesPlayerHaveQuest, GetQuestText, HandleQuestProgress} from "./utils/questUtils";
-import {AudioType, CurrentStreamSettings} from "./streamSettings";
+import {DoesPlayerHaveQuest, GetQuestText} from "./utils/questUtils";
+import {AudioType} from "./streamSettings";
 import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
-import {RemoveUserVIP, WhisperUser} from "./utils/twitchUtils";
+import {WhisperUser} from "./utils/twitchUtils";
 import {GetUserMinigameCount} from "./actionqueue";
-import {ChangeProgressBar} from "./utils/progressBarUtils";
 import {ClassMove, ClassType, MoveType, Player, StatusEffect} from "./valueDefinitions";
 import {PlayHypeTrainAlert} from "./utils/alertUtils";
 
 interface CooldownInfo {
     gracePeriod: number,
     cooldown: number,
-    isOnTimeout: boolean,
     isInGracePeriod: boolean,
     showCooldownMessage: boolean,
+    lastTimeCooldownTriggered?: Date
 }
 
 let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
     ["battlecry", {
         gracePeriod: 30000, //30 seconds
-        cooldown: 900000, //15 minutes
-        isOnTimeout: false,
+        cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
     ["cast confusion", {
         gracePeriod: 0,
-        cooldown: 900000, //15 minutes
-        isOnTimeout: false,
+        cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
     ["cast teleport", {
         gracePeriod: 0,
-        cooldown: 300000, //5 minutes
-        isOnTimeout: false,
+        cooldown: 5 * 60, //5 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
     ["shroud", {
         gracePeriod: 0,
-        cooldown: 900000, //15 minutes
-        isOnTimeout: false,
+        cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
     ["inspire", {
         gracePeriod: 0,
-        cooldown: 900000, //15 minutes
-        isOnTimeout: false,
+        cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
     ["silence", {
         gracePeriod: 0,
-        cooldown: 900000, //15 minutes
-        isOnTimeout: false,
+        cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
     }],
     ["info", {
         gracePeriod: 0,
-        cooldown: 300000, //5 minutes
-        isOnTimeout: false,
+        cooldown: 5 * 60, //5 minutes
         isInGracePeriod: false,
         showCooldownMessage: false,
     }],
     ["help", {
         gracePeriod: 0,
-        cooldown: 300000, //5 minutes
-        isOnTimeout: false,
+        cooldown: 5 * 60, //5 minutes
         isInGracePeriod: false,
         showCooldownMessage: false,
     }],
@@ -146,6 +146,12 @@ let isMonsterPoisoned: boolean = false;
 let creditsGoing: boolean = false;
 let disabled: boolean = false;
 
+//GTA SHIT
+let currentRiders: Array<string> = [];
+let gtaReviews: Array<string> = [];
+let gtaRatings: Array<number> = [];
+let currentRating: number = 5;
+
 function HandleTimeout(command: string) {
     cooldowns.forEach((val, key) => {
         if(IsCommand(command, key) && !val.isInGracePeriod) {
@@ -153,22 +159,49 @@ function HandleTimeout(command: string) {
             cooldowns.set(key, val);
 
             setTimeout(() => {
-                val.isOnTimeout = true;
-                val.isInGracePeriod = false;
-                cooldowns.set(key, val);
-                setTimeout(() => {
-                    val.isOnTimeout = false;
-                    cooldowns.set(key, val);
-
-                    if(key == 'battlecry') {
-                        battlecryStarted = false;
-                    }
-
-                }, val.cooldown * CurrentStreamSettings.cooldownMultiplier);
+                val.lastTimeCooldownTriggered = new Date();
+                // val.isOnTimeout = true;
+                // val.isInGracePeriod = false;
+                // cooldowns.set(key, val);
+                // setTimeout(() => {
+                //     val.isOnTimeout = false;
+                //     cooldowns.set(key, val);
+                //
+                //     if(key == 'battlecry') {
+                //         battlecryStarted = false;
+                //     }
+                //
+                // }, val.cooldown * CurrentStreamSettings.cooldownMultiplier);
+                SaveCurrentCooldownInfo();
             }, val.gracePeriod);
         }
     })
 }
+
+function SaveCurrentCooldownInfo() {
+    let covertedCooldowns: Array<{ command: string, date: Date | undefined}> = [];
+    cooldowns.forEach((val, key) => {
+        covertedCooldowns.push({
+            command: key,
+            date: val.lastTimeCooldownTriggered
+        });
+    })
+    fs.writeFileSync('commandcooldowns.json', JSON.stringify(covertedCooldowns));
+}
+
+function LoadCurrentCooldownInfo() {
+    if(fs.existsSync('commandcooldowns.json')) {
+        let convertedCooldowns: Array<{ command: string, date: Date | undefined}> = JSON.parse(fs.readFileSync('commandcooldowns.json', 'utf-8'));
+
+        convertedCooldowns.forEach((val) => {
+            let data = cooldowns.get(val.command);
+            data.lastTimeCooldownTriggered = val.date;
+            cooldowns.set(val.command, data);
+        })
+    }
+}
+
+LoadCurrentCooldownInfo();
 
 export async function ProcessUniqueCommands(client: Client, displayName: string, command: string): Promise<boolean> {
     let player = LoadPlayer(displayName);
@@ -205,9 +238,17 @@ export async function ProcessCommands(client: Client, displayName: string, comma
 
     let onTimeout: string = '';
     let showCooldownMsg = false;
+    let secondsLeft = 0;
     cooldowns.forEach((val, key) => {
+        if(val.lastTimeCooldownTriggered != undefined) {
+            secondsLeft = val.cooldown - GetSecondsBetweenDates(val.lastTimeCooldownTriggered!, new Date());
+            if(secondsLeft <= 0) {
+                val.lastTimeCooldownTriggered = undefined;
+                SaveCurrentCooldownInfo();
+            }
+        }
 
-        if(val.isOnTimeout && IsCommand(command, key)) {
+        if(val.lastTimeCooldownTriggered != undefined && IsCommand(command, key)) {
             onTimeout = key;
             showCooldownMsg = val.showCooldownMessage;
         }
@@ -215,7 +256,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
 
     if(onTimeout !== '') {
         if(showCooldownMsg) {
-            await client.say(process.env.CHANNEL!, `${onTimeout} is on cooldown!`);
+            await client.say(process.env.CHANNEL!, `${onTimeout} is on cooldown for another ${secondsLeft} seconds!`);
         }
         return;
     }
@@ -664,6 +705,99 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     else if(IsCommand(command, "challenge")) {
         await WhisperUser(client, displayName, `Today Cory is trying to beat the main quest in Skyrim. However, all effects in Crowd Control start out at 1 coin. Every time someone redeems an effect, it doubles in price. Chat can try to help or hinder while prices gradually increase.`)
     }
+    else if(IsCommand(command, "ineedaride")) {
+        if(!currentRiders.includes(displayName)) {
+            currentRiders.push(displayName);
+        }
+    }
+    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'cancelride')) {
+        currentRiders = [];
+        CurrentGTARider = "";
+
+        const taxiGroup = "TaxiGroup";
+        let sceneName = await GetOpenScene();
+
+        if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
+            return;
+        }
+
+        await SetSceneItemEnabled(taxiGroup, false);
+
+        await UpdateStarVisuals();
+    }
+    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'letsride')) {
+        let rider = currentRiders[GetRandomInt(0, currentRiders.length)];
+        CurrentGTARider = rider.toLowerCase();
+        Broadcast(JSON.stringify({ type: 'rider', rider: rider }));
+        currentRiders = [];
+        await WhisperUser(client, displayName, `The current rider has been chosen! @${rider} is in the taxi. Use !locations to see where you can go.`);
+
+        const taxiGroup = "TaxiGroup";
+
+        let sceneName = await GetOpenScene();
+
+        if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
+            return;
+        }
+
+        await SetSceneItemEnabled(taxiGroup, true);
+        await SetTextValue("StickmanName", rider);
+
+        await UpdateStarVisuals();
+    }
+    else if(IsCommand(command, "locations")) {
+        await WhisperUser(client, displayName, `The following locations are available in GTA for travel: bank, vinewood sign, legion square, city hall, airport, rural airport, casino, concert, pier, arena, fort, prison, laboratory, plaza, market, vinewood hills, franklin house, michael house, travor trailer, mount chiliad, mount gordo, forest, hills, beach, north chumash, port, el burro heights, terminal`)
+    }
+    else if(IsCommand(command, "review") || IsCommand(command, "rate")) {
+        if(displayName.toLowerCase() != CurrentGTARider.toLowerCase()) {
+            return;
+        }
+        let review = command.replace("!review", "").replace("!rate", "").trim();
+        let rating = parseInt(review.split(' ')[0]);
+        if(!isNaN(rating)) {
+            gtaRatings.push(rating);
+            let reviewText = review.replace(rating.toString(), "").trim();
+            gtaReviews.push(reviewText);
+            currentRating = 0;
+            for (let i = 0; i < gtaRatings.length; i++) {
+                currentRating += gtaRatings[i];
+            }
+            currentRating /= gtaRatings.length;
+
+
+            CurrentGTARider = "";
+            currentRiders = [];
+
+            const taxiGroup = "TaxiGroup";
+            let sceneName = await GetOpenScene();
+
+            if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
+                return;
+            }
+
+            await SetSceneItemEnabled(taxiGroup, false);
+
+            await UpdateStarVisuals();
+
+            let extraReviewText = reviewText.trim() == "" ? "" : `They had this to say about their ride "${reviewText}"`
+
+            if(rating > 3) {
+                PlayTextToSpeech(`${displayName} just gave us a rating of ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", () => {
+                    PlaySound("cheering", AudioType.ImportantStreamEffects);
+                });
+            }
+            else {
+                PlayTextToSpeech(`${displayName} just rated us ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", () => {
+                    PlaySound("booing", AudioType.ImportantStreamEffects);
+                });
+            }
+
+            Broadcast(JSON.stringify({ type: 'rider', rider: "" }));
+        }
+        else {
+            await WhisperUser(client, displayName, `Invalid rating format! Please respond as such: !review # text`);
+        }
+    }
     // else if(IsCommand(command, "gift")) {
     //     if(CanGrabGifts) {
     //         if(IsCommandOnCooldown(player.Username, "gift")) {
@@ -744,7 +878,7 @@ async function HandleMoves(client: Client, displayName: string, command: string)
         }
     }
 
-    let moveAttempted: ClassMove | undefined = MoveDefinitions.find(x => IsCommand(command, x.Command));
+    let moveAttempted: ClassMove | undefined = MoveDefinitions.find(x => IsCommand(command.toLowerCase(), x.Command));
 
     let isDuck = (displayName).toLowerCase() === 'one_1egged_duck';
     let isDucksCommand = (IsCommand(command, 'duckhunt') || IsCommand(command, ' one1eghaha'));
@@ -1303,6 +1437,27 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
                 StunMonster(client);
             }
         }
+    }
+}
+
+async function UpdateStarVisuals() {
+    const taxiGroup = "TaxiGroup";
+
+    let sceneName = await GetOpenScene();
+    let isTaxiVisible = await DoesSceneContainItem(sceneName, taxiGroup) && await GetSceneItemEnabled(taxiGroup);
+
+    Broadcast(JSON.stringify({ type: 'stars', stars: currentRating }));
+
+    for (let i = 1; i <= 5; i++) {
+        let star = `Star${i}`;
+
+        let sceneName = await GetOpenScene();
+
+        if(!await DoesSceneContainItem(sceneName, star)) {
+            return;
+        }
+
+        await SetSceneItemEnabled(star, i <= currentRating && isTaxiVisible);
     }
 }
 

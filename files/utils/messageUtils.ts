@@ -12,8 +12,10 @@ import {AudioType} from "../streamSettings";
 import {CheckForScare} from "./scareUtils";
 import {StatusEffect} from "../valueDefinitions";
 import {WhisperUser} from "./twitchUtils";
+import {CheckIfShouldHaveNPCResponse, GetNPCResponse} from "./npcUtils";
 
 let lastMessageTimestamp = new Date();
+export let CurrentGTARider: string = "";
 
 export function GetMinutesSinceLastMessage(): number {
     const currentTimestamp = new Date();
@@ -85,6 +87,12 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
                 }, 700);
             }
         }
+        else if(CurrentGTARider != "" && CurrentGTARider == displayName.toLowerCase()) {
+            PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
+            setTimeout(() => {
+                Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
+            }, 700);
+        }
     }
 
     // if(message.includes(`!yell`) || message[0] != `!`) {
@@ -123,6 +131,8 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
             addedFirstMessage = true;
         }
         session.Messages.push(message.trim());
+
+        await CheckIfShouldHaveNPCResponse(client, message, userState['display-name']!);
     }
 
     // if(addedFirstMessage) {
@@ -131,6 +141,7 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
 
     //Do not activate until birthday
     // await CheckForBirthday(client, displayName, message)
+
 
     session.LastMessageTime = new Date();
     SavePlayerSession(displayName, session);
