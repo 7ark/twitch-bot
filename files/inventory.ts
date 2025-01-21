@@ -290,7 +290,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await client.say(process.env.CHANNEL!, `@${player.Username}, you chug down a pint of beer and become drunk for 5 minutes. Ah, how wonderful. ${tooDrunk ? `You're a real messy drunk though, huh? You end up passing out, and hitting your head.` : `Refreshing and delicious.`}`);
             await ChangePlayerHealth(client, player.Username, tooDrunk ? GetRandomIntI(-5, -15) : GetRandomIntI(10, 25), DamageType.Poison);
 
-            AddStatusEffectToPlayer(player.Username, StatusEffect.Drunk, 60 * 10);
+            AddStatusEffectToPlayer(player.Username, StatusEffect.Drunk, 60 * 5);
 
             return true;
         },
@@ -664,7 +664,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ContextualName: "a crystal",
         PluralName: "crystals",
         Info: "Gives you enough EXP for an instant level up! Ex. !use crystal",
-        CostRange: {min: 2000, max: 5000 },
+        CostRange: {min: 3000, max: 10000 },
         Tier: ObjectTier.High,
         IconRep: IconType.Crystal,
         UseAction: async (client, player, afterText) => {

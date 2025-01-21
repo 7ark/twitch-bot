@@ -86,7 +86,7 @@ interface CooldownInfo {
     cooldown: number,
     isInGracePeriod: boolean,
     showCooldownMessage: boolean,
-    lastTimeCooldownTriggered?: Date
+    lastTimeCooldownTriggered: Date
 }
 
 let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
@@ -95,48 +95,56 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
         cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["cast confusion", {
         gracePeriod: 0,
         cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["cast teleport", {
         gracePeriod: 0,
         cooldown: 5 * 60, //5 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["shroud", {
         gracePeriod: 0,
         cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["inspire", {
         gracePeriod: 0,
         cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["silence", {
         gracePeriod: 0,
         cooldown: 15 * 60, //15 minutes
         isInGracePeriod: false,
         showCooldownMessage: true,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["info", {
         gracePeriod: 0,
         cooldown: 5 * 60, //5 minutes
         isInGracePeriod: false,
         showCooldownMessage: false,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
     ["help", {
         gracePeriod: 0,
         cooldown: 5 * 60, //5 minutes
         isInGracePeriod: false,
         showCooldownMessage: false,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
 ]);
 
@@ -179,7 +187,7 @@ function HandleTimeout(command: string) {
 }
 
 function SaveCurrentCooldownInfo() {
-    let covertedCooldowns: Array<{ command: string, date: Date | undefined}> = [];
+    let covertedCooldowns: Array<{ command: string, date: Date}> = [];
     cooldowns.forEach((val, key) => {
         covertedCooldowns.push({
             command: key,
@@ -191,7 +199,7 @@ function SaveCurrentCooldownInfo() {
 
 function LoadCurrentCooldownInfo() {
     if(fs.existsSync('commandcooldowns.json')) {
-        let convertedCooldowns: Array<{ command: string, date: Date | undefined}> = JSON.parse(fs.readFileSync('commandcooldowns.json', 'utf-8'));
+        let convertedCooldowns: Array<{ command: string, date: Date}> = JSON.parse(fs.readFileSync('commandcooldowns.json', 'utf-8'));
 
         convertedCooldowns.forEach((val) => {
             let data = cooldowns.get(val.command);
@@ -240,16 +248,15 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     let showCooldownMsg = false;
     let secondsLeft = 0;
     cooldowns.forEach((val, key) => {
-        if(val.lastTimeCooldownTriggered != undefined) {
-            secondsLeft = val.cooldown - GetSecondsBetweenDates(val.lastTimeCooldownTriggered!, new Date());
-            if(secondsLeft <= 0) {
-                val.lastTimeCooldownTriggered = undefined;
-                SaveCurrentCooldownInfo();
-            }
+        let valSecondsLeft = val.cooldown - GetSecondsBetweenDates(val.lastTimeCooldownTriggered, new Date());
+        if(valSecondsLeft <= 0) {
+            SaveCurrentCooldownInfo();
         }
 
-        if(val.lastTimeCooldownTriggered != undefined && IsCommand(command, key)) {
+        let isTheCommand = IsCommand(command, key);
+        if(valSecondsLeft > 0 && isTheCommand) {
             onTimeout = key;
+            secondsLeft = valSecondsLeft;
             showCooldownMsg = val.showCooldownMessage;
         }
     })
@@ -273,7 +280,10 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     else if(IsCommand(command, 'discord')) {
         await client.say(process.env.CHANNEL!, `Come hang out on our Discord, to chat, give stream suggestions, and get go live notification. Join here: https://discord.gg/A7R5wFFUWG`);
     }
-    else if(IsCommand(command, 'youtube')) {
+    else if(IsCommand(command, "games")) {
+        await client.say(process.env.CHANNEL!, "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus");
+    }
+    else if(IsCommand(command, 'youtube') || IsCommand(command, 'yt')) {
         await client.say(process.env.CHANNEL!, `I've been posting lots on Youtube! Mostly shorts, but some long form content. Give it a watch: https://www.youtube.com/@7ark`);
     }
     else if(IsCommand(command, 'socials')) {

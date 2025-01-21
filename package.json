@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx tsc&node ./dist/bot.js",
     "auth": "npx tsc&node ./dist/oauth.js",
-    "authbot": "npx tsc&node ./dist/oauth.js --bot"
+    "authbot": "npx tsc&node ./dist/oauth.js --bot",
+    "ai": "npx tsc&node ./dist/utils/aiUtils.js"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +40,7 @@
     "ngrok": "^5.0.0-beta.2",
     "node-global-key-listener": "^0.2.0",
     "obs-websocket-js": "^5.0.4",
+    "openai": "^4.79.1",
     "p5": "^1.9.0",
     "play-sound": "^1.1.6",
     "readline": "^1.3.0",

@@ -171,7 +171,7 @@ export async function ToggleObject(name: string) {
     await SetSceneItemEnabled(name, false);
     setTimeout(async () => {
         await SetSceneItemEnabled(name, true);
-    }, 100);
+    }, 300);
 }
 
 export async function GetSceneItemEnabled(name: string): Promise<boolean> {

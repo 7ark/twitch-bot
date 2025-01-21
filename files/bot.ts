@@ -26,6 +26,7 @@ import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
 import {LoadProgressBar} from "./utils/progressBarUtils";
 import {SetupNextAdsTime} from "./utils/adUtils";
 import {PlaySound} from "./utils/audioUtils";
+import {TestAI} from "./utils/aiUtils";
 
 const ngrok = require('ngrok');
 
@@ -80,7 +81,6 @@ app.get('/progressBar', (req, res) => {
 // Setup WebSocket Server
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-
 
 wss.on('connection', async (ws) => {
     console.log('WebSocket connection established');
