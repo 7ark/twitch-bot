@@ -70,7 +70,9 @@ export interface Player {
     LevelUpAvailable: boolean;
     CurrentExp: number;
     CurrentExpNeeded: number;
+    Upgrades: Array<string>;
     KnownMoves: Array<string>;
+    UpgradeOptions: Array<string>;
     Voice?: string;
     Inventory: Array<string>;
     PassiveModeEnabled: boolean;
@@ -84,7 +86,7 @@ export interface Player {
     CurrentQuest: Quest | undefined;
     CozyPoints: number;
     HasVip: boolean;
-    MovePoints: number;
+    HitStreak: number;
 }
 
 export interface Class {
@@ -130,4 +132,63 @@ export interface ClassMove {
     SuccessText: Array<string>;
 
     PersonalMoveCooldownInSeconds?: number;
+}
+
+export enum UpgradeType {
+    LearnMove,
+    ApplyAffliction,
+    IncreaseMaxHP,
+    LessDamageWhenBelow30Percent,
+    IncreaseAC,
+    FatalDamageSave,
+    CriticalHitChance,
+    IncreasedDamage,
+    ConsecutiveDamage,
+    HealForDamageDealt,
+    LifestealChance,
+    GemsForDamageChance,
+    MoreEXP,
+    MoreAfflictions,
+    ReducedCooldowns,
+    CooldownCancelChance,
+    DefeatGems,
+    WarriorStrikeTwiceChance,
+    DamageReduction,
+    MoreDamageWhenBelow30Percent,
+    MoreMageDamage,
+    RandomAfflictionChance,
+    StrongerHealing,
+    DoubleAfflictionsChance,
+    IncreaseArmorWhenAbove70Percent,
+    DodgeHeal,
+    RogueDodgeCounter
+}
+
+export interface Upgrade {
+    Name: string;
+    Description: string;
+    Type: UpgradeType;
+    ClassRequirements: Array<ClassType>;
+    UpgradeRequirements: Array<UpgradeType>;
+    AfflictionsImposed: Array<Affliction>;
+    Strength: number;
+    Savable: boolean; //Whether we save this, or its disposed.
+    Rarity: number;
+}
+
+export enum Affliction {
+    Burning,
+    Curse,
+    Poison
+}
+
+export function GetAfflictionDescription(affliction: Affliction) {
+    switch (affliction) {
+        case Affliction.Burning:
+            return "Every tick deals 1 damage per stack of burning.";
+        case Affliction.Curse:
+            return "Attack damage is increased by 5% per stack of curse";
+        case Affliction.Poison:
+            return "Every tick deals 1 damage per stack of poison.";
+    }
 }

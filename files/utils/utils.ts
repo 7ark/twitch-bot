@@ -1,4 +1,5 @@
 import {Client} from "tmi.js";
+import { UpgradeDefinitions } from "../upgradeDefinitions";
 
 export function GetRandomNumber(min: number, max: number): number {
     // The maximum is inclusive and the minimum is inclusive
@@ -138,4 +139,24 @@ export function CheckMessageSimilarity(text: string, previousMessages: Array<str
     }
 
     return false;
+}
+
+export function GetEnumValues(enumObj: object): number[] {
+    return Object.keys(enumObj)
+        .filter(key => !isNaN(Number(key)))
+        .map(key => Number(key));
+}
+
+// For getting enum keys (names)
+export function GetEnumKeys(enumObj: object): string[] {
+    return Object.keys(enumObj)
+        .filter(key => isNaN(Number(key)));
+}
+
+export function GetUpgradeDescription(upgradeName: string): string {
+    let upgrade = UpgradeDefinitions.find(x => x.Name.toLowerCase() === upgradeName.toLowerCase());
+    if(upgrade !== undefined) {
+        return upgrade.Description.replace("{0}", upgrade.Strength.toString());
+    }
+    return "";
 }

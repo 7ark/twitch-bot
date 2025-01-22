@@ -2,15 +2,17 @@ import fs from "fs";
 import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
 import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventory";
-import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates} from "./utils";
+import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates, GetUpgradeDescription} from "./utils";
 import {BanUser,WhisperUser} from "./twitchUtils";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {HandleQuestProgress} from "./questUtils";
-import {DamageType} from "./monsterUtils";
+import {DamageType, LoadMonsterData} from "./monsterUtils";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {CurrentStreamSettings} from "../streamSettings";
 import {AdsRunning} from "./adUtils";
-import {ClassType, Player, QuestType, StatusEffect} from "../valueDefinitions";
+import {ClassType, Player, QuestType, StatusEffect, Upgrade, UpgradeType} from "../valueDefinitions";
+import {UpgradeDefinitions} from "../upgradeDefinitions";
+import {MoveDefinitions} from "../movesDefinitions";
 
 const COZY_POINT_HEALTH_CONVERSION = 5;
 
@@ -75,7 +77,9 @@ export function LoadPlayer(displayName: string): Player {
         LevelUpAvailable: false,
         CurrentExp: 0,
         CurrentExpNeeded: CalculateExpNeeded(0),
+        Upgrades: [],
         KnownMoves: ["punch"],
+        UpgradeOptions: [],
         Voice: "",
         Deaths: 0,
         Inventory: [],
@@ -86,8 +90,7 @@ export function LoadPlayer(displayName: string): Player {
         SpendableGems: 0,
         CurrentQuest: undefined,
         CozyPoints: 0,
-        HasVip: false,
-        MovePoints: 0
+        HasVip: false
     }
 
     if(fs.existsSync('playerData.json')) {
@@ -100,6 +103,14 @@ export function LoadPlayer(displayName: string): Player {
                 break;
             }
         }
+    }
+
+    if(player.UpgradeOptions === undefined || player.UpgradeOptions === null) {
+        player.UpgradeOptions = [];
+    }
+
+    if(player.Upgrades === undefined || player.Upgrades === null) {
+        player.Upgrades = [];
     }
 
     if(player.KnownMoves === undefined || player.KnownMoves === null || player.KnownMoves.length === 0) {
@@ -221,26 +232,30 @@ export function SavePlayer(player: Player) {
 }
 
 export function CalculateMaxHealth(player: Player): number {
-    let max = 25;
+    let max = 10;
     for (let i = 0; i < player.Classes.length; i++) {
         if(player.Classes[i].Type === ClassType.Rogue) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
-                max += 15;
+                max += 3;
             }
         }
         if(player.Classes[i].Type === ClassType.Warrior) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
-                max += 25;
+                max += 5;
             }
         }
         if(player.Classes[i].Type === ClassType.Mage) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
-                max += 5;
+                max += 1;
             }
         }
     }
 
     max += player.CozyPoints * COZY_POINT_HEALTH_CONVERSION;
+
+    DoPlayerUpgrade(player.Username, UpgradeType.IncreaseMaxHP, (upgrade, strength, strengthPercentage) => {
+        max += max * strengthPercentage;
+    });
 
     return max;
 }
@@ -451,6 +466,11 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
             amount -= poisonDamage;
         }
 
+        DoPlayerUpgrade(player.Username, UpgradeType.DamageReduction, (upgrade, strength, strengthPercentage) => {
+            let reduction = Math.floor(amount * strengthPercentage);
+            amount -= reduction;
+        });
+
         if(amount == 0) {
             return;
         }
@@ -519,6 +539,10 @@ export async function GiveExp(client: Client, username: string, amount: number) 
         amount *= 2;
     }
 
+    DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrade, strength, strengthPercentage) => {
+        amount += Math.floor(amount * strengthPercentage);
+    });
+
     let player = LoadPlayer(username);
     player.CurrentExp += Math.round(amount);
     player.CurrentExp = Math.floor(player.CurrentExp);
@@ -562,6 +586,11 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
     let player = LoadPlayer(username);
 
     if(player.LevelUpAvailable) {
+        if(player.UpgradeOptions.length > 0) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you must select your upgrade before you can level up again. Check what your choices are with !levelup`);
+            return;
+        }
+
         let playerClass = player.Classes.find(c => c.Type === classType);
 
         let final = "";
@@ -569,17 +598,17 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
         if(playerClass && playerClass.Level === 0) {
             switch (classType) {
                 case ClassType.Warrior:
-                    GivePlayerObject(client, player.Username, "sword");
-                    GivePlayerObject(client, player.Username, "hammer");
+                    await GivePlayerObject(client, player.Username, "sword");
+                    await GivePlayerObject(client, player.Username, "hammer");
                     break;
                 case ClassType.Mage:
-                    GivePlayerObject(client, player.Username, "wand");
+                    await GivePlayerObject(client, player.Username, "wand");
                     break;
                 case ClassType.Rogue:
-                    GivePlayerObject(client, player.Username, "dagger");
+                    await GivePlayerObject(client, player.Username, "dagger");
                     break;
                 case ClassType.Cleric:
-                    GivePlayerObject(client, player.Username, "healing amulet");
+                    await GivePlayerObject(client, player.Username, "healing amulet");
                     break;
             }
 
@@ -593,6 +622,7 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
         player.CurrentExp -= player.CurrentExpNeeded;
         player.Level++;
         player.CurrentExpNeeded = CalculateExpNeeded(player.Level);
+        player.WaitingToSelectUpgrade = true;
         if(player.CurrentExp < player.CurrentExpNeeded) {
             player.LevelUpAvailable = false;
         }
@@ -603,7 +633,9 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
             }
         }
 
-        final += GetPlayerStatsDisplay(player);
+        // final += GetPlayerStatsDisplay(player);
+
+        final += GetUpgradeSelection(player);
 
         SavePlayer(player);
 
@@ -612,6 +644,162 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
     else {
         await client.say(process.env.CHANNEL!, `@${player.Username}, you have no level ups available.`);
     }
+}
+
+function GetUpgradeSelection(player: Player): string {
+    let allUpgradeOptions = UpgradeDefinitions.filter(def => {
+        // Check if player already has this upgrade
+        if (player.Upgrades.includes(def.Name)) {
+            return false;
+        }
+
+        //Only show learn move you have moves to learn
+        if(def.Type === UpgradeType.LearnMove) {
+            let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+
+            if(validDefs.length <= 0) {
+                return false;
+            }
+        }
+
+        // Check class requirements
+        const hasClassRequirements = def.ClassRequirements.length === 0 ||
+            def.ClassRequirements.every(requiredClass =>
+                player.Classes.some(playerClass => playerClass.Type === requiredClass && playerClass.Level > 0)
+            );
+
+        if (!hasClassRequirements) {
+            return false;
+        }
+
+        // Check upgrade requirements
+        const hasUpgradeRequirements = def.UpgradeRequirements.length === 0 ||
+            def.UpgradeRequirements.every(requiredUpgradeType =>
+                player.Upgrades.some(upgradeNameOwned => {
+                    const upgrade = UpgradeDefinitions.find(def => def.Name === upgradeNameOwned);
+                    return upgrade?.Type === requiredUpgradeType;
+                })
+            );
+
+        return hasUpgradeRequirements;
+    });
+
+    let chosenOptions: Array<Upgrade> = [];
+    let availableOptions = [...allUpgradeOptions]; // Create a copy to modify
+
+    for (let i = 0; i < 3 && availableOptions.length > 0; i++) {
+        // Calculate total rarity weight
+        const totalWeight = availableOptions.reduce((sum, upgrade) => sum + upgrade.Rarity, 0);
+        // Get random point in total weight
+        let random = Math.random() * totalWeight;
+
+        // Find the upgrade at this weight point
+        let randomUpgrade = availableOptions[0];
+        for (const upgrade of availableOptions) {
+            random -= upgrade.Rarity;
+            if (random <= 0) {
+                randomUpgrade = upgrade;
+                break;
+            }
+        }
+
+        availableOptions = availableOptions.filter(upgrade => upgrade !== randomUpgrade);
+        chosenOptions.push(randomUpgrade);
+    }
+
+    for (let i = 0; i < chosenOptions.length; i++) {
+        player.UpgradeOptions.push(chosenOptions[i].Name);
+    }
+
+    return GetUpgradeOptions(player);
+}
+
+export function GetUpgradeOptions(player: Player): string {
+    if(player.UpgradeOptions.length === 0) {
+        return `@${player.Username}, you have no upgrade choices currently. Level up and choose a class to get some!`;
+    }
+    else {
+        let upgradesFinal = `@${player.Username}, you have ${player.UpgradeOptions.length} upgrade choices! Use the following options to select: \n`;
+
+        for (let i = 0; i < player.UpgradeOptions.length; i++) {
+            let upgrade = UpgradeDefinitions.find(x => x.Name === player.UpgradeOptions[i])!;
+            upgradesFinal += `!upgrade ${(i + 1)}: ${upgrade.Name}: ${GetUpgradeDescription(upgrade.Name)} | \n`;
+        }
+
+        return upgradesFinal;
+    }
+}
+
+export async function SelectPlayerUpgrade(client: Client, username: string, selectedUpgrade: number) {
+    let final = ``;
+    let player = LoadPlayer(username);
+
+    if(player.UpgradeOptions.length === 0) {
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have any upgrade options right now! Level up or choose a class to get upgrades.`);
+        return;
+    }
+
+    if(selectedUpgrade >= player.UpgradeOptions.length) {
+        await client.say(process.env.CHANNEL!, `@${player.Username}, that is not an upgrade option!`);
+        return;
+    }
+
+    let chosenUpgradeName = player.UpgradeOptions[selectedUpgrade];
+    let chosenUpgrade = UpgradeDefinitions.find(x => x.Name == chosenUpgradeName);
+    if(chosenUpgrade === undefined) {
+        console.log(`Could not find upgrade ${chosenUpgradeName}`);
+        return;
+    }
+
+    if(chosenUpgrade.Savable) {
+        player.Upgrades.push(chosenUpgradeName);
+    }
+    else {
+        if(chosenUpgrade.Type === UpgradeType.LearnMove) {
+            let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+
+            if(validDefs.length > 0) {
+                let chosenMove = GetRandomItem(validDefs);
+
+                player.KnownMoves.push(chosenMove!.Command);
+
+                let monsterStats = LoadMonsterData().Stats;
+                final = `@${username}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description.replace("{monster}", monsterStats.Name)}`;
+            }
+        }
+    }
+
+    player.UpgradeOptions = [];
+
+    if(final === ``) {
+        final += `@${player.Username}, you have selected ${chosenUpgrade.Name}! `;
+        final += GetPlayerStatsDisplay(player);
+    }
+
+    await client.say(process.env.CHANNEL!, final);
+
+    SavePlayer(player);
+}
+
+export function DoesPlayerHaveUpgrade(username: string, upgradeType: UpgradeType): boolean {
+    let player = LoadPlayer(username);
+    return player.Upgrades.some(upgrade => UpgradeDefinitions.find(x => x.Name === upgrade)?.Type === upgradeType);
+}
+
+export function DoPlayerUpgrade(username: string, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
+    let player = LoadPlayer(username);
+    let totalStrength = 0;
+    let matchingUpgrades = player.Upgrades
+        .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Type === upgradeType))
+        .filter(upgrade => upgrade !== undefined);
+
+    if (matchingUpgrades.length > 0) {
+
+        totalStrength = matchingUpgrades.reduce((sum, upgrade) => sum + upgrade!.Strength, 0);
+        out(matchingUpgrades[0]!, totalStrength, totalStrength / 100);
+        return true;
+    }
+    return false;
 }
 
 export function GetPlayerStatsDisplay(player: Player): string {
@@ -679,8 +867,6 @@ export function GetObjectFromInputText(text: string): InventoryObject | undefine
             }
         }
     }
-
-    return undefined;
 }
 
 function CheckTextInstance(text: string): InventoryObject | undefined {
@@ -695,6 +881,23 @@ function CheckTextInstance(text: string): InventoryObject | undefined {
 
 export function TriggerCommandCooldownOnPlayer(username: string, command: string, timeInSeconds: number) {
     let player = LoadPlayer(username);
+
+    DoPlayerUpgrade(username, UpgradeType.ReducedCooldowns, async (upgrade, strength, strengthPercentage) => {
+        timeInSeconds -= Math.floor(timeInSeconds * strengthPercentage);
+    });
+
+    let cancel = false;
+    DoPlayerUpgrade(username, UpgradeType.CooldownCancelChance, async (upgrade, strength, strengthPercentage) => {
+        if(GetRandomIntI(0, 100) <= strength) {
+            cancel = true;
+        }
+    });
+
+    if(cancel) {
+        return;
+    }
+
+    timeInSeconds = Math.max(1, timeInSeconds);
 
     let existingEffectIndex = player.CommandCooldowns.findIndex(x => x.Command == command);
     if(existingEffectIndex == -1) {
@@ -785,3 +988,17 @@ export function TickAllCozyPoints() {
         ProcessCozyPointTick(players[i].Username);
     }
 }
+
+
+// let players = LoadAllPlayers();
+// for (let i = 0; i < players.length; i++) {
+//     players[i].CurrentExp = 0;
+//     players[i].Level = 0;
+//     for (let j = 0; j < players[i].Classes.length; j++) {
+//         players[i].Classes[j].Level = 0;
+//     }
+//     players[i].CurrentExpNeeded = CalculateExpNeeded(players[i].Level);
+//     players[i].LevelUpAvailable = false;
+//     players[i].KnownMoves = [];
+//     SavePlayer(players[i]);
+// }

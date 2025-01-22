@@ -681,7 +681,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         },
         Consumable: true,
         Rewardable: true,
-        Rarity: 6
+        Rarity: 2
     },
     {
         ObjectName: "accuracy potion",

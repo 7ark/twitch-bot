@@ -20,7 +20,7 @@ import {GetAllPlayerSessions, HandleLoadingSession, UpdateSessionTimestamp} from
 import {TryToStartRandomChatChallenge} from "./utils/alertUtils";
 import {InitializeShop} from "./utils/minigameUtils";
 import {TickAllCozyPoints} from "./utils/playerGameUtils";
-import {LoadMonsterData, SetupMonsterDamageTypes} from "./utils/monsterUtils";
+import {LoadMonsterData, SetupMonsterDamageTypes, TickAfflictions} from "./utils/monsterUtils";
 import {AudioType, CurrentStreamSettings} from "./streamSettings";
 import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
 import {LoadProgressBar} from "./utils/progressBarUtils";
@@ -223,6 +223,10 @@ async function InitializeBot() {
     setInterval(() => {
         TickAllCozyPoints();
     }, 1800000); //30 minutes
+
+    setInterval(() => {
+        TickAfflictions();
+    }, 1000 * 30); //30 seconds
 
     setInterval(() => {
         SetupMonsterDamageTypes();

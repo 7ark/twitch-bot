@@ -3,16 +3,17 @@ import {
     AddStatusEffectToPlayer,
     ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
+    DoPlayerUpgrade,
     GetCommandCooldownTimeLeftInSeconds,
     GetObjectFromInputText,
-    GetPlayerStatsDisplay,
+    GetPlayerStatsDisplay, GetUpgradeOptions,
     GiveExp,
     GivePlayerObject,
     IsCommandOnCooldown,
     LevelUpPlayer,
     LoadAllPlayers,
     LoadPlayer,
-    SavePlayer,
+    SavePlayer, SelectPlayerUpgrade,
     TakeObjectFromPlayer,
     TriggerCommandCooldownOnPlayer,
     TryLoadPlayer
@@ -25,7 +26,8 @@ import {
     GetRandomIntI,
     GetRandomItem,
     GetRandomNumber,
-    GetSecondsBetweenDates
+    GetSecondsBetweenDates,
+    GetUpgradeDescription
 } from "./utils/utils";
 import fs from "fs";
 import {GetMove, MoveDefinitions} from "./movesDefinitions";
@@ -78,8 +80,10 @@ import {AudioType} from "./streamSettings";
 import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
 import {WhisperUser} from "./utils/twitchUtils";
 import {GetUserMinigameCount} from "./actionqueue";
-import {ClassMove, ClassType, MoveType, Player, StatusEffect} from "./valueDefinitions";
+import {ClassMove, ClassType, MoveType, Player, StatusEffect, UpgradeType} from "./valueDefinitions";
 import {PlayHypeTrainAlert} from "./utils/alertUtils";
+import {isNaN} from "@tensorflow/tfjs-node";
+import {UpgradeDefinitions} from "./upgradeDefinitions";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -303,9 +307,32 @@ export async function ProcessCommands(client: Client, displayName: string, comma
 
         await LevelUpPlayer(client, player.Username, classType);
     }
-    // else if(IsCommand(command, 'mage') || IsCommand(command, 'warrior') || IsCommand(command, 'rogue')) {
-    //     // console.log(`Loaded ${player.Username} ${player.Level} ${player.LevelUpsAvailable}`);
-    // }
+    else if(IsCommand(command, 'upgrade')) {
+        let split = command.replace('!upgrade', '').trim().split(' ');
+        if(split.length > 0) {
+            let value: number = parseInt(split[0]);
+            console.log("Parsed value:", value);
+            if(Number.isNaN(value)) {
+                await WhisperUser(client, displayName, `@${player.Username}, that is not a valid upgrade option number. Use !levelup to check your options.`);
+                return;
+            }
+            
+            await SelectPlayerUpgrade(client, player.Username, value);
+        }
+        else {
+            console.log(`No number in message: ${command}}`);
+            await WhisperUser(client, displayName, `@${player.Username}, you must select a number. Use !levelup to check your options. Ex. !upgrade 2`);
+        }
+    }
+    else if(IsCommand(command, 'upgrades')) {
+        if(player.Upgrades.length === 0) {
+            await WhisperUser(client, displayName, `@${player.Username}, you don't have any upgrades yet! You can get upgrades when leveling up.`);
+            return;
+        }
+
+        let text = `@${player.Username}, your current upgrades are: ${player.Upgrades.join(', ')}. Type !info [upgrade name] to get more information on what they do.`;
+        await WhisperUser(client, displayName, text);
+    }
     else if(IsCommand(command, 'stats') || IsCommand(command, 'level') || IsCommand(command, 'status')) {
         let split = command.trim().split(' ');
 
@@ -567,7 +594,13 @@ export async function ProcessCommands(client: Client, displayName: string, comma
                 await WhisperUser(client, displayName, move.Description);
             }
             else {
-                await WhisperUser(client, displayName, `${player.Username}, I'm not sure what that is. You need to use !info [item or move name]`);
+                let upgrade = UpgradeDefinitions.find(x => x.Name.toLowerCase() === infoFocus.toLowerCase());
+                if(upgrade !== undefined) {
+                    await WhisperUser(client, displayName, `${upgrade.Name}: ${GetUpgradeDescription(upgrade.Name)}`);
+                }
+                else {
+                    await WhisperUser(client, displayName, `${player.Username}, I'm not sure what that is. You need to use !info [item or move name]`);
+                }
             }
         }
         else {
@@ -648,7 +681,10 @@ export async function ProcessCommands(client: Client, displayName: string, comma
         }
     }
     else if(IsCommand(command, "levelup")) {
-        if(player.LevelUpAvailable) {
+        if(player.UpgradeOptions.length > 0) {
+            await client.say(process.env.CHANNEL!, GetUpgradeOptions(player));
+        }
+        else if(player.LevelUpAvailable) {
             await WhisperUser(client, displayName, `@${player.Username}, you have a level up available! You can use !mage, !warrior, or !rogue to choose a class to level up in`);
         }
         else {
@@ -1094,6 +1130,10 @@ async function HandleMoveHeal(client: Client, moveAttempted: ClassMove, player: 
 
     let healAmount = GetRandomIntI(moveAttempted.HealAmount!.min, moveAttempted.HealAmount!.max);
 
+    DoPlayerUpgrade(username, UpgradeType.StrongerHealing, (upgrade, strength, strengthPercentage) => {
+        healAmount += Math.floor(healAmount * strengthPercentage);
+    });
+
     let successText = GetRandomItem(moveAttempted.SuccessText)!
         .replace('{name}', username)
         .replace(`{target}`, otherPlayer.Username)
@@ -1179,6 +1219,14 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
     if(!wasCrit && DoesPlayerHaveStatusEffect(username, StatusEffect.BetterChanceToCrit)) {
         wasCrit = rollToHit >= 18;
     }
+    
+    if(!wasCrit) {
+        DoPlayerUpgrade(username, UpgradeType.CriticalHitChance, async (upgrade, strength, strengthPercentage) => {
+            if(GetRandomIntI(0, 100) <= strength) {
+                wasCrit = true;
+            }
+        });
+    }
 
     if(moveAttempted.ClassRequired !== undefined) {
         extraRollAddition += Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 5);
@@ -1202,6 +1250,9 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
     if(rollToHit + extraRollAddition < dragonAc || rollToHit === 1) {
         client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${dragonAc}`);
+
+        player.HitStreak = 0;
+        SavePlayer(player);
 
         if(rollToHit === 1) {
             if(moveAttempted.Damage === undefined) {
@@ -1363,8 +1414,32 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             }
         }
 
+        player.HitStreak++;
+        SavePlayer(player);
+
+        DoPlayerUpgrade(username, UpgradeType.ConsecutiveDamage, async (upgrade, strength, strengthPercentage) => {
+            let extraDamage = Math.round(scaledDamage * strengthPercentage);
+            scaledDamage += extraDamage * (player.HitStreak - 1);
+        });
+        
+        if(moveAttempted.ClassRequired === ClassType.Mage) {    
+            DoPlayerUpgrade(username, UpgradeType.MoreMageDamage, async (upgrade, strength, strengthPercentage) => {
+                scaledDamage += scaledDamage * strengthPercentage;
+            });
+        }
+
         // Apply the damage
         let dragonDead = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
+
+        let struckTwice = false;
+        if(!dragonDead) {
+            DoPlayerUpgrade(username, UpgradeType.WarriorStrikeTwiceChance, async (upgrade, strength, strengthPercentage) => {
+                if(GetRandomIntI(0, 100) <= strength) {
+                    dragonDead = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
+                    struckTwice = true;
+                }
+            });
+        }
 
         let poisonDamage = Math.max(1, Math.round(scaledDamage * 0.2));
         if(isMonsterPoisoned && scaledDamage > 0) {
@@ -1411,11 +1486,15 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
 
         if(isDrunk) {
-            finalSuccessText += `Your drunk energy did an extra ${adjustedDrunkDamage} damage!`;
+            finalSuccessText += ` Your drunk energy did an extra ${adjustedDrunkDamage} damage!`;
+        }
+
+        if(struckTwice) {
+            finalSuccessText += ` You struck twice! You do another ${scaledDamage} ${DamageType[damageTypeDealt].toLowerCase()} damage!`;
         }
         
         if(wasCrit) {
-            finalSuccessText = `It's a critical hit! ${finalSuccessText}`;
+            finalSuccessText = ` It's a critical hit! ${finalSuccessText}`;
 
             if(gainHPOnCrit) {
                 await ChangePlayerHealth(client, player.Username, Math.round(scaledDamage), DamageType.None);
