@@ -165,7 +165,7 @@ const minigameKeys = Object
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
     "Check out my socials - Discord: discord.gg/A7R5wFFUWG, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
-    `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Use the (Learn a Move) channel point redeem to learn more moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
+    `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Every time you level up, you can learn new upgrades and moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
     "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus",
     "Check what stuff you have with !inventory. You can !info [item] to learn more about it. You can also use !info [move name] to learn about what it does",
     `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`

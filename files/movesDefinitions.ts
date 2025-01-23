@@ -20,7 +20,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         MovePointsToUnlock: 0,
 
         HitModifier: 0,
-        Damage: { min: 1, max: 2 },
+        Damage: { min: 1, max: 5 },
         DamageTypes: [DamageType.Bludgeoning],
         SuccessText: [`{name} rolled {roll} and punches {monster} for {0} damage!`],
     },

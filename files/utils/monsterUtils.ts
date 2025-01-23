@@ -121,6 +121,7 @@ export enum DamageType {
     Bludgeoning,
     Fire,
     Cold,
+    Lightning,
     Poison,
     Psychic,
 }

@@ -90,7 +90,9 @@ export function LoadPlayer(displayName: string): Player {
         SpendableGems: 0,
         CurrentQuest: undefined,
         CozyPoints: 0,
-        HasVip: false
+        HasVip: false,
+        HitStreak: 0,
+        ByteCoins: 0
     }
 
     if(fs.existsSync('playerData.json')) {
@@ -253,11 +255,11 @@ export function CalculateMaxHealth(player: Player): number {
 
     max += player.CozyPoints * COZY_POINT_HEALTH_CONVERSION;
 
-    DoPlayerUpgrade(player.Username, UpgradeType.IncreaseMaxHP, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgradeWithPlayer(player, UpgradeType.IncreaseMaxHP, (upgrade, strength, strengthPercentage) => {
         max += max * strengthPercentage;
     });
 
-    return max;
+    return Math.floor(max);
 }
 
 export function CalculateExpNeeded(level: number) {
@@ -452,6 +454,10 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     let player = LoadPlayer(playerName);
     let maxHealth = CalculateMaxHealth(player);
 
+    if(player.CurrentHealth > CalculateMaxHealth(player)) {
+        player.CurrentHealth = CalculateMaxHealth(player);
+    }
+
     if(amount > 0 && player.CurrentHealth >= maxHealth) {
         return;
     }
@@ -477,7 +483,8 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     }
 
     player = LoadPlayer(playerName);
-    player.CurrentHealth += amount;
+    player.CurrentHealth += Math.floor(amount);
+    player.CurrentHealth = Math.floor(player.CurrentHealth);
     SavePlayer(player);
     if(player.CurrentHealth <= 0) {
         player = LoadPlayer(playerName);
@@ -534,14 +541,16 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
 }
 
 
-export async function GiveExp(client: Client, username: string, amount: number) {
-    if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp) || AdsRunning) {
-        amount *= 2;
+export async function GiveExp(client: Client, username: string, amount: number, affectedByModifiers: boolean = true) {
+    if(affectedByModifiers) {
+        if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp) || AdsRunning) {
+            amount *= 2;
+        }
+    
+        DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrade, strength, strengthPercentage) => {
+            amount += Math.floor(amount * strengthPercentage);
+        });
     }
-
-    DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrade, strength, strengthPercentage) => {
-        amount += Math.floor(amount * strengthPercentage);
-    });
 
     let player = LoadPlayer(username);
     player.CurrentExp += Math.round(amount);
@@ -674,7 +683,7 @@ function GetUpgradeSelection(player: Player): string {
 
         // Check upgrade requirements
         const hasUpgradeRequirements = def.UpgradeRequirements.length === 0 ||
-            def.UpgradeRequirements.every(requiredUpgradeType =>
+            def.UpgradeRequirements.some(requiredUpgradeType =>
                 player.Upgrades.some(upgradeNameOwned => {
                     const upgrade = UpgradeDefinitions.find(def => def.Name === upgradeNameOwned);
                     return upgrade?.Type === requiredUpgradeType;
@@ -764,7 +773,14 @@ export async function SelectPlayerUpgrade(client: Client, username: string, sele
                 player.KnownMoves.push(chosenMove!.Command);
 
                 let monsterStats = LoadMonsterData().Stats;
-                final = `@${username}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description.replace("{monster}", monsterStats.Name)}`;
+                
+                let desc = chosenMove!.Description;
+
+                while(desc.includes("{monster}")) {
+                    desc = desc.replace("{monster}", monsterStats.Name);
+                }
+                
+                final = `@${username}, you have learned !${chosenMove!.Command}: ${desc}`;
             }
         }
     }
@@ -788,6 +804,21 @@ export function DoesPlayerHaveUpgrade(username: string, upgradeType: UpgradeType
 
 export function DoPlayerUpgrade(username: string, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
     let player = LoadPlayer(username);
+    let totalStrength = 0;
+    let matchingUpgrades = player.Upgrades
+        .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Type === upgradeType))
+        .filter(upgrade => upgrade !== undefined);
+
+    if (matchingUpgrades.length > 0) {
+
+        totalStrength = matchingUpgrades.reduce((sum, upgrade) => sum + upgrade!.Strength, 0);
+        out(matchingUpgrades[0]!, totalStrength, totalStrength / 100);
+        return true;
+    }
+    return false;
+}
+
+export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
     let totalStrength = 0;
     let matchingUpgrades = player.Upgrades
         .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Type === upgradeType))

@@ -581,10 +581,10 @@ export async function GetViewerCount() {
 
         if (response.data.data && response.data.data.length > 0) {
             const streamData = response.data.data[0];
-            console.log(`Current viewer count: ${streamData.viewer_count}`);
+            // console.log(`Current viewer count: ${streamData.viewer_count}`);
             return streamData.viewer_count;
         } else {
-            console.log('Stream is offline or viewer count not available.');
+            // console.log('Stream is offline or viewer count not available.');
             return 0;
         }
     } catch (error: any) {

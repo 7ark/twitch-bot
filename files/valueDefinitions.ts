@@ -87,6 +87,7 @@ export interface Player {
     CozyPoints: number;
     HasVip: boolean;
     HitStreak: number;
+    ByteCoins: number;
 }
 
 export interface Class {

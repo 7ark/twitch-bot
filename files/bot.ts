@@ -26,7 +26,6 @@ import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
 import {LoadProgressBar} from "./utils/progressBarUtils";
 import {SetupNextAdsTime} from "./utils/adUtils";
 import {PlaySound} from "./utils/audioUtils";
-import {TestAI} from "./utils/aiUtils";
 
 const ngrok = require('ngrok');
 
@@ -226,7 +225,7 @@ async function InitializeBot() {
 
     setInterval(() => {
         TickAfflictions();
-    }, 1000 * 30); //30 seconds
+    }, 1000 * 15); //15 seconds
 
     setInterval(() => {
         SetupMonsterDamageTypes();

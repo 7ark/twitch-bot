@@ -315,9 +315,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             }
 
             let onPurpose = false;
-            let otherUser: PlayerSessionData;
-            if(afterText.includes("@")) {
-                otherUser = LoadPlayerSession(afterText.replace("@", ""));
+            let otherUser: PlayerSessionData = LoadPlayerSession(afterText.replace("@", ""));
+            if(otherUser !== undefined) {
                 onPurpose = true;
             }
             else {
@@ -657,7 +656,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         },
         Consumable: true,
         Rewardable: true,
-        Rarity: 10
+        Rarity: 0 //Deprecating the letter
     },
     {
         ObjectName: "crystal",
@@ -675,7 +674,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             let expNeeded = player.CurrentExpNeeded - player.CurrentExp;
             await client.say(process.env.CHANNEL!, `@${player.Username} has crushed a magic crystal!`);
-            await GiveExp(client, player.Username, expNeeded);
+            await GiveExp(client, player.Username, expNeeded, false);
 
             return true;
         },

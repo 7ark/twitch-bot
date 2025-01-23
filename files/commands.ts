@@ -47,7 +47,7 @@ import {
     SetSceneItemEnabled,
     SetTextValue
 } from "./utils/obsutils";
-import {IsMonsterActive, SayAllChat} from "./globals";
+import {IsMonsterActive, SayAllChat, GetCurrentGTARider, SetCurrentGTARider} from "./globals";
 import {
     GetStringifiedSessionData,
     LoadPlayerSession,
@@ -65,7 +65,7 @@ import {
 } from "./utils/monsterUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
-import {CurrentGTARider, DrunkifyText} from "./utils/messageUtils";
+import {DrunkifyText} from "./utils/messageUtils";
 import {
     GetCurrentShopItems,
     HandleMinigames,
@@ -84,6 +84,15 @@ import {ClassMove, ClassType, MoveType, Player, StatusEffect, UpgradeType} from 
 import {PlayHypeTrainAlert} from "./utils/alertUtils";
 import {isNaN} from "@tensorflow/tfjs-node";
 import {UpgradeDefinitions} from "./upgradeDefinitions";
+import {
+    BankActive,
+    ExchangeGemsForCoins,
+    GetBankStatusText,
+    GetExchangeRateText,
+    LoadBankData,
+    SaveBankData,
+    UpdateExchangeRate
+} from "./utils/bankUtils";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -207,8 +216,10 @@ function LoadCurrentCooldownInfo() {
 
         convertedCooldowns.forEach((val) => {
             let data = cooldowns.get(val.command);
-            data.lastTimeCooldownTriggered = val.date;
-            cooldowns.set(val.command, data);
+            if(data !== undefined) {
+                data.lastTimeCooldownTriggered = val.date;
+                cooldowns.set(val.command, data);
+            }
         })
     }
 }
@@ -317,7 +328,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
                 return;
             }
             
-            await SelectPlayerUpgrade(client, player.Username, value);
+            await SelectPlayerUpgrade(client, player.Username, value - 1);
         }
         else {
             console.log(`No number in message: ${command}}`);
@@ -497,7 +508,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
         }
     }
     else if (IsCommand(command, 'equip')) {
-        let objectUsed = command.replace("!equip", "").trim();
+        let objectUsed = command.replace("!equip", "").trim().toLowerCase();
         let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
 
         if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
@@ -662,7 +673,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
             .filter((v) => isNaN(Number(v)))
 
         await client.say(process.env.CHANNEL!, `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. 
-        You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Use the (Learn a Move) channel point redeem to learn more moves. 
+        You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Every time you level up, you can learn new upgrades and moves. 
         You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. 
         You can also !yell some text to speech at me.
         `);
@@ -693,12 +704,12 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     }
     else if(IsCommand(command, "shop") || IsCommand(command, "store")) {
         let shopItems = GetCurrentShopItems();
-        let text = `Todays Shop:${shopItems.map((x, i) => ` (${(i + 1)}): ${x.obj} for ${x.cost} gems`)}`;
+        let text = `Todays Shop:${shopItems.map((x, i) => ` (${(i + 1)}): ${x.obj} for ${x.cost} ${BankActive ? "ByteCoins" : "Gems"}`)}`;
 
         await client.say(process.env.CHANNEL!, text);
         await WhisperUser(client, displayName, `Use "!buy [objectname]" to choose something to purchase`);
 
-        let scrollingText = `Todays Shop:\n${shopItems.map((x, i) => `${x.obj} | ${x.cost}g\n`).join('')}\nUse !shop`;
+        let scrollingText = `Todays Shop:\n${shopItems.map((x, i) => `${x.obj} | ${x.cost}${BankActive ? "c" : "g"}\n`).join('')}\nUse !shop`;
         ShowShop(scrollingText);
     }
     else if(IsCommand(command, "buy")) {
@@ -712,14 +723,19 @@ export async function ProcessCommands(client: Client, displayName: string, comma
             let foundIndex = shopItems.findIndex(x => x.obj === chosenObject?.ObjectName);
             if(foundIndex !== -1) {
                 let cost = shopItems[foundIndex].cost;
-                if(player.SpendableGems >= cost) {
+                
+                if(!BankActive && player.SpendableGems >= cost) {
                     player.SpendableGems -= cost;
                     SavePlayer(player);
-
+                    await GivePlayerObject(client, player.Username, chosenObject.ObjectName);
+                }
+                else if(BankActive && player.ByteCoins >= cost) {
+                    player.ByteCoins -= cost;
+                    SavePlayer(player);
                     await GivePlayerObject(client, player.Username, chosenObject.ObjectName);
                 }
                 else {
-                    await WhisperUser(client, displayName, `@${player.Username}, you don't have enough gems! You need ${(shopItems[foundIndex].cost - player.SpendableGems)} more gems.`);
+                    await WhisperUser(client, displayName, `@${player.Username}, you don't have enough ${BankActive ? "ByteCoins" : "gems"}! You need ${(shopItems[foundIndex].cost - player.SpendableGems)} more ${BankActive ? "ByteCoins" : "gems"}.`);
                 }
             }
             else {
@@ -751,6 +767,39 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     else if(IsCommand(command, "challenge")) {
         await WhisperUser(client, displayName, `Today Cory is trying to beat the main quest in Skyrim. However, all effects in Crowd Control start out at 1 coin. Every time someone redeems an effect, it doubles in price. Chat can try to help or hinder while prices gradually increase.`)
     }
+    else if(IsCommand(command, "give")) {
+        let option = command.replace("!give", "").trim();
+        let pieces = option.trim().split(' ');
+
+        let otherPlayer = TryLoadPlayer(pieces[0].replace("@", ""));
+
+        if(otherPlayer?.Username == player.Username) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you throw it up in the air and catch it again`);
+        }
+
+        if(otherPlayer != null) {
+            let item = GetObjectFromInputText(option.trim().replace(pieces[0] + " ", ""))!;
+
+            if(item !== undefined) {
+                if(player.Inventory.includes(item.ObjectName)) {
+                    await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${item.ContextualName}!`);
+                    GivePlayerObject(client, otherPlayer.Username, item.ObjectName);
+                    let index = player.Inventory.indexOf(item.ObjectName);
+                    player.Inventory.splice(index, 1);
+                    SavePlayer(player);
+                }
+                else {
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that item. Ex !give the7ark bananas`);
+                }
+            }
+            else {
+                await client.say(process.env.CHANNEL!, `@${player.Username}, I couldn't find that item. Ex !give the7ark bananas`);
+            }
+        }
+        else {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player. Ex !give the7ark bananas`);
+        }
+    }
     else if(IsCommand(command, "ineedaride")) {
         if(!currentRiders.includes(displayName)) {
             currentRiders.push(displayName);
@@ -758,7 +807,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     }
     else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'cancelride')) {
         currentRiders = [];
-        CurrentGTARider = "";
+        SetCurrentGTARider("");
 
         const taxiGroup = "TaxiGroup";
         let sceneName = await GetOpenScene();
@@ -773,7 +822,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     }
     else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'letsride')) {
         let rider = currentRiders[GetRandomInt(0, currentRiders.length)];
-        CurrentGTARider = rider.toLowerCase();
+        SetCurrentGTARider(rider.toLowerCase());
         Broadcast(JSON.stringify({ type: 'rider', rider: rider }));
         currentRiders = [];
         await WhisperUser(client, displayName, `The current rider has been chosen! @${rider} is in the taxi. Use !locations to see where you can go.`);
@@ -794,8 +843,9 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     else if(IsCommand(command, "locations")) {
         await WhisperUser(client, displayName, `The following locations are available in GTA for travel: bank, vinewood sign, legion square, city hall, airport, rural airport, casino, concert, pier, arena, fort, prison, laboratory, plaza, market, vinewood hills, franklin house, michael house, travor trailer, mount chiliad, mount gordo, forest, hills, beach, north chumash, port, el burro heights, terminal`)
     }
+    
     else if(IsCommand(command, "review") || IsCommand(command, "rate")) {
-        if(displayName.toLowerCase() != CurrentGTARider.toLowerCase()) {
+        if(displayName.toLowerCase() != GetCurrentGTARider().toLowerCase()) {
             return;
         }
         let review = command.replace("!review", "").replace("!rate", "").trim();
@@ -811,7 +861,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
             currentRating /= gtaRatings.length;
 
 
-            CurrentGTARider = "";
+            SetCurrentGTARider("");
             currentRiders = [];
 
             const taxiGroup = "TaxiGroup";
@@ -870,6 +920,67 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     // else if(IsCommand(command, "trickortreat")) {
     //     await client.say(process.env.CHANNEL!, `Try out our new channel point redemption to trick or treat. Will you get goodies, or a nasty surprise?`);
     // }
+    else if(IsCommand(command, "balance")) {
+        if(!BankActive) {
+            return;
+        }
+        
+        if(player.ByteCoins === undefined) player.ByteCoins = 0;
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you have ${player.ByteCoins} ByteCoins`);
+    }
+    else if(IsCommand(command, "bank")) {
+        if(!BankActive) {
+            return;
+        }
+        
+        await client.say(process.env.CHANNEL!, GetBankStatusText());
+    }
+    else if(IsCommand(command, "exchange")) {
+        if(!BankActive) {
+            return;
+        }
+
+        let input = command.replace("!exchange", "").trim();
+        
+        if(!input) {
+            await client.say(process.env.CHANNEL!, GetExchangeRateText());
+            return;
+        }
+
+        let gemsToExchange = parseInt(input);
+        if(isNaN(gemsToExchange) || gemsToExchange <= 0) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, please specify a valid number of gems to exchange`);
+            return;
+        }
+
+        if(player.SpendableGems < gemsToExchange) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have enough gems! You need ${gemsToExchange - player.SpendableGems} more gems.`);
+            return;
+        }
+
+        let coinsToReceive = ExchangeGemsForCoins(gemsToExchange);
+        if(coinsToReceive <= 0) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you need to exchange at least ${UpdateExchangeRate()} gems to get 1 ByteCoin`);
+            return;
+        }
+
+        let bankData = LoadBankData();
+        if(bankData.totalCoins < coinsToReceive) {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, the bank doesn't have enough ByteCoins for this exchange!`);
+            return;
+        }
+
+        if(player.ByteCoins === undefined) player.ByteCoins = 0;
+        
+        player.SpendableGems -= gemsToExchange;
+        player.ByteCoins += coinsToReceive;
+        bankData.totalCoins -= coinsToReceive;
+        
+        SavePlayer(player);
+        SaveBankData(bankData);
+
+        await client.say(process.env.CHANNEL!, `@${player.Username} exchanged ${gemsToExchange} gems for ${coinsToReceive} ByteCoins!`);
+    }
     else {
         await HandleMoves(client, displayName, command);
     }
@@ -899,6 +1010,7 @@ async function HandleMoves(client: Client, displayName: string, command: string)
 
         if(options.length > 0) {
             command = `!${GetRandomItem(options)}`;
+            await client.say(process.env.CHANNEL!, `@${displayName}, you randomly chose ${command}`);
         }
         else {
             command = `!punch`;
@@ -952,7 +1064,7 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                         client.say(process.env.CHANNEL!, `@${displayName}, you don't know that move. You need to be a level ${moveAttempted?.LevelRequirement} ${ClassType[playerRelevantClass.Type]} to learn this move.`);
                     }
                     else {
-                        client.say(process.env.CHANNEL!, `@${displayName}, you don't know that move. Redeem 'Learn a Move' to learn new moves.`);
+                        client.say(process.env.CHANNEL!, `@${displayName}, you don't know that move. You now learn upgrades and moves when leveling up.`);
                     }
                 }
                 else {
@@ -1248,6 +1360,10 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         rollDisplay = "a NATURAL TWENTY";
     }
 
+    if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
+        TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
+    }
+
     if(rollToHit + extraRollAddition < dragonAc || rollToHit === 1) {
         client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${dragonAc}`);
 
@@ -1278,8 +1394,11 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         let targetPlayer: Player | undefined = undefined;
 
         let monsterStats = LoadMonsterData().Stats;
+        while(finalSuccessText.includes("{monster}")) {
+            finalSuccessText = finalSuccessText.replace("{monster}", monsterStats.Name);
+        }
 
-        finalSuccessText = finalSuccessText.replace(`{monster}`, monsterStats.Name);
+        let damageTypeDealt: DamageType = moveAttempted.DamageTypes === undefined ? DamageType.None : GetRandomItem(moveAttempted.DamageTypes!)!;
 
         let maxDamage = 0;
         if(moveAttempted.Command === "throw") {
@@ -1300,6 +1419,8 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
                     "a napkin they found nearby",
                     "their feelings",
                 ])!;
+
+                damageTypeDealt = DamageType.Bludgeoning;
 
                 baseDamage = GetRandomIntI(1, 2);
                 maxDamage = 2;
@@ -1390,8 +1511,6 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
                 }
             }
         }
-
-        let damageTypeDealt: DamageType = moveAttempted.DamageTypes === undefined ? DamageType.None : GetRandomItem(moveAttempted.DamageTypes!)!;
 
         if(damageTypeDealt === DamageType.None) {
             console.error("Did none damage type on move " + moveAttempted.Command)
@@ -1502,10 +1621,6 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
 
         ReduceMonsterHits(client);
-
-        if(moveAttempted.PersonalMoveCooldownInSeconds !== undefined) {
-            TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
-        }
 
         client.say(process.env.CHANNEL!, finalSuccessText);
 

@@ -10,7 +10,7 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 0,
         Savable: false,
-        Rarity: 10,
+        Rarity: 40,
     },
     {
         Name: `Tough`,
@@ -144,7 +144,7 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [Affliction.Burning],
         Strength: 3,
         Savable: true,
-        Rarity: 5
+        Rarity: 10
     },
     {
         Name: `Inflict Curse`,
@@ -155,14 +155,14 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [Affliction.Curse],
         Strength: 3,
         Savable: true,
-        Rarity: 5
+        Rarity: 10
     },
     {
         Name: `Double Afflictions`,
         Description: `Any upgrade that inflicts an affliction now inflicts {0} more`,
         Type: UpgradeType.MoreAfflictions,
         ClassRequirements: [],
-        UpgradeRequirements: [UpgradeType.ApplyAffliction],
+        UpgradeRequirements: [UpgradeType.ApplyAffliction, UpgradeType.RandomAfflictionChance],
         AfflictionsImposed: [],
         Strength: 1,
         Savable: true,
@@ -227,7 +227,7 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [Affliction.Poison],
         Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 10
     },
     {
         Name: `Rich Adventurer`,
@@ -302,7 +302,7 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Description: `All attacks have a {0}% chance to double the number of afflictions on a monster`,
         Type: UpgradeType.DoubleAfflictionsChance,
         ClassRequirements: [ClassType.Mage],
-        UpgradeRequirements: [],
+        UpgradeRequirements: [UpgradeType.ApplyAffliction, UpgradeType.RandomAfflictionChance],
         AfflictionsImposed: [],
         Strength: 5,
         Savable: true,
