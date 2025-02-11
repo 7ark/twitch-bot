@@ -160,3 +160,7 @@ export function GetUpgradeDescription(upgradeName: string): string {
     }
     return "";
 }
+
+export function IsCommand(message: string, command: string): boolean {
+    return message.toLowerCase() === `!${command}` || message.toLowerCase().includes(`!${command} `);
+}

@@ -6,19 +6,21 @@ import {
     DoPlayerUpgrade,
     GetCommandCooldownTimeLeftInSeconds,
     GetObjectFromInputText,
-    GetPlayerStatsDisplay, GetUpgradeOptions,
+    GetPlayerStatsDisplay,
+    GetUpgradeOptions,
     GiveExp,
     GivePlayerObject,
     IsCommandOnCooldown,
     LevelUpPlayer,
     LoadAllPlayers,
     LoadPlayer,
-    SavePlayer, SelectPlayerUpgrade,
+    SavePlayer,
+    SelectPlayerUpgrade,
     TakeObjectFromPlayer,
     TriggerCommandCooldownOnPlayer,
     TryLoadPlayer
-} from "./utils/playerGameUtils";
-import {Broadcast} from "./bot";
+} from "./playerGameUtils";
+import {Broadcast} from "../bot";
 import {
     AddSpacesBeforeCapitals,
     GetNumberWithOrdinal,
@@ -27,11 +29,11 @@ import {
     GetRandomItem,
     GetRandomNumber,
     GetSecondsBetweenDates,
-    GetUpgradeDescription
-} from "./utils/utils";
+    GetUpgradeDescription, IsCommand
+} from "./utils";
 import fs from "fs";
-import {GetMove, MoveDefinitions} from "./movesDefinitions";
-import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject} from "./inventory";
+import {GetMove, MoveDefinitions} from "../movesDefinitions";
+import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject} from "../inventoryDefinitions";
 import {
     DoesSceneContainItem,
     GetObsSourcePosition,
@@ -46,14 +48,14 @@ import {
     SetObsSourceScale,
     SetSceneItemEnabled,
     SetTextValue
-} from "./utils/obsutils";
-import {IsMonsterActive, SayAllChat, GetCurrentGTARider, SetCurrentGTARider} from "./globals";
+} from "./obsutils";
+import {CurrentGTARider, IsMonsterActive, SayAllChat} from "../globals";
 import {
     GetStringifiedSessionData,
     LoadPlayerSession,
     PlayerSessionData,
     SavePlayerSession
-} from "./utils/playerSessionUtils";
+} from "./playerSessionUtils";
 import {
     DamageType,
     DoDamageToMonster,
@@ -62,10 +64,10 @@ import {
     LoadMonsterData,
     ReduceMonsterHits,
     StunMonster
-} from "./utils/monsterUtils";
-import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
-import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./utils/displayUtils";
-import {DrunkifyText} from "./utils/messageUtils";
+} from "./monsterUtils";
+import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./audioUtils";
+import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./displayUtils";
+import {DrunkifyText, GetLastParameterFromCommand} from "./messageUtils";
 import {
     GetCurrentShopItems,
     HandleMinigames,
@@ -74,25 +76,26 @@ import {
     ResetLeaderboard,
     ShowLeaderboard,
     ShowShop
-} from "./utils/minigameUtils";
-import {DoesPlayerHaveQuest, GetQuestText} from "./utils/questUtils";
-import {AudioType} from "./streamSettings";
-import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
-import {WhisperUser} from "./utils/twitchUtils";
-import {GetUserMinigameCount} from "./actionqueue";
-import {ClassMove, ClassType, MoveType, Player, StatusEffect, UpgradeType} from "./valueDefinitions";
-import {PlayHypeTrainAlert} from "./utils/alertUtils";
+} from "./minigameUtils";
+import {DoesPlayerHaveQuest, GetQuestText} from "./questUtils";
+import {AudioType} from "../streamSettings";
+import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
+import {WhisperUser} from "./twitchUtils";
+import {GetUserMinigameCount} from "../actionqueue";
+import {Affliction, ClassMove, ClassType, MoveType, Player, StatusEffect, UpgradeType} from "../valueDefinitions";
+import {PlayHypeTrainAlert} from "./alertUtils";
 import {isNaN} from "@tensorflow/tfjs-node";
-import {UpgradeDefinitions} from "./upgradeDefinitions";
+import {UpgradeDefinitions} from "../upgradeDefinitions";
 import {
-    BankActive,
+    ExchangeCoinsForGems,
     ExchangeGemsForCoins,
     GetBankStatusText,
     GetExchangeRateText,
     LoadBankData,
     SaveBankData,
     UpdateExchangeRate
-} from "./utils/bankUtils";
+} from "./bankUtils";
+import {COMMAND_DEFINITIONS, CommandDefinition} from "../commandDefinitions";
 
 interface CooldownInfo {
     gracePeriod: number,
@@ -161,17 +164,15 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
     }],
 ]);
 
-let battlecryStarted: boolean = false;
+export let BattlecryStarted: boolean = false;
+export let CreditsGoing: boolean = false;
+
 let gainHPOnCrit: boolean = false;
 let isMonsterPoisoned: boolean = false;
-let creditsGoing: boolean = false;
 let disabled: boolean = false;
 
 //GTA SHIT
-let currentRiders: Array<string> = [];
-let gtaReviews: Array<string> = [];
-let gtaRatings: Array<number> = [];
-let currentRating: number = 5;
+
 
 function HandleTimeout(command: string) {
     cooldowns.forEach((val, key) => {
@@ -189,7 +190,7 @@ function HandleTimeout(command: string) {
                 //     cooldowns.set(key, val);
                 //
                 //     if(key == 'battlecry') {
-                //         battlecryStarted = false;
+                //         BattlecryStarted = false;
                 //     }
                 //
                 // }, val.cooldown * CurrentStreamSettings.cooldownMultiplier);
@@ -254,7 +255,7 @@ export async function ProcessCommands(client: Client, displayName: string, comma
         disabled = false;
     }
 
-    if(creditsGoing || disabled){
+    if(CreditsGoing || disabled){
         return;
     }
     // console.log(command + " vs " + cleanMessage(command));
@@ -285,701 +286,32 @@ export async function ProcessCommands(client: Client, displayName: string, comma
 
     let player = LoadPlayer(displayName);
 
-    if(IsCommand(command, 'lurk')) {
-        await client.say(process.env.CHANNEL!, `@${displayName}, have a nice lurk!`);
-    }
-    else if(IsCommand(command, 'cc')) {
-        await client.say(process.env.CHANNEL!, `Crowd Control is a way for you (the viewer) to interact with my modded game and cause fun effects to happen, good or bad. 
-        You can get 250 free coins (on desktop) every 30 minutes from the overlay on screen, or buy them from my interact link: https://interact.crowdcontrol.live/#/twitch/26580802/coins`);
-    }
-    else if(IsCommand(command, 'discord')) {
-        await client.say(process.env.CHANNEL!, `Come hang out on our Discord, to chat, give stream suggestions, and get go live notification. Join here: https://discord.gg/A7R5wFFUWG`);
-    }
-    else if(IsCommand(command, "games")) {
-        await client.say(process.env.CHANNEL!, "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus");
-    }
-    else if(IsCommand(command, 'youtube') || IsCommand(command, 'yt')) {
-        await client.say(process.env.CHANNEL!, `I've been posting lots on Youtube! Mostly shorts, but some long form content. Give it a watch: https://www.youtube.com/@7ark`);
-    }
-    else if(IsCommand(command, 'socials')) {
-        await client.say(process.env.CHANNEL!, `Check out my socials - Discord: discord.gg/A7R5wFFUWG, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark`);
-    }
-    else if(IsCommand(command, 'cart') || IsCommand(command, 'addtocart')) {
-        await client.say(process.env.CHANNEL!, `Use the "Add to Cart" channel point redeem to suggest items to purchase for my stream! Items will be featured on an upcoming special stream. Ideally include a link to whatever you want purchased. Items are subject to approval.`);
-    }
-    //Selecting class
-    else if(Object.keys(ClassType).filter(key => isNaN(Number(key))).some(key => IsCommand(command, key.toLowerCase()))) {
-        let classTypeKey: string = Object.keys(ClassType)
-            .filter(key => isNaN(Number(key)))
-            .find(key => IsCommand(command, key.toLowerCase()));
-        if (!classTypeKey) return; // In case something goes wrong
-
-        let classType: ClassType = ClassType[classTypeKey as keyof typeof ClassType];
-
-        await LevelUpPlayer(client, player.Username, classType);
-    }
-    else if(IsCommand(command, 'upgrade')) {
-        let split = command.replace('!upgrade', '').trim().split(' ');
-        if(split.length > 0) {
-            let value: number = parseInt(split[0]);
-            console.log("Parsed value:", value);
-            if(Number.isNaN(value)) {
-                await WhisperUser(client, displayName, `@${player.Username}, that is not a valid upgrade option number. Use !levelup to check your options.`);
-                return;
-            }
-            
-            await SelectPlayerUpgrade(client, player.Username, value - 1);
-        }
-        else {
-            console.log(`No number in message: ${command}}`);
-            await WhisperUser(client, displayName, `@${player.Username}, you must select a number. Use !levelup to check your options. Ex. !upgrade 2`);
-        }
-    }
-    else if(IsCommand(command, 'upgrades')) {
-        if(player.Upgrades.length === 0) {
-            await WhisperUser(client, displayName, `@${player.Username}, you don't have any upgrades yet! You can get upgrades when leveling up.`);
-            return;
-        }
-
-        let text = `@${player.Username}, your current upgrades are: ${player.Upgrades.join(', ')}. Type !info [upgrade name] to get more information on what they do.`;
-        await WhisperUser(client, displayName, text);
-    }
-    else if(IsCommand(command, 'stats') || IsCommand(command, 'level') || IsCommand(command, 'status')) {
-        let split = command.trim().split(' ');
-
-        let playerToStats = player;
-
-        if(split.length > 1) {
-            let otherPlayer = TryLoadPlayer(split[1].replace("@", ""));
-
-            if(otherPlayer != undefined) {
-                playerToStats = otherPlayer;
-            }
-        }
-
-        await WhisperUser(client, displayName, GetPlayerStatsDisplay(playerToStats));
-    }
-    else if(IsCommand(command, 'moves') || IsCommand(command, 'abilities') || IsCommand(command, 'skills') || IsCommand(command, 'spells')) {
-        let text = `@${displayName}, the moves you can use right now are: `;
-
-        for (let i = 0; i < player.KnownMoves.length; i++) {
-            let move = GetMove(player.KnownMoves[i]);
-            if(IsMonsterActive || (move !== undefined && move.Type !== MoveType.Attack)) {
-                text += `!${player.KnownMoves[i]}`;
-
-                if(i < player.KnownMoves.length - 2) {
-                    text += ", ";
-                }
-                else if(i === player.KnownMoves.length - 2 && player.KnownMoves.length > 1) {
-                    text += " and ";
-                }
-            }
-        }
-
-        let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
-
-        text += `. You can learn ${validDefs.length} new moves at this level. You can also use !randomattack to use any random attack move you know.`;
-
-        await WhisperUser(client, displayName, text);
-    }
-    else if(battlecryStarted && IsCommand(command, 'battlecry')) {
-        if(IsCommandOnCooldown(player.Username, 'battlecry')) {
-            let cooldownSecondsLeft = GetCommandCooldownTimeLeftInSeconds(player.Username, 'battlecry');
-
-            await client.say(process.env.CHANNEL!, `@${displayName}, this move is currently on cooldown! You can do this again in ${cooldownSecondsLeft} seconds.`);
-            return;
-        }
-
-        PlaySound('battlecry', AudioType.UserGameActions);
-
-        DoBattleCry(displayName);
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'giveallexp')) {
-        let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
-        let expAmount = parseInt(command.replace('!giveallexp ', ''));
-        for (let i = 0; i < allPlayerData.length; i++) {
-            let currPlayer: Player = allPlayerData[i];
-
-            await GiveExp(client, currPlayer.Username, expAmount);
-        }
-        await client.say(process.env.CHANNEL!, `I've given ${expAmount}EXP to ALL adventurers!`);
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'giveexp')) {
-        console.log("giving exp to user");
-        let afterText = command.replace('!giveexp ', '').split(' ');
-        let user = afterText[0].replace("@", "");
-        let expAmount = parseInt(afterText[1]);
-
-        console.log(`giving ${expAmount} to ${user}`);
-
-        let playerToGiveExp = LoadPlayer(user);
-        if(playerToGiveExp.CurrentExp === 0 && playerToGiveExp.Level === 0) {
-            await client.say(process.env.CHANNEL!, `No found user by that name`);
-            return;
-        }
-        else {
-            await client.say(process.env.CHANNEL!, `Giving ${expAmount} to @${user}`);
-            await GiveExp(client, user, expAmount);
-        }
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'adventure')) {
-        Broadcast(JSON.stringify({ type: 'startadventure' }));
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'credits')) {
-        PlaySound("credits", AudioType.StreamInfrastructure);
-        Broadcast(JSON.stringify({ type: 'showcredits', data: GetStringifiedSessionData() }));
-        creditsGoing = true;
-    }
-    else if(IsCommand(command, 'setvoice')) {
-        await TryToSetVoice(client, displayName,  command.replace("!setvoice", "").trim());
-    }
-    else if(IsCommand(command, 'yell')) {
-        let textToSay = command.replace("!yell", "");
-
-        if(DoesPlayerHaveStatusEffect(displayName, StatusEffect.Drunk)) {
-            textToSay = DrunkifyText(textToSay);
-        }
-
-        if(textToSay.length > 250) {
-            textToSay = textToSay.slice(0, 250) + "...";
-        }
-
-        PlayTextToSpeech(textToSay, AudioType.UserTTS, TryGetPlayerVoice(player));
-
-        setTimeout(() => {
-            Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: displayName, display: textToSay, }));
-        }, 700);
-    }
-    else if(IsCommand(command, 'inventory') || IsCommand(command, 'equipment')) {
-        if(player.Inventory.length === 0) {
-            await WhisperUser(client, displayName, `@${displayName}, you have no items in your inventory`);
-        }
-        else {
-            let final = `@${displayName}, you have `;
-            let uniqueItems: Array<{item: InventoryObject, count: number}> = [];
-
-            for (let i = 0; i < player.Inventory.length; i++) {
-                let inventoryObj: InventoryObject = AllInventoryObjects.find(x => x.ObjectName === player.Inventory[i])!;
-
-                let foundObj = uniqueItems.find(x => x.item === inventoryObj);
-                if(foundObj !== undefined) {
-                    foundObj.count++;
-                }
-                else {
-                    if(inventoryObj === undefined)
-                        console.log(`FAILED TO FIND INVENTORY ITEM: ${player.Inventory[i]}`)
-                    uniqueItems.push({item: inventoryObj, count: 1})
-                }
-            }
-
-            for (let i = 0; i < uniqueItems.length; i++) {
-                final += uniqueItems[i].count > 1 ? uniqueItems[i].item.PluralName : uniqueItems[i].item.ContextualName;
-                if(uniqueItems[i].count > 1) {
-                    final += ` (x${uniqueItems[i].count})`;
-                }
-
-                if(i < uniqueItems.length - 2 && uniqueItems.length > 2) {
-                    final += ", "
-                }
-
-                if(i === uniqueItems.length - 2) {
-                    final += " and ";
-                }
-            }
-
-            final += `. You also have ${player.SpendableGems} gems.`;
-
-            await WhisperUser(client, displayName, final);
-            // await client.say(process.env.CHANNEL!, final);
-        }
-    }
-    else if (IsCommand(command, 'use')) {
-        let objectUsed = command.replace("!use", "").trim();
-        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
-        
-        if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
-            await WhisperUser(client, displayName, `@${player.Username}, you don't have that!`);
-        }
-        else {
-            let wasUsed = await inventoryObject.UseAction(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
-            if(inventoryObject.Consumable && wasUsed) {
-                TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
-            }
-        }
-    }
-    else if (IsCommand(command, 'equip')) {
-        let objectUsed = command.replace("!equip", "").trim().toLowerCase();
-        let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
-
-        if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
-            await WhisperUser(client, displayName, `@${player.Username}, you don't have that!`);
-        }
-        else {
-            if(inventoryObject.Equippable) {
-                if(player.EquippedBacklog === undefined) {
-                    player.EquippedBacklog = [];
-                }
-
-                if(player.EquippedObject !== undefined) {
-                    player.EquippedBacklog.push(player.EquippedObject);
-                    await WhisperUser(client, displayName, `@${player.Username}, you have unequipped your ${player.EquippedObject.ObjectName}`);
-                }
-
-                let existingObjectIndex = player.EquippedBacklog.findIndex(x => x.ObjectName === inventoryObject.ObjectName);
-                if(existingObjectIndex !== -1) {
-                    player.EquippedObject = player.EquippedBacklog[existingObjectIndex];
-                    player.EquippedBacklog.splice(existingObjectIndex, 1);
-                }
-                else {
-                    player.EquippedObject = {
-                        ObjectName: inventoryObject.ObjectName,
-                        RemainingDurability: GetRandomIntI(inventoryObject.Durability!.min, inventoryObject.Durability!.max)
-                    };
-                }
-
-                let attackClassInfo = "It will work with ";
-                if(inventoryObject.ClassRestrictions!.length === 3) {
-                    attackClassInfo += "all classes.";
-                }
-                else if(inventoryObject.ClassRestrictions!.length === 1) {
-                    attackClassInfo += `the ${ClassType[inventoryObject.ClassRestrictions![0]]} class.`;
-                }
-                else {
-                    attackClassInfo += `the ${ClassType[inventoryObject.ClassRestrictions![0]]} and ${ClassType[inventoryObject.ClassRestrictions![1]]} classes.`;
-                }
-
-                await WhisperUser(client, displayName, `@${player.Username}, you have equipped your ${player.EquippedObject.ObjectName}. ${attackClassInfo}`);
-                SavePlayer(player);
-            }
-            else {
-                await WhisperUser(client, displayName, `@${player.Username}, you can't equip that object.`);
-            }
-        }
-    }
-    else if(IsCommand(command, 'unequip')) {
-        if(player.EquippedBacklog === undefined) {
-            player.EquippedBacklog = [];
-        }
-
-        if(player.EquippedObject != undefined) {
-            await WhisperUser(client, displayName, `@${player.Username}, you have unequipped your ${player.EquippedObject.ObjectName}`);
-            player.EquippedBacklog.push(player.EquippedObject);
-            player.EquippedObject = undefined;
-            SavePlayer(player);
-        }
-        else {
-            await WhisperUser(client, displayName, `@${player.Username}, you have nothing equipped right now`);
-        }
-    }
-    else if(IsCommand(command, 'durability')) {
-        if(player.EquippedObject != undefined) {
-            await WhisperUser(client, displayName, `@${player.Username}, your ${player.EquippedObject.ObjectName} has a remaining durability of ${player.EquippedObject.RemainingDurability}`);
-        }
-        else {
-            await WhisperUser(client, displayName, `@${player.Username}, you have nothing equipped right now`);
-        }
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'give')) {
-        let afterText = command.replace('!give ', '').split(' ');
-        let user = afterText[0].replace("@", "");
-        let objectUsed = "";
-        for (let i = 1; i < afterText.length; i++) {
-            objectUsed += afterText[i];
-            if(i != afterText.length - 1) {
-                objectUsed += " ";
-            }
-        }
-
-        let inventoryObject: InventoryObject = AllInventoryObjects.find(x => objectUsed.includes(x.ObjectName))!;
-
-        await GivePlayerObject(client, user, objectUsed);
-
-    }
-    else if (IsCommand(command, 'info')) {
-        let infoFocus = command.replace("!info", "").trim();
-        let inventoryObject: InventoryObject = GetObjectFromInputText(infoFocus)!;
-
-        if(inventoryObject === undefined || inventoryObject === null) {
-            let move = GetMove(infoFocus);
-            if(move !== undefined) {
-                await WhisperUser(client, displayName, move.Description);
-            }
-            else {
-                let upgrade = UpgradeDefinitions.find(x => x.Name.toLowerCase() === infoFocus.toLowerCase());
-                if(upgrade !== undefined) {
-                    await WhisperUser(client, displayName, `${upgrade.Name}: ${GetUpgradeDescription(upgrade.Name)}`);
-                }
-                else {
-                    await WhisperUser(client, displayName, `${player.Username}, I'm not sure what that is. You need to use !info [item or move name]`);
-                }
-            }
-        }
-        else {
-            await WhisperUser(client, displayName, inventoryObject.Info);
-        }
-    }
-    else if (IsCommand(command, 'voices')) {
-        await client.say(process.env.CHANNEL!, `Use !setvoice [voice] to set your TTS voice for the stream. The available voices are: Andrew, Emma, Brian, Guy, Aria, Davis, Eric, Jacob, Roger, Steffan, AvaMultilingual, Amber, Ashley`);
-    }
-    else if (IsCommand(command, 'cozy')) {
-        await WhisperUser(client, displayName, `${player.Username}, you have ${player.CozyPoints} cozy point${player.CozyPoints == 1 ? '' : 's'}`);
-    }
-    else if(IsCommand(command, 'togglepassive') || IsCommand(command, 'passive') || IsCommand(command, 'toggle passive')) {
-        player.PassiveModeEnabled = !player.PassiveModeEnabled;
-        SavePlayer(player);
-        await client.say(process.env.CHANNEL!, `${player.Username}, passive mode is now ${player.PassiveModeEnabled ? `enabled` : `disabled`}`);
-    }
-    else if(IsCommand(command, 'deathleaderboard') || IsCommand(command, 'deathlb')) {
-        let players = LoadAllPlayers().sort((x, y) => {
-            return x.Deaths - y.Deaths;
-        });
-
-        let text = "Deaths Leaderboard: \n";
-        let max = Math.min(5, players.length);
-        for (let i = 0; i < max; i++) {
-            if(players[i].Deaths == undefined || players[i].Deaths == 0) {
+    let validDef: CommandDefinition | undefined = undefined;
+    for (let i = 0; i < COMMAND_DEFINITIONS.length; i++) {
+        let commandDef = COMMAND_DEFINITIONS[i];
+        if(commandDef.Commands.length == 0) {
+            if(commandDef.CommandVerification != undefined && await commandDef.CommandVerification(command)) {
+                validDef = commandDef;
                 break;
             }
-
-            text += `${GetNumberWithOrdinal(i + 1)}: @${players[i].Username} - ${players[i].Deaths} Deaths`;
-
-            if(i != 5) {
-                text += " | ";
-            }
         }
 
-        await client.say(process.env.CHANNEL!, text);
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'test')) {
-        //Flash red lights
-        await PlayHypeTrainAlert();
-    }
-    else if(IsCommand(command, "gems")) {
-        await WhisperUser(client, displayName, `@${player.Username}, you have ${player.SpendableGems} gems.`);
-    }
-    // else if(IsCommand(command, "dead")) {
-    //     setTimeout(() => {
-    //         Broadcast(JSON.stringify({ type: 'changestickmanappearance', displayName: player.Username, changeType: 'died' }));
-    //     }, 1000)
-    // }
-    // else if(IsCommand(command, "revive")) {
-    //     setTimeout(() => {
-    //         Broadcast(JSON.stringify({ type: 'changestickmanappearance', displayName: player.Username, changeType: 'revive' }));
-    //     }, 1000)
-    // }
-    else if(IsCommand(command, "help")) {
-        const minigameKeys = Object
-            .keys(MinigameType)
-            .filter((v) => isNaN(Number(v)))
-
-        await client.say(process.env.CHANNEL!, `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. 
-        You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Every time you level up, you can learn new upgrades and moves. 
-        You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. 
-        You can also !yell some text to speech at me.
-        `);
-    }
-    else if(IsCommand(command, "leaderboard")) {
-        ShowLeaderboard();
-    }
-    else if(IsCommand(command, "quest")) {
-        if(DoesPlayerHaveQuest(player.Username)) {
-            let questText = GetQuestText(player.CurrentQuest!.Type, player.CurrentQuest!.Goal);
-
-            await client.say(process.env.CHANNEL!, `@${player.Username}, you currently have a difficulty ${player.CurrentQuest!.FiveStarDifficulty} quest to: ${questText}. Your current progress is at ${player.CurrentQuest!.Progress}/${player.CurrentQuest!.Goal}`);
-        }
-        else {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, you do not currently have a quest. You can get a quest with a channel point redeem!`);
-        }
-    }
-    else if(IsCommand(command, "levelup")) {
-        if(player.UpgradeOptions.length > 0) {
-            await client.say(process.env.CHANNEL!, GetUpgradeOptions(player));
-        }
-        else if(player.LevelUpAvailable) {
-            await WhisperUser(client, displayName, `@${player.Username}, you have a level up available! You can use !mage, !warrior, or !rogue to choose a class to level up in`);
-        }
-        else {
-            await WhisperUser(client, displayName, `@${player.Username}, you need more exp to level up. You get exp by chatting, fighting monsters, or other interactions in chat.`);
-        }
-    }
-    else if(IsCommand(command, "shop") || IsCommand(command, "store")) {
-        let shopItems = GetCurrentShopItems();
-        let text = `Todays Shop:${shopItems.map((x, i) => ` (${(i + 1)}): ${x.obj} for ${x.cost} ${BankActive ? "ByteCoins" : "Gems"}`)}`;
-
-        await client.say(process.env.CHANNEL!, text);
-        await WhisperUser(client, displayName, `Use "!buy [objectname]" to choose something to purchase`);
-
-        let scrollingText = `Todays Shop:\n${shopItems.map((x, i) => `${x.obj} | ${x.cost}${BankActive ? "c" : "g"}\n`).join('')}\nUse !shop`;
-        ShowShop(scrollingText);
-    }
-    else if(IsCommand(command, "buy")) {
-        let chosenObject = GetObjectFromInputText(command.replace("!buy", "").trim());
-
-        if(chosenObject === undefined || chosenObject === null) {
-            await WhisperUser(client, displayName, `@${player.Username}, could not find object with name ${chosenObject}`);
-        }
-        else {
-            let shopItems = GetCurrentShopItems();
-            let foundIndex = shopItems.findIndex(x => x.obj === chosenObject?.ObjectName);
-            if(foundIndex !== -1) {
-                let cost = shopItems[foundIndex].cost;
-                
-                if(!BankActive && player.SpendableGems >= cost) {
-                    player.SpendableGems -= cost;
-                    SavePlayer(player);
-                    await GivePlayerObject(client, player.Username, chosenObject.ObjectName);
-                }
-                else if(BankActive && player.ByteCoins >= cost) {
-                    player.ByteCoins -= cost;
-                    SavePlayer(player);
-                    await GivePlayerObject(client, player.Username, chosenObject.ObjectName);
-                }
-                else {
-                    await WhisperUser(client, displayName, `@${player.Username}, you don't have enough ${BankActive ? "ByteCoins" : "gems"}! You need ${(shopItems[foundIndex].cost - player.SpendableGems)} more ${BankActive ? "ByteCoins" : "gems"}.`);
+        for (let j = 0; j < commandDef.Commands.length; j++) {
+            if(IsCommand(command, commandDef.Commands[j])) {
+                if(commandDef.CommandVerification == undefined || await commandDef.CommandVerification(command)) {
+                    validDef = commandDef;
+                    break;
                 }
             }
-            else {
-                await WhisperUser(client, displayName, `@${player.Username}, that object is not for sale!`);
-            }
+        }
+
+        if(validDef != undefined) {
+            break;
         }
     }
-    else if(IsCommand(command, "effects")) {
-        if(player.StatusEffects.length > 0) {
-            let text = `@${player.Username}, you have the follow status effects active: `;
-            for (let i = 0; i < player.StatusEffects.length; i++) {
-                let secondsLeft = player.StatusEffects[i].EffectTimeInSeconds - GetSecondsBetweenDates(player.StatusEffects[i].WhenEffectStarted, new Date());
-                text += `${AddSpacesBeforeCapitals(StatusEffect[player.StatusEffects[i].Effect])} (${secondsLeft}s)`;
 
-                if(i < player.StatusEffects.length - 1) {
-                    text += ", ";
-                }
-            }
-
-            await WhisperUser(client, displayName, text);
-        }
-        else {
-            await WhisperUser(client, displayName, `@${player.Username}, you have no status effects`);
-        }
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'resetleaderboard')) {
-        await ResetLeaderboard(client);
-    }
-    else if(IsCommand(command, "challenge")) {
-        await WhisperUser(client, displayName, `Today Cory is trying to beat the main quest in Skyrim. However, all effects in Crowd Control start out at 1 coin. Every time someone redeems an effect, it doubles in price. Chat can try to help or hinder while prices gradually increase.`)
-    }
-    else if(IsCommand(command, "give")) {
-        let option = command.replace("!give", "").trim();
-        let pieces = option.trim().split(' ');
-
-        let otherPlayer = TryLoadPlayer(pieces[0].replace("@", ""));
-
-        if(otherPlayer?.Username == player.Username) {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, you throw it up in the air and catch it again`);
-        }
-
-        if(otherPlayer != null) {
-            let item = GetObjectFromInputText(option.trim().replace(pieces[0] + " ", ""))!;
-
-            if(item !== undefined) {
-                if(player.Inventory.includes(item.ObjectName)) {
-                    await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${item.ContextualName}!`);
-                    GivePlayerObject(client, otherPlayer.Username, item.ObjectName);
-                    let index = player.Inventory.indexOf(item.ObjectName);
-                    player.Inventory.splice(index, 1);
-                    SavePlayer(player);
-                }
-                else {
-                    await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that item. Ex !give the7ark bananas`);
-                }
-            }
-            else {
-                await client.say(process.env.CHANNEL!, `@${player.Username}, I couldn't find that item. Ex !give the7ark bananas`);
-            }
-        }
-        else {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player. Ex !give the7ark bananas`);
-        }
-    }
-    else if(IsCommand(command, "ineedaride")) {
-        if(!currentRiders.includes(displayName)) {
-            currentRiders.push(displayName);
-        }
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'cancelride')) {
-        currentRiders = [];
-        SetCurrentGTARider("");
-
-        const taxiGroup = "TaxiGroup";
-        let sceneName = await GetOpenScene();
-
-        if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
-            return;
-        }
-
-        await SetSceneItemEnabled(taxiGroup, false);
-
-        await UpdateStarVisuals();
-    }
-    else if(displayName.toLowerCase() === 'the7ark' && IsCommand(command, 'letsride')) {
-        let rider = currentRiders[GetRandomInt(0, currentRiders.length)];
-        SetCurrentGTARider(rider.toLowerCase());
-        Broadcast(JSON.stringify({ type: 'rider', rider: rider }));
-        currentRiders = [];
-        await WhisperUser(client, displayName, `The current rider has been chosen! @${rider} is in the taxi. Use !locations to see where you can go.`);
-
-        const taxiGroup = "TaxiGroup";
-
-        let sceneName = await GetOpenScene();
-
-        if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
-            return;
-        }
-
-        await SetSceneItemEnabled(taxiGroup, true);
-        await SetTextValue("StickmanName", rider);
-
-        await UpdateStarVisuals();
-    }
-    else if(IsCommand(command, "locations")) {
-        await WhisperUser(client, displayName, `The following locations are available in GTA for travel: bank, vinewood sign, legion square, city hall, airport, rural airport, casino, concert, pier, arena, fort, prison, laboratory, plaza, market, vinewood hills, franklin house, michael house, travor trailer, mount chiliad, mount gordo, forest, hills, beach, north chumash, port, el burro heights, terminal`)
-    }
-    
-    else if(IsCommand(command, "review") || IsCommand(command, "rate")) {
-        if(displayName.toLowerCase() != GetCurrentGTARider().toLowerCase()) {
-            return;
-        }
-        let review = command.replace("!review", "").replace("!rate", "").trim();
-        let rating = parseInt(review.split(' ')[0]);
-        if(!isNaN(rating)) {
-            gtaRatings.push(rating);
-            let reviewText = review.replace(rating.toString(), "").trim();
-            gtaReviews.push(reviewText);
-            currentRating = 0;
-            for (let i = 0; i < gtaRatings.length; i++) {
-                currentRating += gtaRatings[i];
-            }
-            currentRating /= gtaRatings.length;
-
-
-            SetCurrentGTARider("");
-            currentRiders = [];
-
-            const taxiGroup = "TaxiGroup";
-            let sceneName = await GetOpenScene();
-
-            if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
-                return;
-            }
-
-            await SetSceneItemEnabled(taxiGroup, false);
-
-            await UpdateStarVisuals();
-
-            let extraReviewText = reviewText.trim() == "" ? "" : `They had this to say about their ride "${reviewText}"`
-
-            if(rating > 3) {
-                PlayTextToSpeech(`${displayName} just gave us a rating of ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", () => {
-                    PlaySound("cheering", AudioType.ImportantStreamEffects);
-                });
-            }
-            else {
-                PlayTextToSpeech(`${displayName} just rated us ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", () => {
-                    PlaySound("booing", AudioType.ImportantStreamEffects);
-                });
-            }
-
-            Broadcast(JSON.stringify({ type: 'rider', rider: "" }));
-        }
-        else {
-            await WhisperUser(client, displayName, `Invalid rating format! Please respond as such: !review # text`);
-        }
-    }
-    // else if(IsCommand(command, "gift")) {
-    //     if(CanGrabGifts) {
-    //         if(IsCommandOnCooldown(player.Username, "gift")) {
-    //             await WhisperUser(client, displayName, `@${player.Username}, you can only get one gift when Santa flies by! Leave some for the others.`);
-    //         }
-    //         else {
-    //             TriggerCommandCooldownOnPlayer(player.Username, "gift", 60);
-    //             await GivePlayerObject(client, player.Username, "present");
-    //         }
-    //     }
-    //     else {
-    //         await WhisperUser(client, displayName, `@${player.Username}, all of Santa's gifts are gone! You'll have to wait for him to return.`);
-    //     }
-    // }
-    // else if(IsCommand(command, "holiday")) {
-    //     await WhisperUser(client, displayName, `Happy Holidays! On today's stream, you can fight Santa, as well as receive presents as Santa flies overhead throughout the stream.`);
-    // }
-    else if(await ProcessUniqueCommands(client, displayName, command)){
-
-    }
-    // else if(IsCommand(command, "fear")) {
-    //     await client.say(process.env.CHANNEL!, `For Halloween we're using the Fright Meter. Talk about horror to increase the fright meter, the more you talk, the more it goes up. Additionally, for every 5 bits cheered, the meter goes up by 1. When the scare meter fills up, it plays a scary sound, and then resets (no matter how many extra points it got)`);
-    // }
-    // else if(IsCommand(command, "trickortreat")) {
-    //     await client.say(process.env.CHANNEL!, `Try out our new channel point redemption to trick or treat. Will you get goodies, or a nasty surprise?`);
-    // }
-    else if(IsCommand(command, "balance")) {
-        if(!BankActive) {
-            return;
-        }
-        
-        if(player.ByteCoins === undefined) player.ByteCoins = 0;
-        await client.say(process.env.CHANNEL!, `@${player.Username}, you have ${player.ByteCoins} ByteCoins`);
-    }
-    else if(IsCommand(command, "bank")) {
-        if(!BankActive) {
-            return;
-        }
-        
-        await client.say(process.env.CHANNEL!, GetBankStatusText());
-    }
-    else if(IsCommand(command, "exchange")) {
-        if(!BankActive) {
-            return;
-        }
-
-        let input = command.replace("!exchange", "").trim();
-        
-        if(!input) {
-            await client.say(process.env.CHANNEL!, GetExchangeRateText());
-            return;
-        }
-
-        let gemsToExchange = parseInt(input);
-        if(isNaN(gemsToExchange) || gemsToExchange <= 0) {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, please specify a valid number of gems to exchange`);
-            return;
-        }
-
-        if(player.SpendableGems < gemsToExchange) {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have enough gems! You need ${gemsToExchange - player.SpendableGems} more gems.`);
-            return;
-        }
-
-        let coinsToReceive = ExchangeGemsForCoins(gemsToExchange);
-        if(coinsToReceive <= 0) {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, you need to exchange at least ${UpdateExchangeRate()} gems to get 1 ByteCoin`);
-            return;
-        }
-
-        let bankData = LoadBankData();
-        if(bankData.totalCoins < coinsToReceive) {
-            await client.say(process.env.CHANNEL!, `@${player.Username}, the bank doesn't have enough ByteCoins for this exchange!`);
-            return;
-        }
-
-        if(player.ByteCoins === undefined) player.ByteCoins = 0;
-        
-        player.SpendableGems -= gemsToExchange;
-        player.ByteCoins += coinsToReceive;
-        bankData.totalCoins -= coinsToReceive;
-        
-        SavePlayer(player);
-        SaveBankData(bankData);
-
-        await client.say(process.env.CHANNEL!, `@${player.Username} exchanged ${gemsToExchange} gems for ${coinsToReceive} ByteCoins!`);
+    if(validDef != undefined) {
+        await validDef.Action(client, player, command);
     }
     else {
         await HandleMoves(client, displayName, command);
@@ -1255,14 +587,14 @@ async function HandleMoveHeal(client: Client, moveAttempted: ClassMove, player: 
 }
 
 async function HandleMoveGiveBuff(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
-    let pieces = command.trim().split(' ');
+    let target = GetLastParameterFromCommand(command);
 
-    if(pieces.length <= 1){
+    if(target == ""){
         await client.say(process.env.CHANNEL!, `@${player.Username}, you need to specify a target to buff. Ex. !${moveAttempted.Command} @the7ark`);
         return;
     }
 
-    let otherPlayer = TryLoadPlayer(pieces[1].replace("@", ""));
+    let otherPlayer = TryLoadPlayer(target.replace("@", ""));
 
     if(otherPlayer === null) {
         await client.say(process.env.CHANNEL!, `@${player.Username}, could not find player with the username ${pieces[1].replace("@", "")}`);
@@ -1349,7 +681,8 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         extraRollAddition += GetRandomIntI(-10, 10);
     }
 
-    let dragonAc = GetRandomIntI(10, 17);
+    let monsterInfo = LoadMonsterData();
+    let monsterArmor = monsterInfo.CurrentArmor;
 
     let rollDisplay = `${rollToHit + extraRollAddition} (${rollToHit} + ${extraRollAddition})`;
 
@@ -1364,8 +697,8 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         TriggerCommandCooldownOnPlayer(player.Username, moveAttempted.Command, moveAttempted.PersonalMoveCooldownInSeconds);
     }
 
-    if(rollToHit + extraRollAddition < dragonAc || rollToHit === 1) {
-        client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${dragonAc}`);
+    if(rollToHit + extraRollAddition < monsterArmor || rollToHit === 1) {
+        client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${monsterArmor}`);
 
         player.HitStreak = 0;
         SavePlayer(player);
@@ -1547,6 +880,8 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             });
         }
 
+        scaledDamage = Math.floor(scaledDamage);
+
         // Apply the damage
         let dragonDead = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
 
@@ -1644,33 +979,12 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
     }
 }
 
-async function UpdateStarVisuals() {
-    const taxiGroup = "TaxiGroup";
-
-    let sceneName = await GetOpenScene();
-    let isTaxiVisible = await DoesSceneContainItem(sceneName, taxiGroup) && await GetSceneItemEnabled(taxiGroup);
-
-    Broadcast(JSON.stringify({ type: 'stars', stars: currentRating }));
-
-    for (let i = 1; i <= 5; i++) {
-        let star = `Star${i}`;
-
-        let sceneName = await GetOpenScene();
-
-        if(!await DoesSceneContainItem(sceneName, star)) {
-            return;
-        }
-
-        await SetSceneItemEnabled(star, i <= currentRating && isTaxiVisible);
-    }
-}
-
 function handleMovePlaySound(client: Client, moveAttempted: ClassMove, username: string, command: string) {
     client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
     PlaySound(moveAttempted.SoundFile!, AudioType.UserGameActions);
 
     if(IsCommand(command, 'battlecry')) {
-        battlecryStarted = true;
+        BattlecryStarted = true;
 
         DoBattleCry(username);
     }
@@ -1678,7 +992,7 @@ function handleMovePlaySound(client: Client, moveAttempted: ClassMove, username:
     HandleTimeout(command);
 }
 
-function DoBattleCry(username: string) {
+export function DoBattleCry(username: string) {
     let textOptions = [
         'OOOO RAAAA',
         'AAGGHHHHHH',
@@ -1800,8 +1114,4 @@ async function HandleMoveMonitorDarken(client: Client, moveAttempted: ClassMove,
     client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', username));
 
     HandleTimeout(command);
-}
-
-export function IsCommand(message: string, command: string): boolean {
-    return message.toLowerCase() === `!${command}` || message.toLowerCase().includes(`!${command} `);
 }

@@ -1,4 +1,4 @@
-import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventory";
+import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventoryDefinitions";
 import {GetRandomInt, GetRandomIntI, GetRandomItem, Shuffle} from "./utils";
 import {Broadcast} from "../bot";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
@@ -261,7 +261,7 @@ export function StartChatChallenge(client: Client, username: string) {
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct number of ${numberToGuess}!`);
                             await GivePlayerRandomObject(client, responseName);
-                            await GiveExp(client, responseName, 5);
+                            await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -336,7 +336,7 @@ export function StartChatChallenge(client: Client, username: string) {
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${result}!`);
                             await GivePlayerRandomObject(client, responseName);
-                            await GiveExp(client, responseName, 5);
+                            await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -399,7 +399,7 @@ export function StartChatChallenge(client: Client, username: string) {
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct word of ${randomWord}!`);
                             await GivePlayerRandomObject(client, responseName);
-                            await GiveExp(client, responseName, 5);
+                            await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -463,7 +463,7 @@ export function StartChatChallenge(client: Client, username: string) {
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
                             await GivePlayerRandomObject(client, responseName);
-                            await GiveExp(client, responseName, 5);
+                            await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -530,7 +530,7 @@ export function StartChatChallenge(client: Client, username: string) {
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct letter of "${randomLetterAnswer}"!`);
                             await GivePlayerRandomObject(client, responseName);
-                            await GiveExp(client, responseName, 5);
+                            await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
                             setTimeout(() => {
@@ -592,7 +592,7 @@ export function StartChatChallenge(client: Client, username: string) {
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${randomNumber}!`);
                             await GivePlayerRandomObject(client, responseName);
-                            await GiveExp(client, responseName, 5);
+                            await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
                             setTimeout(() => {

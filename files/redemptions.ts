@@ -15,7 +15,7 @@ import {CurrentPollJoker} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
 import {BanUser, CreateTwitchPoll} from "./utils/twitchUtils";
 import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/alertUtils";
-import {ObjectTier} from "./inventory";
+import {ObjectTier} from "./inventoryDefinitions";
 import {GivePlayerRandomQuest, HandleQuestProgress} from "./utils/questUtils";
 import {DamageType, LoadMonsterData} from "./utils/monsterUtils";
 import {AudioType} from "./streamSettings";
@@ -116,7 +116,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                             if(wasFunny) {
                                 PlaySound("cheering", AudioType.GameAlerts);
                                 await GivePlayerRandomObject(client, player.Username);
-                                await GiveExp(client, player.Username, 50);
+                                await GiveExp(client, player.Username, 30);
                             }
                             else {
                                 PlaySound("booing", AudioType.GameAlerts, "wav", () => {

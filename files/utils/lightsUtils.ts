@@ -1,8 +1,8 @@
 import {AnyDevice, Client} from 'tplink-smarthome-api';
 import axios from "axios";
 
-const bottomLightsIp = "192.168.1.3";
-const topLightsIp = "192.168.1.4";
+const bottomLightsIp = "192.168.1.5";
+const topLightsIp = "192.168.1.6";
 const client = new Client();
 
 let defaultLightColor: {

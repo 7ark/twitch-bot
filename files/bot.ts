@@ -25,7 +25,7 @@ import {AudioType, CurrentStreamSettings} from "./streamSettings";
 import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
 import {LoadProgressBar} from "./utils/progressBarUtils";
 import {SetupNextAdsTime} from "./utils/adUtils";
-import {PlaySound} from "./utils/audioUtils";
+import {PlayTextToSpeech} from "./utils/audioUtils";
 
 const ngrok = require('ngrok');
 
@@ -224,7 +224,7 @@ async function InitializeBot() {
     }, 1800000); //30 minutes
 
     setInterval(() => {
-        TickAfflictions();
+        TickAfflictions(client);
     }, 1000 * 15); //15 seconds
 
     setInterval(() => {

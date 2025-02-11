@@ -1,7 +1,7 @@
 import fs from "fs";
 import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
-import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventory";
+import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventoryDefinitions";
 import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates, GetUpgradeDescription} from "./utils";
 import {BanUser,WhisperUser} from "./twitchUtils";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
@@ -10,7 +10,16 @@ import {DamageType, LoadMonsterData} from "./monsterUtils";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {CurrentStreamSettings} from "../streamSettings";
 import {AdsRunning} from "./adUtils";
-import {ClassType, Player, QuestType, StatusEffect, Upgrade, UpgradeType} from "../valueDefinitions";
+import {
+    ClassType,
+    MAX_LEVEL,
+    MAX_PRESTIGE,
+    Player,
+    QuestType,
+    StatusEffect,
+    Upgrade,
+    UpgradeType
+} from "../valueDefinitions";
 import {UpgradeDefinitions} from "../upgradeDefinitions";
 import {MoveDefinitions} from "../movesDefinitions";
 
@@ -78,6 +87,7 @@ export function LoadPlayer(displayName: string): Player {
         CurrentExp: 0,
         CurrentExpNeeded: CalculateExpNeeded(0),
         Upgrades: [],
+        PermanentUpgrades: [],
         KnownMoves: ["punch"],
         UpgradeOptions: [],
         Voice: "",
@@ -92,7 +102,10 @@ export function LoadPlayer(displayName: string): Player {
         CozyPoints: 0,
         HasVip: false,
         HitStreak: 0,
-        ByteCoins: 0
+        ByteCoins: 0,
+
+        Prestige: 0,
+        Mastery: 0
     }
 
     if(fs.existsSync('playerData.json')) {
@@ -115,12 +128,23 @@ export function LoadPlayer(displayName: string): Player {
         player.Upgrades = [];
     }
 
+    if(player.PermanentUpgrades === undefined || player.PermanentUpgrades === null) {
+        player.PermanentUpgrades = [];
+    }
+
     if(player.KnownMoves === undefined || player.KnownMoves === null || player.KnownMoves.length === 0) {
         player.KnownMoves = ["punch"];
     }
 
     if(!player.KnownMoves.includes("punch")) {
         player.KnownMoves.push("punch");
+    }
+
+    if(player.Prestige === undefined) {
+        player.Prestige = 0;
+    }
+    if(player.Mastery == undefined) {
+        player.Mastery = 0;
     }
 
     if(player.Inventory === undefined) {
@@ -234,7 +258,7 @@ export function SavePlayer(player: Player) {
 }
 
 export function CalculateMaxHealth(player: Player): number {
-    let max = 10;
+    let max = 50;
     for (let i = 0; i < player.Classes.length; i++) {
         if(player.Classes[i].Type === ClassType.Rogue) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
@@ -342,6 +366,7 @@ export async function GivePlayerObject(client: Client, playerName: string, objec
         console.error(`Could not find ${object}`)
         return;
     }
+
     await WhisperUser(client, playerName, `@${playerName}, You've gained ${obj.ContextualName}. ${obj.Info}`);
 
     setTimeout(async () => {
@@ -540,6 +565,41 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: playerName, display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`, }));
 }
 
+async function CheckForPrestige(client: Client, player: Player, levelAddition: number): Promise<boolean> {
+    if(player.Level + levelAddition >= MAX_LEVEL) {
+        player.Upgrades = [];
+        player.KnownMoves = [];
+        player.CurrentHealth = CalculateMaxHealth(player);
+        for (let i = 0; i < player.Classes.length; i++) {
+            player.Classes[i].Level = 0;
+        }
+        player.Level = 0;
+        player.CurrentExp = 0;
+        player.CurrentExpNeeded = CalculateExpNeeded(0);
+        player.LevelUpAvailable = false;
+        player.Prestige++;
+
+        if(player.Prestige >= MAX_PRESTIGE) {
+            player.Prestige = 0;
+            player.Mastery++;
+
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you have gained a level of MASTERY! ALL statistics, including prestige have been reset, you now get to work with Cory to create something unique.`);
+
+            return true;
+        }
+
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you have gained a level of PRESTIGE! Your statistics have been reset, but you now get a permanent upgrade.`);
+
+        let final = await GetUpgradeSelection(client, player, true);
+
+        SavePlayer(player);
+
+        await client.say(process.env.CHANNEL!, final);
+        return true;
+    }
+
+    return false;
+}
 
 export async function GiveExp(client: Client, username: string, amount: number, affectedByModifiers: boolean = true) {
     if(affectedByModifiers) {
@@ -560,6 +620,11 @@ export async function GiveExp(client: Client, username: string, amount: number, 
     if(!player.LevelUpAvailable) {
         if(player.CurrentExp >= player.CurrentExpNeeded) {
             player = LoadPlayer(username);
+
+            if(await CheckForPrestige(client, player, 1)) {
+                return;
+            }
+
             player.LevelUpAvailable = true;
             SavePlayer(player);
 
@@ -579,7 +644,7 @@ export async function GiveExp(client: Client, username: string, amount: number, 
 
             setTimeout(async () => {
                 Broadcast(JSON.stringify({ type: 'exp', displayName: username, display: `LEVEL UP!`, }));
-                await ChangePlayerHealth(client, username, Math.floor(CalculateMaxHealth(player) * 0.4), DamageType.None);
+                await ChangePlayerHealth(client, username, Math.floor(CalculateMaxHealth(player) * 0.05), DamageType.None);
             }, 700);
         }
         else {
@@ -591,6 +656,30 @@ export async function GiveExp(client: Client, username: string, amount: number, 
 
 }
 
+async function LearnRandomMove(client: Client, player: Player, classType: ClassType) {
+    let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) &&
+        def.ClassRequired == classType &&
+        player.Classes.some(x => x.Level > 0 &&
+            x.Type === def.ClassRequired &&
+            x.Level >= (def.LevelRequirement ?? 0)));
+
+    if(validDefs.length > 0) {
+        let chosenMove = GetRandomItem(validDefs);
+
+        player.KnownMoves.push(chosenMove!.Command);
+
+        let monsterStats = LoadMonsterData().Stats;
+
+        let desc = chosenMove!.Description;
+
+        while(desc.includes("{monster}")) {
+            desc = desc.replace("{monster}", monsterStats.Name);
+        }
+
+        await client.say(process.env.CHANNEL!, `@${player.Username}, you have learned !${chosenMove!.Command}: ${desc}`);
+    }
+}
+
 export async function LevelUpPlayer(client: Client, username: string, classType: ClassType) {
     let player = LoadPlayer(username);
 
@@ -600,30 +689,13 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
             return;
         }
 
+        if(await CheckForPrestige(client, player, 0)) {
+            return;
+        }
+
         let playerClass = player.Classes.find(c => c.Type === classType);
 
         let final = "";
-
-        if(playerClass && playerClass.Level === 0) {
-            switch (classType) {
-                case ClassType.Warrior:
-                    await GivePlayerObject(client, player.Username, "sword");
-                    await GivePlayerObject(client, player.Username, "hammer");
-                    break;
-                case ClassType.Mage:
-                    await GivePlayerObject(client, player.Username, "wand");
-                    break;
-                case ClassType.Rogue:
-                    await GivePlayerObject(client, player.Username, "dagger");
-                    break;
-                case ClassType.Cleric:
-                    await GivePlayerObject(client, player.Username, "healing amulet");
-                    break;
-            }
-
-            // player.MovePoints += 10;
-            // final += `You've become a ${ClassType[classType]}! You've been given 10 free move points. Use !learnmove or !learnmove ${ClassType[classType].toLowerCase()} to learn a new move for this class!`
-        }
 
         setTimeout(async () => {
             await HandleQuestProgress(client, player.Username, QuestType.LevelUp, 1);
@@ -631,7 +703,6 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
         player.CurrentExp -= player.CurrentExpNeeded;
         player.Level++;
         player.CurrentExpNeeded = CalculateExpNeeded(player.Level);
-        player.WaitingToSelectUpgrade = true;
         if(player.CurrentExp < player.CurrentExpNeeded) {
             player.LevelUpAvailable = false;
         }
@@ -642,9 +713,38 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
             }
         }
 
+        if(playerClass && playerClass.Level === 0) {
+            switch (classType) {
+                case ClassType.Warrior:
+                    if(!player.Inventory.includes("sword")) {
+                        await GivePlayerObject(client, player.Username, "sword");
+                        await GivePlayerObject(client, player.Username, "hammer");
+                    }
+                    await LearnRandomMove(client, player, classType);
+                    break;
+                case ClassType.Mage:
+                    if(!player.Inventory.includes("wand")) {
+                        await GivePlayerObject(client, player.Username, "wand");
+                    }
+                    await LearnRandomMove(client, player, classType);
+                    break;
+                case ClassType.Rogue:
+                    if(!player.Inventory.includes("dagger")) {
+                        await GivePlayerObject(client, player.Username, "dagger");
+                    }
+                    await LearnRandomMove(client, player, classType);
+                    break;
+                case ClassType.Cleric:
+                    if(!player.Inventory.includes("healing amulet")) {
+                        await GivePlayerObject(client, player.Username, "healing amulet");
+                    }
+                    await LearnRandomMove(client, player, classType);
+                    break;
+            }
+        }
         // final += GetPlayerStatsDisplay(player);
 
-        final += GetUpgradeSelection(player);
+        final += await GetUpgradeSelection(client, player, false);
 
         SavePlayer(player);
 
@@ -655,8 +755,19 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
     }
 }
 
-function GetUpgradeSelection(player: Player): string {
+async function GetUpgradeSelection(client: Client, player: Player, isForPermanent: boolean): Promise<string> {
     let allUpgradeOptions = UpgradeDefinitions.filter(def => {
+        if(isForPermanent) {
+            if(!def.IsPermanent) {
+                return;
+            }
+        }
+        else {
+            if(def.IsPermanent) {
+                return;
+            }
+        }
+
         // Check if player already has this upgrade
         if (player.Upgrades.includes(def.Name)) {
             return false;
@@ -685,6 +796,10 @@ function GetUpgradeSelection(player: Player): string {
         const hasUpgradeRequirements = def.UpgradeRequirements.length === 0 ||
             def.UpgradeRequirements.some(requiredUpgradeType =>
                 player.Upgrades.some(upgradeNameOwned => {
+                    const upgrade = UpgradeDefinitions.find(def => def.Name === upgradeNameOwned);
+                    return upgrade?.Type === requiredUpgradeType;
+                }) ||
+                player.PermanentUpgrades.some(upgradeNameOwned => {
                     const upgrade = UpgradeDefinitions.find(def => def.Name === upgradeNameOwned);
                     return upgrade?.Type === requiredUpgradeType;
                 })
@@ -720,15 +835,15 @@ function GetUpgradeSelection(player: Player): string {
         player.UpgradeOptions.push(chosenOptions[i].Name);
     }
 
-    return GetUpgradeOptions(player);
+    return GetUpgradeOptions(player, isForPermanent);
 }
 
-export function GetUpgradeOptions(player: Player): string {
+export function GetUpgradeOptions(player: Player, permanent: boolean): string {
     if(player.UpgradeOptions.length === 0) {
         return `@${player.Username}, you have no upgrade choices currently. Level up and choose a class to get some!`;
     }
     else {
-        let upgradesFinal = `@${player.Username}, you have ${player.UpgradeOptions.length} upgrade choices! Use the following options to select: \n`;
+        let upgradesFinal = `@${player.Username}, you have ${player.UpgradeOptions.length} ${permanent ? "prestige" : ""} upgrade choices! Use the following options to select: \n`;
 
         for (let i = 0; i < player.UpgradeOptions.length; i++) {
             let upgrade = UpgradeDefinitions.find(x => x.Name === player.UpgradeOptions[i])!;
@@ -872,6 +987,13 @@ export function GetPlayerStatsDisplay(player: Player): string {
     }
 
     final += ` They've died ${player.Deaths} times! [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`;
+
+    if(player.Prestige > 0) {
+        final += ` [${player.Prestige}]Prestige`
+    }
+    if(player.Mastery > 0) {
+        final += ` [${player.Mastery}]Mastery`
+    }
 
     return final;
 }

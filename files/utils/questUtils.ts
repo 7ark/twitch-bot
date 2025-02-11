@@ -1,7 +1,7 @@
 import {GiveExp, GivePlayerRandomObjectInTier, LoadPlayer, SavePlayer} from "./playerGameUtils";
 import {GetRandomEnum, GetRandomIntI, GetRandomItem} from "./utils";
 import {Client} from "tmi.js";
-import {ObjectTier} from "../inventory";
+import {ObjectTier} from "../inventoryDefinitions";
 import {Quest, QuestType} from "../valueDefinitions";
 
 

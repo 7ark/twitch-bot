@@ -8,7 +8,7 @@ export interface BankData {
 }
 
 const startingBankBalance = 10000;
-export let BankActive: boolean = false;
+// export let BankActive: boolean = true;
 
 export function LoadBankData(): BankData {
     if(fs.existsSync('bankData.json')) {
@@ -55,6 +55,11 @@ export function UpdateExchangeRate(): number {
 export function ExchangeGemsForCoins(gemsAmount: number): number {
     let rate = UpdateExchangeRate();
     return Math.floor(gemsAmount / rate);
+}
+
+export function ExchangeCoinsForGems(coinsAmount: number): number {
+    let rate = UpdateExchangeRate();
+    return Math.floor(coinsAmount * rate);
 }
 
 export function GetBankStatusText(): string {

@@ -31,11 +31,11 @@ import {
 import {HandleQuestProgress} from "./questUtils";
 import {PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
-import {InventoryObject} from "../inventory";
+import {InventoryObject} from "../inventoryDefinitions";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {Affliction, ClassType, QuestType, StatusEffect, UpgradeType} from "../valueDefinitions";
 
-enum MonsterType { Dragon, Loaf, Tank }
+enum MonsterType { Dragon, Loaf, Tank, FrankTheTrafficCone }
 
 function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
     switch (type) {
@@ -45,16 +45,17 @@ function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
                 Type: MonsterType.Dragon,
                 AttackMessage: `Bytefire is attacking with breath of fire and ice!`,
                 AttackAddition: 8,
-                ArmorAddition: 5,
-                DamageRatioRange: {
-                    min: 0.2,
-                    max: 0.3
+                ArmorRange: {min: 13, max: 17},
+                DamageRange: {
+                    min: 20,
+                    max: 40
                 },
-                DamageTypes: [DamageType.Fire, DamageType.Cold],
+                DamageTypes: [DamageType.Fire, DamageType.Cold, DamageType.Lightning],
                 MaxHealth: 1500,
                 MonsterAttackRateRange: { min: 5, max: 10 },
                 ResistImmuneDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Cold, DamageType.Fire, DamageType.Piercing, DamageType.Psychic, DamageType.Poison],
                 VulnerabilityDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Cold, DamageType.Fire, DamageType.Piercing, DamageType.Psychic, DamageType.Poison],
+                ExpRange: { min: 7, max: 12 }
             };
         case MonsterType.Loaf:
             return {
@@ -62,16 +63,17 @@ function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
                 Type: MonsterType.Loaf,
                 AttackMessage: `Loaf is defending himself and scratching at everyone!`,
                 AttackAddition: 5,
-                ArmorAddition: 8,
-                DamageRatioRange: {
-                    min: 0.1,
-                    max: 0.3
+                ArmorRange: {min: 15, max: 18},
+                DamageRange: {
+                    min: 10,
+                    max: 20
                 },
                 DamageTypes: [DamageType.Slashing],
-                MaxHealth: 800,
-                MonsterAttackRateRange: { min: 3, max: 7 },
+                MaxHealth: 1000,
+                MonsterAttackRateRange: { min: 2, max: 7 },
                 ResistImmuneDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Piercing, DamageType.Psychic, DamageType.Poison],
                 VulnerabilityDamageTypeOptions: [DamageType.Slashing, DamageType.Fire, DamageType.Piercing, DamageType.Psychic],
+                ExpRange: { min: 5, max: 10 }
             };
         case MonsterType.Tank:
             return {
@@ -83,16 +85,35 @@ function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
                 Type: MonsterType.Tank,
                 AttackMessage: `{monster} fires a barrage of bullets!`,
                 AttackAddition: 7,
-                ArmorAddition: 10,
-                DamageRatioRange: {
-                    min: 0.2,
-                    max: 0.4
+                ArmorRange: {min: 17, max: 20},
+                DamageRange: {
+                    min: 30,
+                    max: 50
                 },
                 DamageTypes: [DamageType.Bludgeoning, DamageType.Fire],
                 MaxHealth: 500,
                 MonsterAttackRateRange: { min: 2, max: 6 },
                 ResistImmuneDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Cold, DamageType.Piercing, DamageType.Psychic, DamageType.Poison],
                 VulnerabilityDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Fire, DamageType.Piercing],
+                ExpRange: { min: 3, max: 7 }
+            };
+        case MonsterType.FrankTheTrafficCone:
+            return {
+                Name: "Frank the Traffic Cone",
+                Type: MonsterType.FrankTheTrafficCone,
+                AttackMessage: `{monster} shoves you into a pot hole!`,
+                AttackAddition: 20,
+                ArmorRange: {min: 28, max: 35},
+                DamageRange: {
+                    min: 3,
+                    max: 8
+                },
+                DamageTypes: [DamageType.Bludgeoning, DamageType.Fire],
+                MaxHealth: 10,
+                MonsterAttackRateRange: { min: 15, max: 20 },
+                ResistImmuneDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Psychic],
+                VulnerabilityDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Fire, DamageType.Cold, DamageType.Poison, DamageType.Piercing],
+                ExpRange: { min: 15, max: 20 }
             };
         // case MonsterType.Santa:
         //     return {
@@ -131,13 +152,14 @@ export interface MonsterStats {
     Type: MonsterType;
     AttackMessage: string;
     AttackAddition: number;
-    ArmorAddition: number;
-    DamageRatioRange: { min: number; max: number; } //Determines max damage to do based on players max health. Value 0 - 1
+    DamageRange: { min: number; max: number; }
     DamageTypes: Array<DamageType>;
     MaxHealth: number;
     MonsterAttackRateRange: { min: number; max: number; }
     ResistImmuneDamageTypeOptions: Array<DamageType>;
     VulnerabilityDamageTypeOptions: Array<DamageType>;
+    ExpRange: { min: number; max: number; }
+    ArmorRange: { min: number; max: number; }
 }
 
 interface AfflictionStack {
@@ -148,6 +170,7 @@ interface AfflictionStack {
 export interface MonsterInfo {
     Health: number;
     HitsBeforeAttack: number;
+    CurrentArmor: number;
     Stats: MonsterStats;
     Afflictions: Array<AfflictionStack>;
 }
@@ -233,6 +256,7 @@ export function LoadMonsterData(): MonsterInfo {
     let monsterInfo: MonsterInfo = {
         Health: 500,
         HitsBeforeAttack: 10,
+        CurrentArmor: 0,
         Stats: GenerateMonsterStatsFromType(MonsterType.Dragon),
         Afflictions: []
     }
@@ -247,6 +271,10 @@ export function LoadMonsterData(): MonsterInfo {
 
     if(monsterInfo.Stats === undefined) {
         monsterInfo.Stats = GenerateMonsterStatsFromType(MonsterType.Dragon);
+    }
+
+    if(monsterInfo.CurrentArmor == 0) {
+        monsterInfo.CurrentArmor = Math.floor(GetRandomIntI(monsterInfo.Stats.ArmorRange.min, monsterInfo.Stats.ArmorRange.max));
     }
 
     if(monsterInfo.Afflictions === undefined) {
@@ -283,11 +311,11 @@ export function AddAffliction(affliction: Affliction, amount: number) {
     SaveMonsterData(monsterInfo);
 }
 
-export function TickAfflictions() {
+export function TickAfflictions(client: Client) {
     let monsterInfo = LoadMonsterData();
     for (let i = 0; i < monsterInfo.Afflictions.length; i++) {
         if(monsterInfo.Afflictions[i].Amount > 0){
-            TriggerAffliction(monsterInfo, monsterInfo.Afflictions[i].AfflictionType);
+            TriggerAffliction(client, monsterInfo, monsterInfo.Afflictions[i].AfflictionType);
             monsterInfo.Afflictions[i].Amount--;
         }
     }
@@ -306,13 +334,13 @@ export function GetAfflictionCount(affliction: Affliction) {
     return 0;
 }
 
-function TriggerAffliction(monsterInfo: MonsterInfo, affliction: Affliction) {
+function TriggerAffliction(client: Client, monsterInfo: MonsterInfo, affliction: Affliction) {
     switch (affliction) {
         case Affliction.Burning:
-            monsterInfo.Health--;
+            HandleDamage(client, 1, DamageType.Fire);
             break;
         case Affliction.Poison:
-            monsterInfo.Health--;
+            HandleDamage(client, 1, DamageType.Poison);
             break;
     }
 }
@@ -409,9 +437,7 @@ export async function TriggerMonsterAttack(client: Client) {
                     await client.say(process.env.CHANNEL!, `${currentMonsterStats.Name} critical hit ${playerClassInfo.Username}!`);
                 }
 
-                let maxDamage = Math.floor(CalculateMaxHealth(playerClassInfo) * GetRandomNumber(currentMonsterStats.DamageRatioRange.min, currentMonsterStats.DamageRatioRange.max));
-
-                let damage = Math.floor(maxDamage * damagePercentage);
+                let damage = Math.floor(GetRandomNumber(currentMonsterStats.DamageRange.min, currentMonsterStats.DamageRange.max) * damagePercentage);
 
                 if(roll === maxRoll) {
                     damage *= 2;
@@ -430,7 +456,7 @@ export async function TriggerMonsterAttack(client: Client) {
                         let healthPercentage = currentHealth / maxHealth;
     
                         if(healthPercentage < 0.3) {
-                            let reduction = damage * strengthPercentage;
+                            let reduction = Math.ceil(damage * strengthPercentage);
                             damage -= reduction;
     
                             await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s damage was reduced by ${reduction} because of their ${upgrade.Name}!`);
@@ -556,12 +582,12 @@ export async function DoDamageToMonster(client: Client, username: string, damage
     }
 
     if(GetAfflictionCount(Affliction.Curse) > 0) {
-        damage += Math.floor((damage * 0.05) * GetAfflictionCount(Affliction.Curse));
+        damage += Math.floor((damage * 0.01) * GetAfflictionCount(Affliction.Curse));
     }
 
     DoPlayerUpgrade(username, UpgradeType.LifestealChance, async (upgrade, strength, strengthPercentage) => {
         if(GetRandomIntI(0, 100) <= strength) {
-            ChangePlayerHealth(client, username, Math.floor(damage), DamageType.None);
+            await ChangePlayerHealth(client, username, Math.floor(damage), DamageType.None);
             await client.say(process.env.CHANNEL!, `@${username} gained ${Math.floor(damage)} health from their ${upgrade.Name}!`);
         }
     });
@@ -585,12 +611,34 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         ChangePlayerHealth(client, username, Math.floor(damage * strengthPercentage), DamageType.None);
     });
 
-    console.log(`Monster took ${damage} ${DamageType[damageType]} damage`);
-    monsterInfo.Health -= Math.floor(damage);
+    let dragonDied = HandleDamage(client, damage, damageType);
 
     setTimeout(async () => {
         await HandleQuestProgress(client, username, QuestType.DealDamage, damage);
     }, 50);
+
+
+    setTimeout(() => {
+        let playerSession: PlayerSessionData = LoadPlayerSession(username);
+        playerSession.TimesAttackedEnemy++;
+        playerSession.AttackedEnemySinceDeath = true;
+        SavePlayerSession(username, playerSession);
+    }, 10);
+
+    await GiveExp(client, username, 1);
+
+    return dragonDied;
+}
+
+function HandleDamage(client: Client, damage: number, damageType: DamageType): boolean {
+    let monsterInfo = LoadMonsterData();
+
+    if(monsterInfo.Health <= 0) {
+        return false;
+    }
+
+    console.log(`Monster took ${damage} ${DamageType[damageType]} damage`);
+    monsterInfo.Health -= Math.floor(damage);
 
     if(monsterInfo.Health <= 0) {
         monsterInfo.Health = 0;
@@ -623,11 +671,11 @@ export async function DoDamageToMonster(client: Client, username: string, damage
                 if(sessions[i].AttackedEnemySinceDeath) {// || sessions[i].NameAsDisplayed.toLowerCase() == username.toLowerCase()) {
                     let player = LoadPlayer(sessions[i].NameAsDisplayed);
 
-                    let expToGive = (player.CurrentExpNeeded - player.CurrentExp) * 0.2;
+                    let expToGive = GetRandomIntI(monsterInfo.Stats.ExpRange.min, monsterInfo.Stats.ExpRange.max) * player.Level;
                     DoPlayerUpgrade(sessions[i].NameAsDisplayed, UpgradeType.DefeatGems, async (upgrade, strength, strengthPercentage) => {
                         expToGive += strength;
                     });
-                    await GiveExp(client, sessions[i].NameAsDisplayed, Math.max(15, expToGive));
+                    await GiveExp(client, sessions[i].NameAsDisplayed, expToGive);
                     await GivePlayerRandomObject(client, sessions[i].NameAsDisplayed);
                     // await GivePlayerObject(client, sessions[i].NameAsDisplayed, "present")
                 }
@@ -656,19 +704,8 @@ export async function DoDamageToMonster(client: Client, username: string, damage
             }, 10);
         }, 100);
 
-
-
         return true;
     }
-
-    setTimeout(() => {
-        let playerSession: PlayerSessionData = LoadPlayerSession(username);
-        playerSession.TimesAttackedEnemy++;
-        playerSession.AttackedEnemySinceDeath = true;
-        SavePlayerSession(username, playerSession);
-    }, 10);
-
-    await GiveExp(client, username, 1);
 
     Broadcast(JSON.stringify({ type: 'attack', health: monsterInfo.Health }));
 
@@ -699,6 +736,7 @@ function SetMonsterData(monsterData: MonsterInfo) {
 
     monsterData.HitsBeforeAttack = GetRandomIntI(monsterData.Stats.MonsterAttackRateRange.min, monsterData.Stats.MonsterAttackRateRange.max);
     monsterData.Health = monsterData.Stats.MaxHealth;
+    monsterData.CurrentArmor = Math.floor(GetRandomIntI(monsterData.Stats.ArmorRange.min, monsterData.Stats.ArmorRange.max));
     ResetMonsterAfflictions(monsterData);
 }
 

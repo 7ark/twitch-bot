@@ -148,8 +148,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         IconRep: IconType.Bottle,
         ThrownDamage: { min: -40, max: -20 },
         UseAction: async (client, player, afterText) => {
-            let maxHealth = CalculateMaxHealth(player);
-            let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.1, 10), Math.max(maxHealth * 0.2, 30)))
+            let heal = GetRandomIntI(10, 30);
 
             await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 
@@ -170,8 +169,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         IconRep: IconType.Bottle,
         ThrownDamage: { min: -80, max: -300 },
         UseAction: async (client, player, afterText) => {
-            let maxHealth = CalculateMaxHealth(player);
-            let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.3, 10), Math.max(maxHealth * 0.5, 30)))
+            let heal = GetRandomIntI(40, 70);
 
             await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 
@@ -192,8 +190,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         IconRep: IconType.Bottle,
         ThrownDamage: { min: -150, max: -500 },
         UseAction: async (client, player, afterText) => {
-            let maxHealth = CalculateMaxHealth(player);
-            let heal = Math.ceil(GetRandomIntI(Math.max(maxHealth * 0.7, 10), Math.max(maxHealth * 0.8, 30)))
+            let heal = GetRandomIntI(100, 150);
 
             await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 

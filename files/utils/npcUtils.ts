@@ -126,7 +126,9 @@ const npcs: Array<NPC> = [
                     "I'm having a great time",
                 ],
                 response: [
-                    "Well wowie! How about that! That's so great."
+                    "Well wowie! How about that! That's so great.",
+                    "That's great to hear!",
+                    "Hooray!"
                 ]
             },
             {
@@ -151,7 +153,10 @@ const npcs: Array<NPC> = [
                     "What keeps you busy?"
                 ],
                 response: [
-                    "Well mostly I farm, though papa says I outta stop."
+                    "Well mostly I farm, though papa says I outta stop.",
+                    "I like to run around a lot!",
+                    "Sometimes I draw, but papa yelled at me last time I did it... cause I did it on the walls. Oops",
+                    "I do whatever papa asks me to do!"
                 ]
             },
             {
@@ -162,7 +167,9 @@ const npcs: Array<NPC> = [
                     "What are you doing here?",
                 ],
                 response: [
-                    "Well I was just heading out to the shops and found all you people, and shucks it sure is an honor."
+                    "Well I was just heading out to the shops and found all you people, and shucks it sure is an honor.",
+                    "Well I just like to say hello sometimes!",
+                    "I'm just chatting while my papa works!"
                 ]
             },
             {
@@ -171,7 +178,9 @@ const npcs: Array<NPC> = [
                     "What are you buying from the shop?",
                 ],
                 response: [
-                    "Well papa had me run into town to pick him up some new tools!"
+                    "Well papa had me run into town to pick him up some new tools!",
+                    "I was hoping to find an ice cream!",
+                    "Papa needed some help!"
                 ]
             },
             {
@@ -196,7 +205,11 @@ const npcs: Array<NPC> = [
                     "How's life?"
                 ],
                 response: [
-                    "I'm great! A little sleepy... but great!"
+                    "I'm great! A little sleepy... but great!",
+                    "I'm having a good time meeting all of you!",
+                    "I'm doing pretty okay!",
+                    "I can't stop yawning.",
+                    "It's good! How's yours?"
                 ]
             },
             {
@@ -206,7 +219,10 @@ const npcs: Array<NPC> = [
                     "Did you not get enough rest?",
                 ],
                 response: [
-                    "Well I was just tossing and turning all night last night, couldn't get a wink of sleep!"
+                    "Well I was just tossing and turning all night last night, couldn't get a wink of sleep!",
+                    "No reason!",
+                    "I'm not supposed to say! Shhh",
+                    "Just all the noise from papa's workshop!"
                 ]
             },
             {
@@ -227,7 +243,19 @@ const npcs: Array<NPC> = [
                     "Who raised you?"
                 ],
                 response: [
-                    "Well he's papa, duh!"
+                    "Well he's papa, duh!",
+                    "My papa is the best! He does a bunch of farming"
+                ]
+            },
+            {
+                intents: [
+                    "Who is your mother?",
+                    "Who's your mom?",
+                    "Who's mama?",
+                ],
+                response: [
+                    "What's that?",
+                    "I don't know who that is!"
                 ]
             },
             {
@@ -278,7 +306,9 @@ const npcs: Array<NPC> = [
                     "Whats wrong with the potatos?",
                 ],
                 response: [
-                    "Papa just says I'm not allowed, that's all!"
+                    "Papa just says I'm not allowed, that's all!",
+                    "Shhh! Don't tell anyone!",
+                    "I'm not allowed to go there!"
                 ]
             },
             {
@@ -392,7 +422,8 @@ const npcs: Array<NPC> = [
                     "Is a good boy",
                 ],
                 response: [
-                    "Wowie thanks! I'm trying my best"
+                    "Wowie thanks! I'm trying my best",
+                    "Well shucks don't make me blush"
                 ]
             },
             {
@@ -409,6 +440,16 @@ const npcs: Array<NPC> = [
                 ],
                 response: [
                     "Well shucks, sorry I'm trying my best"
+                ]
+            },
+            {
+                intents: [
+                    "I should treat you better",
+                    "I'll be nicer to you",
+                ],
+                response: [
+                    "Well kindness makes the world go round I bet!",
+                    "Well shucks, I'd appreciate that"
                 ]
             },
             {
@@ -466,10 +507,179 @@ const npcs: Array<NPC> = [
                 intents: [
                     "bye",
                     "goodbye",
-                    "bye all"
+                    "bye all",
+                    "goodnight",
+                    "goodnight yall"
                 ],
                 response: [
-                    "Goodbye!!"
+                    "Goodbye!!",
+                    "Bye bye!",
+                ]
+            },
+            {
+                intents: [
+                    "do you know what i can do with my gems?",
+                    "what are gems?",
+                ],
+                response: [
+                    "Oh my papa is always talking about those! He always says we need more gems but the farm ain't doin' too well...",
+                    "My papa says the bank buys gems!",
+                ]
+            },
+            {
+                intents: [
+                    "ohhhhh",
+                ],
+                response: [
+                    "Ohhhh! :D",
+                ]
+            },
+            {
+                intents: [
+                    "jesus",
+                ],
+                response: [
+                    "Who's that?",
+                ]
+            },
+            {
+                intents: [
+                    "Have you ever taken a taxi?",
+                    "Do you use taxis?",
+                ],
+                response: [
+                    "Oh no! I've always wanted to, but papa says we don't have enough Bytecoins...",
+                ]
+            },
+            {
+                intents: [
+                    "loaf",
+                ],
+                response: [
+                    "the7arloaf",
+                    "the7arloaf the7arloaf the7arloaf",
+                ]
+            },
+            {
+                intents: [
+                    "!mine",
+                    "the7armine"
+                ],
+                response: [
+                    "!mine",
+                ]
+            },
+            {
+                intents: [
+                    "!cook",
+                    "the7arcook"
+                ],
+                response: [
+                    "!cook",
+                ]
+            },
+            {
+                intents: [
+                    "!fish",
+                    "the7arfish"
+                ],
+                response: [
+                    "!fish",
+                ]
+            },
+            {
+                intents: [
+                    "how healthy are you?",
+                    "are you healthy?",
+                    "are you okay?"
+                ],
+                response: [
+                    "I'm fit as a fiddle! My papa took me to the doctor and he said I was doing just fine!",
+                    "I'm so healthy! I brush my teeth 3 times a day and eat all my fruits and veggies!",
+                ]
+            },
+            {
+                intents: [
+                    "i havent forgiven timmy",
+                ],
+                response: [
+                    "Oh shucks im sorry please forgive me",
+                ]
+            },
+            {
+                intents: [
+                    "where is the bank",
+                ],
+                response: [
+                    "My papa says its far away, but he says that the chat fellas can get to it using !bank",
+                ]
+            },
+            {
+                intents: [
+                    "mothman",
+                    "mothman will be happy"
+                ],
+                response: [
+                    "Who is mister mothman?",
+                ]
+            },
+            {
+                intents: [
+                    "duck",
+                ],
+                response: [
+                    "Duck!",
+                    "Goose!",
+                ]
+            },
+            {
+                intents: [
+                    "who likes you?",
+                    "who even cares about you?"
+                ],
+                response: [
+                    "My papa does!",
+                    "Well that's a bit mean :(",
+                ]
+            },
+            {
+                intents: [
+                    "It's looking cute",
+                    "You look cute?"
+                ],
+                response: [
+                    "No, YOU look cute!",
+                    "Well wowie, I think you're pretty swell too",
+                ]
+            },
+            {
+                intents: [
+                    "no",
+                    "lol no"
+                ],
+                response: [
+                    "Okay... :(",
+                    "But why not??"
+                ]
+            },
+            {
+                intents: [
+                    "sorry",
+                    "im sorry"
+                ],
+                response: [
+                    "Apology accepted!",
+                    "Well it's alright! We all make mistakes"
+                ]
+            },
+            {
+                intents: [
+                    "yes",
+                    "lol yes"
+                ],
+                response: [
+                    "Hooray!",
+                    "I agree with you!",
                 ]
             },
             {
@@ -574,6 +784,7 @@ export async function GetNPCResponse(npc: NPC, message: string): Promise<string>
     const matcher = new NPCMatcher(npc.Responses);
     await matcher.initialize();
 
+    //TODO REMOVE NAME STUFF
     const response = await matcher.findBestResponse(message.toLowerCase().replace(npc.Name.toLowerCase(), "").trim());
 
     matcher.dispose();

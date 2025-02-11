@@ -11,6 +11,7 @@ interface StreamSettings {
     volume: Map<AudioType, number>;
     doesRandomChatChallenges: boolean;
     cooldownMultiplier: number;
+    challengeType?: string;
 }
 
 //Playing alone, casually
@@ -75,6 +76,20 @@ const COLLAB_STORY_SETTINGS: StreamSettings = {
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3
+}
+
+//Playing alone, casually
+const GTA_CHALLENGE_NEEDRIDE: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 1],
+        [AudioType.UserGameActions, 0.3],
+        [AudioType.GameAlerts, 0],
+        [AudioType.StreamInfrastructure, 1],
+        [AudioType.ImportantStreamEffects, 1],
+    ]),
+    doesRandomChatChallenges: false,
+    cooldownMultiplier: 3,
+    challengeType: "gta_needride"
 }
 
 //I SET MY SETTINGS HERE

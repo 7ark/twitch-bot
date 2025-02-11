@@ -11,6 +11,7 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Strength: 0,
         Savable: false,
         Rarity: 40,
+        IsPermanent: false
     },
     {
         Name: `Tough`,
@@ -21,7 +22,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 15,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Incredible Resolve`,
@@ -32,7 +34,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `New Shield`,
@@ -43,7 +46,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 3,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Unkillable`,
@@ -54,7 +58,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Critical Eye`,
@@ -65,7 +70,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Super Strength`,
@@ -76,7 +82,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Rapid Strike`,
@@ -87,7 +94,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Fast Learner`,
@@ -98,7 +106,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Speedy`,
@@ -107,9 +116,10 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         ClassRequirements: [],
         UpgradeRequirements: [],
         AfflictionsImposed: [],
-        Strength: 10,
+        Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Cooldown Mastery`,
@@ -118,9 +128,10 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         ClassRequirements: [],
         UpgradeRequirements: [],
         AfflictionsImposed: [],
-        Strength: 10,
+        Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Hoarder`,
@@ -131,7 +142,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 250,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
 
     //Afflictions
@@ -142,9 +154,10 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         ClassRequirements: [],
         UpgradeRequirements: [],
         AfflictionsImposed: [Affliction.Burning],
-        Strength: 3,
+        Strength: 2,
         Savable: true,
-        Rarity: 10
+        Rarity: 10,
+        IsPermanent: false
     },
     {
         Name: `Inflict Curse`,
@@ -153,9 +166,10 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         ClassRequirements: [],
         UpgradeRequirements: [],
         AfflictionsImposed: [Affliction.Curse],
-        Strength: 3,
+        Strength: 2,
         Savable: true,
-        Rarity: 10
+        Rarity: 10,
+        IsPermanent: false
     },
     {
         Name: `Double Afflictions`,
@@ -166,8 +180,103 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 1,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
+
+    //TODO New
+    // {
+    //     Name: `Turtle`,
+    //     Description: `Gain {0}% health, deal 25% less damage`,
+    //     Type: UpgradeType.GainPercentHealthDeal25PercentLessDamage,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [],
+    //     AfflictionsImposed: [],
+    //     Strength: 25,
+    //     Savable: true,
+    //     Rarity: 5,
+    //     IsPermanent: false
+    // },
+    // {
+    //     Name: `Recovery`,
+    //     Description: `Each time a monster takes damage from an affliction, heal {0}`,
+    //     Type: UpgradeType.HealWhenMonsterTakesAfflictionDamage,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [UpgradeType.ApplyAffliction],
+    //     AfflictionsImposed: [],
+    //     Strength: 1,
+    //     Savable: true,
+    //     Rarity: 3,
+    //     IsPermanent: false
+    // },
+    // {
+    //     Name: `Front Liner`,
+    //     Description: `Each time the monster attacks, {0}% of the damage other players would take is instead passed to you`,
+    //     Type: UpgradeType.ShieldDamageFromOtherPlayers,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [],
+    //     AfflictionsImposed: [],
+    //     Strength: 40,
+    //     Savable: true,
+    //     Rarity: 5,
+    //     IsPermanent: false
+    // },
+    // {
+    //     Name: `Hardy`,
+    //     Description: `Take {0}% less damage`,
+    //     Type: UpgradeType.ReduceDamage,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [],
+    //     AfflictionsImposed: [],
+    //     Strength: 5,
+    //     Savable: true,
+    //     Rarity: 5,
+    //     IsPermanent: false
+    // },
+    // {
+    //     Name: `Noodle Arms`,
+    //     Description: `Take {0}% less damage, but deal 10% less damage`,
+    //     Type: UpgradeType.ReduceDamageButDealLess,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [],
+    //     AfflictionsImposed: [],
+    //     Strength: 10,
+    //     Savable: true,
+    //     Rarity: 5,
+    //     IsPermanent: false
+    // },
+    // {
+    //     Name: `Team Player`,
+    //     Description: `Gain {0}% more max HP`,
+    //     Type: UpgradeType.IncreaseMaxHP,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [UpgradeType.ShieldDamageFromOtherPlayers],
+    //     AfflictionsImposed: [],
+    //     Strength: 20,
+    //     Savable: true,
+    //     Rarity: 5,
+    //     IsPermanent: false
+    // },
+    // {
+    //     Name: `Team Shield`,
+    //     Description: `Take {0}% less damage`,
+    //     Type: UpgradeType.ReduceDamage,
+    //     ClassRequirements: [],
+    //     UpgradeRequirements: [UpgradeType.ShieldDamageFromOtherPlayers],
+    //     AfflictionsImposed: [],
+    //     Strength: 10,
+    //     Savable: true,
+    //     Rarity: 5,
+    //     IsPermanent: false
+    // },
+    //receives % more damage from other players, unlocks many from above, but also + extra health
+    //each time you do x, % chance to destroy random item
+    //-gems but plus hp
+    //better exchange rate on bank
+    //% chance when you gain an item to have it destroyed but you gain dmg/hp
+    //separate upgrades: each time an item you have is destroyed, increase max hp/heal/deal damage equal to rarity?
+    //+%dmg -%hp
+    //reduce cleric specific cooldowns for like heals and shit
 
     //Class specific
 
@@ -181,7 +290,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 15,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Just Better`,
@@ -192,7 +302,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Last Stand`,
@@ -203,7 +314,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 15,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
 
     //Rogue
@@ -216,7 +328,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Poisonous`,
@@ -225,9 +338,10 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         ClassRequirements: [ClassType.Rogue],
         UpgradeRequirements: [],
         AfflictionsImposed: [Affliction.Poison],
-        Strength: 5,
+        Strength: 3,
         Savable: true,
-        Rarity: 10
+        Rarity: 10,
+        IsPermanent: false
     },
     {
         Name: `Rich Adventurer`,
@@ -238,7 +352,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Vital Knowledge`,
@@ -249,7 +364,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Dodge Recovery`,
@@ -260,7 +376,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
 
     //Mage
@@ -273,7 +390,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Better Wand`,
@@ -284,7 +402,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Arcane Intelligence`,
@@ -295,7 +414,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Arcane Focus`,
@@ -306,7 +426,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 5,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
 
     //Cleric
@@ -319,7 +440,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 25,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Blessed Armor`,
@@ -330,7 +452,8 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 3,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
     {
         Name: `Healing Hands`,
@@ -341,7 +464,45 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         AfflictionsImposed: [],
         Strength: 10,
         Savable: true,
-        Rarity: 5
+        Rarity: 5,
+        IsPermanent: false
     },
 
+    //Permanent
+    {
+        Name: `SUPER LEARNER`,
+        Description: `Get 10% more EXP`,
+        Type: UpgradeType.MoreEXP,
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        AfflictionsImposed: [],
+        Strength: 10,
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER HURTER`,
+        Description: `Do 10% more damage`,
+        Type: UpgradeType.IncreasedDamage,
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        AfflictionsImposed: [],
+        Strength: 10,
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER HARDY`,
+        Description: `Gain 10% more max HP`,
+        Type: UpgradeType.IncreaseMaxHP,
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        AfflictionsImposed: [],
+        Strength: 10,
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
 ];

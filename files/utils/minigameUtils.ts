@@ -1,10 +1,9 @@
 import {Client} from "tmi.js";
-import {IsCommand} from "../commands";
 import {Broadcast} from "../bot";
-import {GetRandomIntI, GetRandomItem, RemoveFromArray} from "./utils";
+import {GetRandomIntI, GetRandomItem, IsCommand, RemoveFromArray} from "./utils";
 import {GiveExp, GivePlayerRandomObjectInTier, LoadAllPlayers, LoadPlayer, SavePlayer} from "./playerGameUtils";
 import {AddToMinigameQueue, IsMinigameQueueEmpty} from "../actionqueue";
-import {AllInventoryObjects, ObjectTier} from "../inventory";
+import {AllInventoryObjects, ObjectTier} from "../inventoryDefinitions";
 import {HandleQuestProgress} from "./questUtils";
 import {GiveUserVIP, RemoveUserVIP} from "./twitchUtils";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
@@ -32,7 +31,7 @@ export enum MinigameType {
 export function IsCommandMinigame(command: string): boolean {
     const stringKeys = Object
     .keys(MinigameType)
-    .filter((v) => isNaN(Number(v)))
+    .filter((v) => isNaN(Number(v)));
 
     let result = false;
     stringKeys.forEach((key, index) => {
@@ -82,6 +81,10 @@ export function InitializeShop() {
             obj: randomObj?.ObjectName!,
             cost: GetRandomIntI(randomObj?.CostRange!.min!, randomObj?.CostRange!.max!)
         });
+    }
+
+    for (let i = 0; i < currentShop.length; i++) {
+        currentShop[i].cost = Math.floor(currentShop[i].cost / 7);
     }
 }
 

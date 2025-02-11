@@ -49,7 +49,7 @@ const dragon = `
     '   '  \`
 `;
 
-enum MonsterType { Dragon, Loaf, Tank, Santa }
+enum MonsterType { Dragon, Loaf, Tank, FrankTheTrafficCone }
 
 interface MonsterInfoHtml {
     Type: MonsterType,
@@ -73,9 +73,12 @@ function CreateMonster(data: { type: string; monsterType: MonsterType; health: n
         case MonsterType.Tank:
             monsterImage.src = `extras/tank.png`;
             break;
-        case MonsterType.Santa:
-            monsterImage.src = `extras/santa.png`;
+        case MonsterType.FrankTheTrafficCone:
+            monsterImage.src = `extras/frank.png`;
             break;
+        // case MonsterType.Santa:
+        //     monsterImage.src = `extras/santa.png`;
+        //     break;
     }
 
     // monsterHtml.id = 'monster';

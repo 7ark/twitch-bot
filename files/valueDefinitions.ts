@@ -71,6 +71,7 @@ export interface Player {
     CurrentExp: number;
     CurrentExpNeeded: number;
     Upgrades: Array<string>;
+    PermanentUpgrades: Array<string>;
     KnownMoves: Array<string>;
     UpgradeOptions: Array<string>;
     Voice?: string;
@@ -88,6 +89,9 @@ export interface Player {
     HasVip: boolean;
     HitStreak: number;
     ByteCoins: number;
+
+    Prestige: number;
+    Mastery: number;
 }
 
 export interface Class {
@@ -162,7 +166,22 @@ export enum UpgradeType {
     DoubleAfflictionsChance,
     IncreaseArmorWhenAbove70Percent,
     DodgeHeal,
-    RogueDodgeCounter
+    RogueDodgeCounter,
+
+    //TODO
+    GainPercentHealthDeal25PercentLessDamage,
+    HealWhenMonsterTakesAfflictionDamage,
+    ShieldDamageFromOtherPlayers,
+    ReduceDamage,
+    ReduceDamageButDealLess,
+}
+
+export const MAX_LEVEL = 25;
+export const MAX_PRESTIGE = 10;
+
+export interface UpgradeEffect {
+    Type: UpgradeType;
+    Strength: number;
 }
 
 export interface Upgrade {
@@ -175,6 +194,7 @@ export interface Upgrade {
     Strength: number;
     Savable: boolean; //Whether we save this, or its disposed.
     Rarity: number;
+    IsPermanent: boolean;
 }
 
 export enum Affliction {
@@ -188,7 +208,7 @@ export function GetAfflictionDescription(affliction: Affliction) {
         case Affliction.Burning:
             return "Every tick deals 1 damage per stack of burning.";
         case Affliction.Curse:
-            return "Attack damage is increased by 5% per stack of curse";
+            return "Attack damage is increased by 1% per stack of curse";
         case Affliction.Poison:
             return "Every tick deals 1 damage per stack of poison.";
     }

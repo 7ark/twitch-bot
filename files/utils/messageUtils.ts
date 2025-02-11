@@ -1,8 +1,8 @@
 import {ChatUserstate, client, Client} from "tmi.js";
-import {MessageDelegate, SayAllChat} from "../globals";
+import {CurrentGTARider, MessageDelegate, SayAllChat} from "../globals";
 import {DoesPlayerHaveStatusEffect, GivePlayerObject, LoadPlayer, RandomlyGiveExp} from "./playerGameUtils";
 import {CheckMessageSimilarity, GetRandomInt, GetRandomIntI, GetRandomItem,} from "./utils";
-import {ProcessCommands, ProcessUniqueCommands} from "../commands";
+import {ProcessCommands, ProcessUniqueCommands} from "./commandUtils";
 import {Broadcast} from "../bot";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {PlayTextToSpeech, TryGetPlayerVoice} from "./audioUtils";
@@ -15,7 +15,6 @@ import {WhisperUser} from "./twitchUtils";
 import {CheckIfShouldHaveNPCResponse, GetNPCResponse} from "./npcUtils";
 
 let lastMessageTimestamp = new Date();
-export let CurrentGTARider: string = "";
 
 export function GetMinutesSinceLastMessage(): number {
     const currentTimestamp = new Date();
@@ -164,7 +163,7 @@ const minigameKeys = Object
 
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
-    "Check out my socials - Discord: discord.gg/A7R5wFFUWG, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
+    "Check out my socials - Discord: https://discord.gg/6dEKeStTEM, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
     `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Every time you level up, you can learn new upgrades and moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
     "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus",
     "Check what stuff you have with !inventory. You can !info [item] to learn more about it. You can also use !info [move name] to learn about what it does",
@@ -227,6 +226,35 @@ export function DrunkifyText(sentence: string): string {
     return drunkWords.join(" ".repeat(Math.random() > 0.7 ? 2 : 1));
 }
 
+export function GetParameterFromCommand(text: string, parameter: number) {
+    let pieces = text.split(' ');
+    if(pieces.length > parameter) {
+        return pieces[parameter];
+    }
+    else {
+        return "";
+    }
+}
+
+export function GetLastParameterFromCommand(text: string) {
+    let pieces = text.split(' ');
+    if(pieces.length > 0) {
+        let lastIndex = pieces.length - 1;
+        while (lastIndex >= 0) {
+            if(pieces[lastIndex].trim() != "") {
+                return pieces[lastIndex].trim();
+            }
+            else {
+                lastIndex--;
+            }
+        }
+
+        return "";
+    }
+    else {
+        return "";
+    }
+}
 
 
 // function DrunkifyText(text: string): string {
