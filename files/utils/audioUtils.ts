@@ -9,6 +9,7 @@ import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {Player} from "../valueDefinitions";
 import fs from "fs";
 import axios from "axios";
+import playSound from "play-sound";
 
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
@@ -58,31 +59,36 @@ function convertMp3ToWav(mp3FilePath: string, wavFilePath: string): Promise<void
     });
 }
 
+const audioPlayer = playSound({ player: "C:\\Users\\funny\\Documents\\mplayer\\mplayer.exe"});
+
 export function PlaySound(soundName: string, type: AudioType, extension: string = "wav", callback?: () => void) {
     try {
-        let fileLoc = `files/extras/${soundName}.${extension}`;
+        let outputDevice = ``;
+        const fileLoc = `files/extras/${soundName}.${extension}`;
         console.log(`Playing audio at: ${fileLoc}`);
-        if(!fs.existsSync(fileLoc)) {
-            console.log(`COULD NOT FIND FILE, WE'RE ABORTING OH GOD`);
+
+        if (!fs.existsSync(fileLoc)) {
+            console.error(`File not found: ${fileLoc}. Aborting.`);
             return;
         }
 
-        let audioBuffer = load(fileLoc);//.then(play);
+        // Define options for the underlying player.
+        let options = {};
+        if (outputDevice) {
+            // For example, using mplayer on Windows you can specify a device with the following:
+            options = { mplayer: ['-ao', `directsound:device=${outputDevice}`] };
+            console.log(`Routing audio to device: ${outputDevice}`);
+        }
 
-        audioBuffer.then((buffer) => {
-            let playHandle: AudioPlayHandle = play(buffer, {
-                start: 0,
-                end: buffer.duration,
-                volume: CurrentStreamSettings.volume.get(type)
-            }, () => {});
-
-            setTimeout(() => {
-                if(callback != undefined) {
-                    callback();
-                }
-            }, buffer.duration * 1000)
-        })
-
+        // Cast options to any to bypass the type error.
+        audioPlayer.play(fileLoc, options as any, (err: any) => {
+            if (err) {
+                console.error("Error playing sound:", err);
+            }
+            if (callback) {
+                callback();
+            }
+        });
     }
     catch (e) {
         console.log(e);
@@ -358,7 +364,7 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
 //     </voice>
 // </speak>`;
 
-    const ssml = ParseEmotionalText(text, emotionMappings).generateSSML(voice);
+    const ssml = ParseEmotionalText(text).generateSSML(voice);
 
     // let voices = await synthesizer.getVoicesAsync("en-US");
 
