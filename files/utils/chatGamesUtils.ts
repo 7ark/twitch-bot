@@ -1,4 +1,4 @@
-import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventoryDefinitions";
+import {AllInventoryObjects, InventoryObject, ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
 import {GetRandomInt, GetRandomIntI, GetRandomItem, Shuffle} from "./utils";
 import {Broadcast} from "../bot";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
@@ -260,7 +260,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct number of ${numberToGuess}!`);
-                            await GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName, ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
@@ -335,7 +335,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${result}!`);
-                            await GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName, ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
@@ -366,7 +366,8 @@ export function StartChatChallenge(client: Client, username: string) {
             challenge: () => {
                 //Word scramble
                 const words = ['water', 'duck', 'hunt', `secret`, `example`, `dragon`, `bytefire`, `lethal`, `company`, `scrap`, `skyrim`, `dungeon`, `programming`, `coding`, `gamer`, `function`, `loaf`,
-                `scramble`, `twitch`, `fallout`, `nuclear`, `subscription`, `control`, `maddening`, `minigame`, `stickman`, `delay`, `gems`];
+                `scramble`, `twitch`, `fallout`, `nuclear`, `subscription`, `control`, `maddening`, `minigame`, `stickman`, `delay`, `gems`,
+                `portcullis`, `taxi`, `bank`, `chatopia`, `blood`, `timmy`, `gazicmalzen`];
 
                 let randomWord = GetRandomItem(words)!;
                 let scrambledWord = randomWord.split('').sort(function(){return 0.5-Math.random()}).join('')
@@ -398,7 +399,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct word of ${randomWord}!`);
-                            await GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName, ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
@@ -462,7 +463,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has guessed the correct user of @${user}!`);
-                            await GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName, ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
@@ -529,7 +530,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct letter of "${randomLetterAnswer}"!`);
-                            await GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName, ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
@@ -591,7 +592,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${randomNumber}!`);
-                            await GivePlayerRandomObject(client, responseName);
+                            await GivePlayerRandomObject(client, responseName, ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 35);
                             someoneGotIt = true;
 
@@ -792,7 +793,7 @@ export function StartChatChallenge(client: Client, username: string) {
 
                             PlayTextToSpeech(`${responseName} wins the challenge!`, AudioType.GameAlerts);
                             await client.say(process.env.CHANNEL!, `@${responseName} has gotten the correct number of ${answer}! Explanation: ${explanation}`);
-                            await GivePlayerRandomObjectInTier(client, responseName, [ObjectTier.Mid, ObjectTier.High]);
+                            await GivePlayerRandomObjectInTier(client, responseName, [ObjectTier.Mid, ObjectTier.High], ObjectRetrievalType.RandomReward);
                             await GiveExp(client, responseName, 50);
                             someoneGotIt = true;
 

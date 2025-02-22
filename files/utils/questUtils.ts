@@ -1,7 +1,7 @@
 import {GiveExp, GivePlayerRandomObjectInTier, LoadPlayer, SavePlayer} from "./playerGameUtils";
 import {GetRandomEnum, GetRandomIntI, GetRandomItem} from "./utils";
 import {Client} from "tmi.js";
-import {ObjectTier} from "../inventoryDefinitions";
+import {ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
 import {Quest, QuestType} from "../valueDefinitions";
 
 
@@ -58,19 +58,19 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
         case QuestType.DealDamage:
             switch (difficulty) {
                 case 1:
-                    multiplyArray = [ 5, 10, 20 ];
+                    multiplyArray = [ 50, 100, 200 ];
                     break;
                 case 2:
-                    multiplyArray = [ 20, 25, 30 ];
+                    multiplyArray = [ 200, 250, 300 ];
                     break;
                 case 3:
-                    multiplyArray = [ 30, 40];
+                    multiplyArray = [ 300, 400];
                     break;
                 case 4:
-                    multiplyArray = [ 40, 50 ];
+                    multiplyArray = [ 400, 500 ];
                     break;
                 case 5:
-                    multiplyArray = [ 50, 75, 100 ];
+                    multiplyArray = [ 500, 750, 1000 ];
                     break;
             }
             return GetRandomIntI(difficulty, difficulty * 2) * GetRandomItem(multiplyArray);
@@ -142,6 +142,7 @@ export async function GivePlayerRandomQuest(client: Client, username: string) {
 
 async function GiveQuestRewards(client: Client, username: string, difficulty: number) {
     let exp = 1;
+    let coins = 0;
     switch (difficulty) {
         case 1:
             exp = GetRandomIntI(10, 25);
@@ -149,35 +150,46 @@ async function GiveQuestRewards(client: Client, username: string, difficulty: nu
         case 2:
             exp = GetRandomIntI(25, 50);
             if(GetRandomIntI(1, 3) == 1) {
-                await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low]);
+                await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low], ObjectRetrievalType.RandomReward);
             }
             break;
         case 3:
             exp = GetRandomIntI(50, 75);
             if(GetRandomIntI(1, 2) == 1) {
-                await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid]);
+                await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Low, ObjectTier.Mid], ObjectRetrievalType.RandomReward);
             }
+            coins = GetRandomIntI(2, 5);
             break;
         case 4:
             exp = GetRandomIntI(100, 150);
-            await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid]);
+            await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid], ObjectRetrievalType.RandomReward);
+            coins = GetRandomIntI(5, 10);
             break;
         case 5:
             exp = GetRandomIntI(150, 300)
-            await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid, ObjectTier.High]);
+            coins = GetRandomIntI(10, 15);
+            await GivePlayerRandomObjectInTier(client, username, [ObjectTier.Mid, ObjectTier.High], ObjectRetrievalType.RandomReward);
             break;
     }
 
+    if(coins > 0) {
+        let player = LoadPlayer(username);
+        player.ByteCoins += coins;
+        SavePlayer(player);
+    }
+
     await GiveExp(client, username, exp);
-    await client.say(process.env.CHANNEL!, `@${username}, you've received ${exp} EXP as a reward!`);
+    await client.say(process.env.CHANNEL!, `@${username}, you've received ${exp} EXP${(coins > 0 ? `, and ${coins} Bytecoins` : ``)} as a reward!`);
 }
 
 export async function HandleQuestProgress(client: Client, username: string, type: QuestType, addedProgress: number) {
+    addedProgress = Math.round(addedProgress);
     if(DoesPlayerHaveQuest(username)){
         let player = LoadPlayer(username);
 
         if(player.CurrentQuest!.Type == type) {
             player.CurrentQuest!.Progress += addedProgress;
+            player.CurrentQuest!.Progress = Math.floor(player.CurrentQuest!.Progress);
             if(player.CurrentQuest?.Progress >= player.CurrentQuest?.Goal) {
                 //Quest complete!
                 await client.say(process.env.CHANNEL!, `@${username}, you've completed your quest!`);

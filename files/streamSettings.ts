@@ -5,6 +5,7 @@ export enum AudioType {
     GameAlerts, //This is for gambling, or the chat challenges
     StreamInfrastructure, //This includes things like credits
     ImportantStreamEffects, //This is stuff that I may want louder than game alerts but quieter than infrastructure, like scare alerts
+    Ads,
 }
 
 interface StreamSettings {
@@ -22,6 +23,7 @@ const SOLO_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0.4],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 1],
+        [AudioType.Ads, 1],
     ]),
     doesRandomChatChallenges: true,
     cooldownMultiplier: 1
@@ -34,6 +36,7 @@ const SOLO_CHILL_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0.2],
         [AudioType.StreamInfrastructure, 0.8],
         [AudioType.ImportantStreamEffects, 1],
+        [AudioType.Ads, 0.3],
     ]),
     doesRandomChatChallenges: true,
     cooldownMultiplier: 3
@@ -47,6 +50,7 @@ const SOLO_STORY_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0.3],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 0.7],
+        [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3
@@ -60,6 +64,7 @@ const COLLAB_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0.05],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 0.5],
+        [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 2
@@ -73,6 +78,7 @@ const COLLAB_STORY_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 0.2],
+        [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3
@@ -86,10 +92,25 @@ const GTA_CHALLENGE_NEEDRIDE: StreamSettings = {
         [AudioType.GameAlerts, 0],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 1],
+        [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3,
     challengeType: "gta_needride"
+}
+
+const COOK_CHALLENGE: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 1],
+        [AudioType.UserGameActions, 0.3],
+        [AudioType.GameAlerts, 0],
+        [AudioType.StreamInfrastructure, 1],
+        [AudioType.ImportantStreamEffects, 1],
+        [AudioType.Ads, 0],
+    ]),
+    doesRandomChatChallenges: false,
+    cooldownMultiplier: 3,
+    challengeType: "cook"
 }
 
 //I SET MY SETTINGS HERE

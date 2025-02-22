@@ -43,6 +43,7 @@ export enum StatusEffect {
     DoubleDamage,
     BetterChanceToCrit,
     AllResistance,
+    RandomAccuracy,
 }
 
 export interface StatusEffectModule {
@@ -89,6 +90,7 @@ export interface Player {
     HasVip: boolean;
     HitStreak: number;
     ByteCoins: number;
+    GatheringResources: boolean;
 
     Prestige: number;
     Mastery: number;
@@ -142,12 +144,12 @@ export interface ClassMove {
 export enum UpgradeType {
     LearnMove,
     ApplyAffliction,
-    IncreaseMaxHP,
+    IncreaseMaxHPPercent,
     LessDamageWhenBelow30Percent,
     IncreaseAC,
     FatalDamageSave,
     CriticalHitChance,
-    IncreasedDamage,
+    DamageChangePercentage,
     ConsecutiveDamage,
     HealForDamageDealt,
     LifestealChance,
@@ -158,7 +160,7 @@ export enum UpgradeType {
     CooldownCancelChance,
     DefeatGems,
     WarriorStrikeTwiceChance,
-    DamageReduction,
+    TakenDamageChangedByPercent,
     MoreDamageWhenBelow30Percent,
     MoreMageDamage,
     RandomAfflictionChance,
@@ -167,13 +169,9 @@ export enum UpgradeType {
     IncreaseArmorWhenAbove70Percent,
     DodgeHeal,
     RogueDodgeCounter,
-
-    //TODO
-    GainPercentHealthDeal25PercentLessDamage,
     HealWhenMonsterTakesAfflictionDamage,
     ShieldDamageFromOtherPlayers,
-    ReduceDamage,
-    ReduceDamageButDealLess,
+    ChangeHitModifier
 }
 
 export const MAX_LEVEL = 25;
@@ -182,16 +180,17 @@ export const MAX_PRESTIGE = 10;
 export interface UpgradeEffect {
     Type: UpgradeType;
     Strength: number;
+    AfflictionsImposed?: Array<Affliction>;
 }
 
 export interface Upgrade {
     Name: string;
     Description: string;
-    Type: UpgradeType;
+    Effects: Array<UpgradeEffect>;
+    // Type: UpgradeType;
     ClassRequirements: Array<ClassType>;
     UpgradeRequirements: Array<UpgradeType>;
-    AfflictionsImposed: Array<Affliction>;
-    Strength: number;
+    // Strength: number;
     Savable: boolean; //Whether we save this, or its disposed.
     Rarity: number;
     IsPermanent: boolean;
@@ -208,7 +207,7 @@ export function GetAfflictionDescription(affliction: Affliction) {
         case Affliction.Burning:
             return "Every tick deals 1 damage per stack of burning.";
         case Affliction.Curse:
-            return "Attack damage is increased by 1% per stack of curse";
+            return "Attack damage is increased by 5% per stack of curse";
         case Affliction.Poison:
             return "Every tick deals 1 damage per stack of poison.";
     }

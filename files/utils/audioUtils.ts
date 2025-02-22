@@ -8,6 +8,7 @@ import {GetRandomItem} from "./utils";
 import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {Player} from "../valueDefinitions";
 import fs from "fs";
+import axios from "axios";
 
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
@@ -84,81 +85,67 @@ export function PlaySound(soundName: string, type: AudioType, extension: string 
 
     }
     catch (e) {
-        console.error(e);
+        console.log(e);
     }
 }
 
 export interface Voice {
     male: boolean;
     voice: string;
-    rate: number;
 }
 
 const okayVoices: Array<Voice> = [
     {
         male: true,
         voice: "en-US-AndrewNeural",
-        rate: 1
     },
     {
         male: false,
         voice: "en-US-EmmaNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-BrianNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-GuyNeural",
-        rate: 1
     },
     {
         male: false,
         voice: "en-US-AriaNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-DavisNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-EricNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-JacobNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-RogerNeural",
-        rate: 1
     },
     {
         male: true,
         voice: "en-US-SteffanNeural",
-        rate: 1
     },
     {
         male: false,
         voice: "en-US-AvaMultilingualNeural",
-        rate: 1
     },
     {
         male: false,
         voice: "en-US-AmberNeural",
-        rate: 1
     },
     {
         male: false,
         voice: "en-US-AshleyNeural",
-        rate: 1
     },
 ]
 
@@ -213,6 +200,107 @@ export function TryGetPlayerVoice(player: Player) {
     return player.Voice === undefined || player.Voice === "" ? GetRandomItem(okayVoices)!.voice : player.Voice;
 }
 
+function GetEmotionMapping(): Map<string, string> {
+    let emotionMappings: Map<string, string> = new Map<string, string>();
+    emotionMappings.set(`*cheerful*`, `cheerful`);
+    emotionMappings.set(`*angry*`, `angry`);
+    emotionMappings.set(`*sad*`, `sad`);
+    emotionMappings.set(`*whisper*`, `whispering`);
+    emotionMappings.set(`*scared*`, `terrified`);
+    emotionMappings.set(`*terrified*`, `terrified`);
+    emotionMappings.set(`*excited*`, `excited`);
+    emotionMappings.set(`*hopeful*`, `hopeful`);
+    emotionMappings.set(`*shouting*`, `shouting`);
+    emotionMappings.set(`*unfriendly*`, `unfriendly`);
+
+    return emotionMappings;
+}
+
+function ParseEmotionalText(text: string) {
+    const voiceStyles: Array<{
+        text: string,
+        style?: string
+    }> = [];
+
+    let emotionMappings = GetEmotionMapping();
+
+    // Create regex pattern from emotion markers
+    const markers = Array.from(emotionMappings.keys()).map(marker =>
+        marker.replace(/[*]/g, '\\*')
+    ).join('|');
+    const pattern = new RegExp(`(${markers})([^*]+)`, 'g');
+
+    // Keep track of where we left off
+    let lastIndex = 0;
+    let matches = Array.from(text.matchAll(pattern));
+
+    if (matches.length === 0) {
+        // If no emotion markers found, treat entire text as unstyled
+        voiceStyles.push({
+            text: text.trim()
+        });
+    } else {
+        // Process each match and the text between matches
+        matches.forEach(match => {
+            // If there's text before this style marker, add it as unstyled
+            if (match.index > lastIndex) {
+                const unsetyled = text.substring(lastIndex, match.index).trim();
+                if (unsetyled) {
+                    voiceStyles.push({
+                        text: unsetyled
+                    });
+                }
+            }
+
+            const [, marker, content] = match;
+            const style = emotionMappings.get(marker);
+
+            voiceStyles.push({
+                text: content.trim(),
+                style: style
+            });
+
+            lastIndex = match.index + match[0].length;
+        });
+
+        // Check for any remaining text after the last style marker
+        if (lastIndex < text.length) {
+            const remaining = text.substring(lastIndex).trim();
+            if (remaining) {
+                voiceStyles.push({
+                    text: remaining
+                });
+            }
+        }
+    }
+
+    // Generate SSML
+    const generateSSML = (voice: string) => {
+        const styleElements = voiceStyles.map(style => {
+            if (style.style) {
+                return `        <mstts:express-as style="${style.style}" styledegree="2">
+            ${style.text}
+        </mstts:express-as>`;
+            } else {
+                return `        ${style.text}`;
+            }
+        }).join('\n');
+
+        return `<speak version="1.0"
+    xmlns:mstts="https://www.w3.org/2001/mstts"
+    xml:lang="en-US">
+    <voice name="${voice}">
+${styleElements}
+    </voice>
+</speak>`;
+    };
+
+    return {
+        styles: voiceStyles,
+        generateSSML
+    };
+}
+
 export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse: string = "en-US-BrianNeural", callback?: () => void) {
     const subscriptionKey = process.env.AZURE_KEY;
     const serviceRegion = process.env.AZURE_REGION;
@@ -228,7 +316,6 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
         voiceInfo = {
             male: true, //idk but no way to check
             voice: voiceToUse,
-            rate: 1
         }
     }
 
@@ -248,11 +335,30 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
 
     let synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
 
-    const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>
-                <voice name='${voice}'>
-                    <prosody rate='${voiceInfo.rate}'>${text}</prosody>
-                </voice>
-             </speak>`;
+    // const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>
+    //             <voice name='${voice}'>
+    //                 <prosody rate='${voiceInfo.rate}'>${text}</prosody>
+    //             </voice>
+    //          </speak>`;
+
+
+//     const ssml = `<speak version="1.0"
+//     xmlns:mstts="https://www.w3.org/2001/mstts"
+//     xml:lang="en-US">
+//     <voice name="${voice}">
+//         <mstts:express-as style="cheerful" styledegree="2">
+//             That'd be just amazing!
+//         </mstts:express-as>
+//         <mstts:express-as style="angry" styledegree="2">
+//             That'd be just amazing!
+//         </mstts:express-as>
+//         <mstts:express-as style="assistant" styledegree="0.01">
+//             What's next?
+//         </mstts:express-as>
+//     </voice>
+// </speak>`;
+
+    const ssml = ParseEmotionalText(text, emotionMappings).generateSSML(voice);
 
     // let voices = await synthesizer.getVoicesAsync("en-US");
 

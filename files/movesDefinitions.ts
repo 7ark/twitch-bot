@@ -189,7 +189,7 @@ export const MoveDefinitions: Array<ClassMove> = [
 
         HitModifier: 4,
         Damage: { min: 10, max: 15 },
-        DamageTypes: [DamageType.Fire],
+        DamageTypes: [DamageType.Lightning],
         SuccessText: [`@{name} rolled {roll} and calls down a bolt of lightning on {monster} for {0} damage!`],
         PersonalMoveCooldownInSeconds: 30
     },

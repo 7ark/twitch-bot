@@ -34,7 +34,7 @@ export function UpdateExchangeRate(): number {
     }
 
     // Base volatility
-    let volatility = GetRandomNumber(-0.2, 0.2);
+    let volatility = GetRandomNumber(-0.5, 0.5);
     
     // Add market pressure based on bank balance
     // Lower balance = higher rates (more expensive)

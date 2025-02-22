@@ -189,7 +189,7 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
                 0% { transform: scale(0) }
                 40% { transform: scale(1) }
                 90% { transform: scale(1) }
-                100% { transform: scale(0) }
+                100% { transform: scale(1) }
             }
             @keyframes zoom2 {
                 0% { transform: scale(0) }
@@ -225,6 +225,7 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
     }
     styleTag.textContent += keyframes;
 
+    console.log("show minigame");
     setTimeout(() => {
         textAnimation.style.fontSize = `50px`;
         textAnimation.style.bottom = "-25px";
@@ -233,6 +234,7 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
             textAnimation.textContent = "..";
             setTimeout(() => {
                 textAnimation.textContent = "...";
+                console.log("show ...");
             }, 1000)
         }, 1000)
     }, 3000)
@@ -240,9 +242,10 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
     setTimeout(() => {
         textAnimation.textContent = "";
         textAnimation.style.animation = '';
-        textAnimation.style.scale = `0`;
+        console.log("hide minigame before reward");
 
         setTimeout(() => {
+            console.log("show minigame reward: " + data.reward);
             textAnimation.textContent = data.reward;
 
             textAnimation.style.animationName = `zoom2`;
@@ -257,6 +260,7 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
             textAnimation.style.fontSize = `${fontSize}px`;
 
             setTimeout(() => {
+                console.log("final hide minigame");
                 textAnimation.style.animation = '';
                 textAnimation.textContent = "";
             }, 5000)

@@ -11,11 +11,11 @@ import {Broadcast} from "./bot";
 import {GetRandomIntI, GetRandomItem} from "./utils/utils";
 import {MoveDefinitions} from "./movesDefinitions";
 import {AddToActionQueue} from "./actionqueue";
-import {CurrentPollJoker} from "./globals";
+import {CurrentCaller, CurrentPollJoker} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
 import {BanUser, CreateTwitchPoll} from "./utils/twitchUtils";
-import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/alertUtils";
-import {ObjectTier} from "./inventoryDefinitions";
+import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/chatGamesUtils";
+import {ObjectRetrievalType, ObjectTier} from "./inventoryDefinitions";
 import {GivePlayerRandomQuest, HandleQuestProgress} from "./utils/questUtils";
 import {DamageType, LoadMonsterData} from "./utils/monsterUtils";
 import {AudioType} from "./streamSettings";
@@ -44,6 +44,7 @@ const REDEEM_SETLIGHTCOLOR_PURPLE = `82b5bd8b-956d-43cb-a803-e4d221be6d88`;
 const REDEEM_SETLIGHTCOLOR_GREEN = `97d7a1e9-674d-46ed-9441-b010deadc7d2`;
 const REDEEM_SETLIGHTCOLOR_CUSTOM = `16cae48b-6bce-4fc8-a37f-f94473a1ce06`;
 const REDEEM_TRICKORTREAT = `e5fd3064-ef28-4048-afb4-7c91928c0574`;
+const REDEEM_CALLIN = `1861f169-44f4-43bf-8627-1456996090d2`;
 
 export async function ProcessRedemptions(client: Client, username: string, rewardId: string, redemptionId: string, userInput: string) {
     console.log(`Redemption! from ${username}, a reward id of ${rewardId}`)
@@ -115,7 +116,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                         PlayTextToSpeech(`Chat has found the joke of ${player.Username} to be... ${wasFunny ? `FUNNY` : `NOT FUNNY`}`, AudioType.GameAlerts, "en-US-BrianNeural", async () => {
                             if(wasFunny) {
                                 PlaySound("cheering", AudioType.GameAlerts);
-                                await GivePlayerRandomObject(client, player.Username);
+                                await GivePlayerRandomObject(client, player.Username, ObjectRetrievalType.RandomReward);
                                 await GiveExp(client, player.Username, 30);
                             }
                             else {
@@ -212,7 +213,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
         case REDEEM_SETLIGHTCOLOR_CUSTOM:
             let splitInput = userInput.replace(",", "").split(' ');
             if(splitInput.length < 3) {
-                client.say(process.env.CHANNEL!, `@${username}, that is an incorrect input for RGB values`);
+                await client.say(process.env.CHANNEL!, `@${username}, that is an incorrect input for RGB values`);
             }
             else {
                 let r = parseInt(splitInput[0]);
@@ -260,6 +261,25 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             break;
         case REDEEM_TRICKORTREAT:
             await TrickOrTreat(client, username);
+            break;
+        case REDEEM_CALLIN:
+            PlaySound("phonering", AudioType.ImportantStreamEffects);
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await client.say(process.env.CHANNEL!, `@${username}, your call has begun. All messages are TTS for the next minute. Use !hangup to end the call at any time.`);
+
+            await PlayTextToSpeech(userInput, AudioType.ImportantStreamEffects, TryGetPlayerVoice(player));
+
+            CurrentCaller = player.Username;
+
+            setTimeout(async () => {
+                if(CurrentCaller != ``) {
+                    PlaySound("endcall", AudioType.ImportantStreamEffects);
+                    await client.say(process.env.CHANNEL!, `@${username}, your call has concluded.`);
+                    CurrentCaller = ``;
+                }
+            }, 1000 * 60) //1 minute call
             break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))

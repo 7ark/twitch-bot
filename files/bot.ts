@@ -17,15 +17,17 @@ import {
 } from "./utils/twitchUtils";
 import {ReceiveMessageFromHTML} from "./utils/htmlUtils";
 import {GetAllPlayerSessions, HandleLoadingSession, UpdateSessionTimestamp} from "./utils/playerSessionUtils";
-import {TryToStartRandomChatChallenge} from "./utils/alertUtils";
-import {InitializeShop} from "./utils/minigameUtils";
+import {TryToStartRandomChatChallenge} from "./utils/chatGamesUtils";
 import {TickAllCozyPoints} from "./utils/playerGameUtils";
-import {LoadMonsterData, SetupMonsterDamageTypes, TickAfflictions} from "./utils/monsterUtils";
+import {InitialMonsterSetup, LoadMonsterData, SetupMonsterDamageTypes, TickAfflictions} from "./utils/monsterUtils";
 import {AudioType, CurrentStreamSettings} from "./streamSettings";
 import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
 import {LoadProgressBar} from "./utils/progressBarUtils";
 import {SetupNextAdsTime} from "./utils/adUtils";
 import {PlayTextToSpeech} from "./utils/audioUtils";
+import {SelectCustomer} from "./utils/cookingSimUtils";
+import {InitializeGroceryStore, InitializeSalesman} from "./utils/shopUtils";
+import {WipePlayerGatherState} from "./utils/gatherUtils";
 
 const ngrok = require('ngrok');
 
@@ -219,6 +221,12 @@ async function InitializeBot() {
         }, 1800000); //30 minutes
     }
 
+    if(CurrentStreamSettings.challengeType == "cook") {
+        setInterval(() => {
+            SelectCustomer(client);
+        }, 1000 * 60 * 3);
+    }
+
     setInterval(() => {
         TickAllCozyPoints();
     }, 1800000); //30 minutes
@@ -240,12 +248,16 @@ async function InitializeBot() {
         //     CanGrabGifts = false;
         // }, 1000 * 60)
         }, 1800000); //30 minutes
+
+    await InitialMonsterSetup();
 }
 
 // export let CanGrabGifts: boolean = false;
 
 HandleLoadingSession();
-InitializeShop();
+InitializeSalesman();
+InitializeGroceryStore();
+WipePlayerGatherState();
 
 process.on('SIGINT', async (code) => {
     await SetLightVisible(false);

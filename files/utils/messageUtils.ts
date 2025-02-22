@@ -1,5 +1,5 @@
 import {ChatUserstate, client, Client} from "tmi.js";
-import {CurrentGTARider, MessageDelegate, SayAllChat} from "../globals";
+import {CurrentCaller, CurrentGTARider, MessageDelegate, SayAllChat} from "../globals";
 import {DoesPlayerHaveStatusEffect, GivePlayerObject, LoadPlayer, RandomlyGiveExp} from "./playerGameUtils";
 import {CheckMessageSimilarity, GetRandomInt, GetRandomIntI, GetRandomItem,} from "./utils";
 import {ProcessCommands, ProcessUniqueCommands} from "./commandUtils";
@@ -13,6 +13,8 @@ import {CheckForScare} from "./scareUtils";
 import {StatusEffect} from "../valueDefinitions";
 import {WhisperUser} from "./twitchUtils";
 import {CheckIfShouldHaveNPCResponse, GetNPCResponse} from "./npcUtils";
+import {COOK_CurrentCustomers, ShowCustomerText} from "./cookingSimUtils";
+import {AddChapterMarker} from "./obsutils";
 
 let lastMessageTimestamp = new Date();
 
@@ -23,7 +25,7 @@ export function GetMinutesSinceLastMessage(): number {
     return minutesDifference;
 }
 
-function CleanMessage(input: string): string {
+export function CleanMessage(input: string): string {
     // Check if the string is empty
     if (input.length === 0) return input;
 
@@ -86,11 +88,21 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
                 }, 700);
             }
         }
-        else if(CurrentGTARider != "" && CurrentGTARider == displayName.toLowerCase()) {
-            PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
+        else if(CurrentCaller != `` && CurrentCaller.toLowerCase() == displayName.toLowerCase()) {
+            PlayTextToSpeech(message, AudioType.ImportantStreamEffects, TryGetPlayerVoice(player));
             setTimeout(() => {
                 Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
             }, 700);
+        }
+        else {
+            if((CurrentGTARider != "" && CurrentGTARider == displayName.toLowerCase()) ||
+                (COOK_CurrentCustomers.includes(displayName.toLowerCase()))) {
+                PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
+                setTimeout(() => {
+                    Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
+                }, 700);
+                await ShowCustomerText(player.Username, message);
+            }
         }
     }
 
@@ -164,10 +176,9 @@ const minigameKeys = Object
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
     "Check out my socials - Discord: https://discord.gg/6dEKeStTEM, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
-    `Cory's chat is extremely interactive! Here's how you can participate. Use !stats to see your character sheet. You gain exp by chatting, and fighting monsters. You can use !moves to see what you can do. Every time you level up, you can learn new upgrades and moves. You can play some minigames with${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn some gems. You can also !yell some text to speech at me.`,
-    "I'm a game developer! Feel free to ask questions or talk about code. I've released two games to Steam, Battle Tracks and Luminus",
-    "Check what stuff you have with !inventory. You can !info [item] to learn more about it. You can also use !info [move name] to learn about what it does",
-    `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`
+    `Chat is interactive! Use '!help options' to see all subjects to learn about. Use !commands to see all command options. Use '!help fight' to learn about fighting monsters. Use '!help minigames' to learn about playing small minigames. Use '!help interact' to learn about more interactive elements of chat.`,
+    `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`,
+    `Check out my latest Youtube video: https://youtu.be/WpT1y_0o7iE`
 ];
 let regularMessageIndex: number = GetRandomInt(0, regularMessages.length);
 
@@ -176,7 +187,7 @@ export async function PostNewRegularMessage(client: Client) {
         return;
     }
 
-    client.say(process.env.CHANNEL!, regularMessages[regularMessageIndex]);
+    await client.say(process.env.CHANNEL!, regularMessages[regularMessageIndex]);
 
     regularMessageIndex++;
     if(regularMessageIndex >= regularMessages.length) {
@@ -254,6 +265,18 @@ export function GetLastParameterFromCommand(text: string) {
     else {
         return "";
     }
+}
+
+export function GetAllParameterTextAfter(text: string, parameter: number) {
+    let pieces = text.split(' ');
+    if(pieces.length > parameter) {
+        let textPiece = pieces[parameter];
+        let split = text.split(textPiece);
+
+        return `${textPiece}${split[1]}`;
+    }
+
+    return "";
 }
 
 

@@ -83,7 +83,7 @@ import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} fro
 import {WhisperUser} from "./twitchUtils";
 import {GetUserMinigameCount} from "../actionqueue";
 import {Affliction, ClassMove, ClassType, MoveType, Player, StatusEffect, UpgradeType} from "../valueDefinitions";
-import {PlayHypeTrainAlert} from "./alertUtils";
+import {PlayHypeTrainAlert} from "./chatGamesUtils";
 import {isNaN} from "@tensorflow/tfjs-node";
 import {UpgradeDefinitions} from "../upgradeDefinitions";
 import {
@@ -311,7 +311,9 @@ export async function ProcessCommands(client: Client, displayName: string, comma
     }
 
     if(validDef != undefined) {
-        await validDef.Action(client, player, command);
+        if(!validDef.AdminCommand || player.Username.toLowerCase() === "the7ark") {
+            await validDef.Action(client, player, command);
+        }
     }
     else {
         await HandleMoves(client, displayName, command);
@@ -328,7 +330,6 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                 bannedMoves.push(MoveDefinitions[i].Command);
             }
         }
-        console.log(bannedMoves);
 
         let options = [...player.KnownMoves];
 
@@ -338,7 +339,6 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                 options.splice(index, 1);
             }
         }
-        console.log(options);
 
         if(options.length > 0) {
             command = `!${GetRandomItem(options)}`;
@@ -658,8 +658,12 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
     }
 
+    if(DoesPlayerHaveStatusEffect(username, StatusEffect.RandomAccuracy)) {
+        rollToHit += GetRandomIntI(-10, 10);
+    }
+
     let extraRollAddition = moveAttempted.HitModifier ?? 0;
-    let wasCrit = rollToHit == 20;
+    let wasCrit = rollToHit >= 20;
     if(!wasCrit && DoesPlayerHaveStatusEffect(username, StatusEffect.BetterChanceToCrit)) {
         wasCrit = rollToHit >= 18;
     }
@@ -675,6 +679,10 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
     if(moveAttempted.ClassRequired !== undefined) {
         extraRollAddition += Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 5);
     }
+
+    DoPlayerUpgrade(username, UpgradeType.ChangeHitModifier, async (upgrade, strength, strengthPercentage) => {
+        extraRollAddition += strength;
+    });
 
     let isDrunk = DoesPlayerHaveStatusEffect(username, StatusEffect.Drunk);
     if(isDrunk) {

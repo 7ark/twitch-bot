@@ -3,7 +3,7 @@ import {Broadcast} from "../bot";
 import {GetRandomIntI, GetRandomItem, IsCommand, RemoveFromArray} from "./utils";
 import {GiveExp, GivePlayerRandomObjectInTier, LoadAllPlayers, LoadPlayer, SavePlayer} from "./playerGameUtils";
 import {AddToMinigameQueue, IsMinigameQueueEmpty} from "../actionqueue";
-import {AllInventoryObjects, ObjectTier} from "../inventoryDefinitions";
+import {AllInventoryObjects, ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
 import {HandleQuestProgress} from "./questUtils";
 import {GiveUserVIP, RemoveUserVIP} from "./twitchUtils";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
@@ -41,55 +41,6 @@ export function IsCommandMinigame(command: string): boolean {
     });
 
     return result;
-}
-
-let currentShop: Array<{obj: string, cost: number}> = [];
-
-export function InitializeShop() {
-    let lowObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.Low && x.CostRange !== undefined && x.Rarity > 0);
-    let midObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.Mid && x.CostRange !== undefined && x.Rarity > 0);
-    let highObjects = AllInventoryObjects.filter(x => x.Tier == ObjectTier.High && x.CostRange !== undefined && x.Rarity > 0);
-
-    const lowAmount = 3;
-    const midAmount = 2;
-    const highAmount = 1;
-
-    currentShop = [];
-    for (let i = 0; i < lowAmount; i++) {
-        let randomObj = GetRandomItem(lowObjects);
-        RemoveFromArray(lowObjects, randomObj);
-
-        currentShop.push({
-            obj: randomObj?.ObjectName!,
-            cost: GetRandomIntI(randomObj?.CostRange!.min!, randomObj?.CostRange!.max!)
-        });
-    }
-    for (let i = 0; i < midAmount; i++) {
-        let randomObj = GetRandomItem(midObjects);
-        RemoveFromArray(midObjects, randomObj);
-
-        currentShop.push({
-            obj: randomObj?.ObjectName!,
-            cost: GetRandomIntI(randomObj?.CostRange!.min!, randomObj?.CostRange!.max!)
-        });
-    }
-    for (let i = 0; i < highAmount; i++) {
-        let randomObj = GetRandomItem(highObjects);
-        RemoveFromArray(highObjects, randomObj);
-
-        currentShop.push({
-            obj: randomObj?.ObjectName!,
-            cost: GetRandomIntI(randomObj?.CostRange!.min!, randomObj?.CostRange!.max!)
-        });
-    }
-
-    for (let i = 0; i < currentShop.length; i++) {
-        currentShop[i].cost = Math.floor(currentShop[i].cost / 7);
-    }
-}
-
-export function GetCurrentShopItems(): Array<{obj: string, cost: number}> {
-    return currentShop;
 }
 
 interface MinigameReward {
@@ -143,18 +94,18 @@ export async function ResetLeaderboard(client: Client) {
             PlayTextToSpeech(thirdPlaceText, AudioType.StreamInfrastructure, "en-US-BrianNeural", async () => {
                 await client.say(process.env.CHANNEL!, thirdPlaceText);
                 await GiveExp(client, thirdPlace.Username, Math.max(25, thirdPlace.CurrentExpNeeded * 0.1));
-                await GivePlayerRandomObjectInTier(client, thirdPlace.Username, [ObjectTier.Low]);
+                await GivePlayerRandomObjectInTier(client, thirdPlace.Username, [ObjectTier.Low], ObjectRetrievalType.RandomReward);
 
                 PlayTextToSpeech(secondPlaceText, AudioType.StreamInfrastructure, "en-US-BrianNeural", async () => {
                     await client.say(process.env.CHANNEL!, secondPlaceText);
                     await GiveExp(client, secondPlace.Username, Math.max(50, secondPlace.CurrentExpNeeded * 0.25));
-                    await GivePlayerRandomObjectInTier(client, secondPlace.Username, [ObjectTier.Mid]);
+                    await GivePlayerRandomObjectInTier(client, secondPlace.Username, [ObjectTier.Mid], ObjectRetrievalType.RandomReward);
 
                     PlayTextToSpeech(firstPlaceText, AudioType.StreamInfrastructure, "en-US-BrianNeural", async () => {
                         await client.say(process.env.CHANNEL!, firstPlaceText);
                         await GiveUserVIP(client, firstPlace.Username);
                         await GiveExp(client, firstPlace.Username, Math.max(100, firstPlace.CurrentExpNeeded * 0.5));
-                        await GivePlayerRandomObjectInTier(client, firstPlace.Username, [ObjectTier.High]);
+                        await GivePlayerRandomObjectInTier(client, firstPlace.Username, [ObjectTier.High], ObjectRetrievalType.RandomReward);
 
                         PlaySound("cheering", AudioType.StreamInfrastructure);
                     });

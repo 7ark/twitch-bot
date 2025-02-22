@@ -21,14 +21,14 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 34,
+    "CurrentExp": 15,
     "CurrentExpNeeded": 8,
     "KnownMoves": [
       "punch",
       "slash"
     ],
     "ExpBoostMultiplier": 1,
-    "Voice": "en-US-AriaNeural",
+    "Voice": "",
     "Inventory": [
       "sword",
       "hammer",
@@ -108,7 +108,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 544,
+    "CurrentExp": 519,
     "CurrentExpNeeded": 9,
     "KnownMoves": [
       "punch",
@@ -533,7 +533,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 181,
+    "CurrentExp": 161,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -3037,7 +3037,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 537,
+    "CurrentExp": 367,
     "CurrentExpNeeded": 59,
     "KnownMoves": [
       "punch"
@@ -3131,10 +3131,7 @@
       "scroll of truth",
       "coal",
       "cardboard box",
-      "fire resistance potion",
-      "accuracy potion",
-      "power helmet",
-      "magic nuke"
+      "fire resistance potion"
     ],
     "PassiveModeEnabled": false,
     "Deaths": 46,
@@ -4981,7 +4978,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 85,
+    "CurrentExp": 84,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -5727,7 +5724,7 @@
   {
     "Username": "thelindenbookie",
     "Level": 17,
-    "CurrentHealth": 22,
+    "CurrentHealth": 25,
     "Classes": [
       {
         "Type": 0,
@@ -5747,7 +5744,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 939,
+    "CurrentExp": 828,
     "CurrentExpNeeded": 721,
     "KnownMoves": [
       "punch",
@@ -5816,19 +5813,12 @@
       "cheese wheel",
       "great healing potion",
       "healing potion",
-      "great healing potion",
-      "salt",
-      "tomato",
-      "salt",
-      "cheese wheel",
-      "water",
-      "honey",
-      "apple"
+      "great healing potion"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
-    "Gems": 5496,
-    "SpendableGems": 2891,
+    "Gems": 5244,
+    "SpendableGems": 2639,
     "CozyPoints": 0,
     "CommandCooldowns": [],
     "HasVip": false,
@@ -5867,13 +5857,7 @@
     "Prestige": 0,
     "Mastery": 0,
     "ByteCoins": 479,
-    "GatheringResources": false,
-    "CurrentQuest": {
-      "Type": 1,
-      "Progress": 8,
-      "Goal": 75,
-      "FiveStarDifficulty": 3
-    }
+    "GatheringResources": false
   },
   {
     "Username": "xomeraki",
@@ -7321,7 +7305,7 @@
   {
     "Username": "7arksgamemanager",
     "Level": 0,
-    "CurrentHealth": 50,
+    "CurrentHealth": 25,
     "Classes": [
       {
         "Type": 0,
@@ -7360,9 +7344,7 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false,
-    "Prestige": 0,
-    "Mastery": 0
+    "GatheringResources": false
   },
   {
     "Username": "favorablebuff",
@@ -8562,8 +8544,8 @@
   },
   {
     "Username": "wareblake",
-    "Level": 14,
-    "CurrentHealth": 92,
+    "Level": 13,
+    "CurrentHealth": 89,
     "Classes": [
       {
         "Type": 0,
@@ -8575,7 +8557,7 @@
       },
       {
         "Type": 2,
-        "Level": 14
+        "Level": 13
       },
       {
         "Type": 3,
@@ -8583,8 +8565,8 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 528,
-    "CurrentExpNeeded": 505,
+    "CurrentExp": 650,
+    "CurrentExpNeeded": 213,
     "KnownMoves": [
       "punch",
       "throw",
@@ -8637,15 +8619,13 @@
       "tinderbox",
       "diamond axe",
       "fire resistance potion",
-      "accuracy potion",
-      "raw mutton",
-      "raw beef"
+      "accuracy potion"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 3884,
-    "SpendableGems": 2975,
+    "Gems": 3717,
+    "SpendableGems": 3808,
     "CozyPoints": 0,
     "HasVip": false,
     "MovePoints": 0,
@@ -8659,22 +8639,15 @@
       "Vital Knowledge",
       "Hoarder",
       "Fast Learner",
-      "Lifeblood",
-      "Poisonous"
+      "Lifeblood"
     ],
-    "HitStreak": 4,
+    "HitStreak": 0,
     "WaitingToSelectUpgrade": true,
-    "ByteCoins": 201,
+    "ByteCoins": 171,
     "PermanentUpgrades": [],
     "Prestige": 1,
     "Mastery": 0,
-    "GatheringResources": false,
-    "CurrentQuest": {
-      "Type": 7,
-      "Progress": 1,
-      "Goal": 2,
-      "FiveStarDifficulty": 2
-    }
+    "GatheringResources": false
   },
   {
     "Username": "dad_jok3s",
@@ -10436,7 +10409,7 @@
   {
     "Username": "ki14wi08",
     "Level": 24,
-    "CurrentHealth": 22,
+    "CurrentHealth": 32,
     "Classes": [
       {
         "Type": 0,
@@ -10456,7 +10429,7 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 1049,
+    "CurrentExp": 1002,
     "CurrentExpNeeded": 1362,
     "Upgrades": [
       "Inflict Curse",
@@ -10509,6 +10482,7 @@
       "scroll of truth",
       "cardboard box",
       "tinderbox",
+      "fire resistance potion",
       "accuracy potion",
       "tinderbox",
       "scroll of challenge",
@@ -10528,11 +10502,11 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 3971,
-    "SpendableGems": 2851,
+    "Gems": 3902,
+    "SpendableGems": 2782,
     "CozyPoints": 0,
     "HasVip": false,
-    "HitStreak": 2,
+    "HitStreak": 9,
     "ByteCoins": 61,
     "EquippedBacklog": [
       {
@@ -10546,13 +10520,13 @@
     },
     "Prestige": 0,
     "Mastery": 0,
-    "GatheringResources": false,
     "CurrentQuest": {
-      "Type": 7,
-      "Progress": 0,
-      "Goal": 1,
+      "Type": 1,
+      "Progress": 10,
+      "Goal": 15,
       "FiveStarDifficulty": 1
-    }
+    },
+    "GatheringResources": false
   },
   {
     "Username": "saucyhamilton",
@@ -11832,7 +11806,7 @@
   {
     "Username": "thoughtsgobrrr",
     "Level": 3,
-    "CurrentHealth": 28,
+    "CurrentHealth": 55,
     "Classes": [
       {
         "Type": 0,
@@ -11852,7 +11826,7 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 21,
+    "CurrentExp": 10,
     "CurrentExpNeeded": 27,
     "Upgrades": [
       "Tough",
@@ -11877,7 +11851,7 @@
     "SpendableGems": 129,
     "CozyPoints": 0,
     "HasVip": false,
-    "HitStreak": 0,
+    "HitStreak": 1,
     "ByteCoins": 0,
     "Prestige": 0,
     "Mastery": 0,
@@ -11954,8 +11928,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": true,
-    "CurrentExp": 7,
+    "LevelUpAvailable": false,
+    "CurrentExp": 3,
     "CurrentExpNeeded": 4,
     "Upgrades": [],
     "PermanentUpgrades": [],
@@ -11963,105 +11937,6 @@
       "punch"
     ],
     "UpgradeOptions": [],
-    "Voice": "",
-    "Deaths": 0,
-    "Inventory": [],
-    "StatusEffects": [],
-    "CommandCooldowns": [],
-    "PassiveModeEnabled": false,
-    "Gems": 0,
-    "SpendableGems": 0,
-    "CozyPoints": 0,
-    "HasVip": false,
-    "HitStreak": 0,
-    "ByteCoins": 0,
-    "Prestige": 0,
-    "Mastery": 0,
-    "GatheringResources": false
-  },
-  {
-    "Username": "professor_apple",
-    "Level": 0,
-    "CurrentHealth": 50,
-    "Classes": [
-      {
-        "Type": 0,
-        "Level": 0
-      },
-      {
-        "Type": 1,
-        "Level": 0
-      },
-      {
-        "Type": 2,
-        "Level": 0
-      },
-      {
-        "Type": 3,
-        "Level": 0
-      }
-    ],
-    "LevelUpAvailable": true,
-    "CurrentExp": 4,
-    "CurrentExpNeeded": 4,
-    "Upgrades": [],
-    "PermanentUpgrades": [],
-    "KnownMoves": [
-      "punch"
-    ],
-    "UpgradeOptions": [],
-    "Voice": "",
-    "Deaths": 0,
-    "Inventory": [],
-    "StatusEffects": [],
-    "CommandCooldowns": [],
-    "PassiveModeEnabled": false,
-    "Gems": 0,
-    "SpendableGems": 0,
-    "CozyPoints": 0,
-    "HasVip": false,
-    "HitStreak": 0,
-    "ByteCoins": 0,
-    "Prestige": 0,
-    "Mastery": 0,
-    "GatheringResources": false
-  },
-  {
-    "Username": "noellemain767",
-    "Level": 1,
-    "CurrentHealth": 50,
-    "Classes": [
-      {
-        "Type": 0,
-        "Level": 1
-      },
-      {
-        "Type": 1,
-        "Level": 0
-      },
-      {
-        "Type": 2,
-        "Level": 0
-      },
-      {
-        "Type": 3,
-        "Level": 0
-      }
-    ],
-    "LevelUpAvailable": true,
-    "CurrentExp": 19,
-    "CurrentExpNeeded": 8,
-    "Upgrades": [],
-    "PermanentUpgrades": [],
-    "KnownMoves": [
-      "punch",
-      "cast fireball"
-    ],
-    "UpgradeOptions": [
-      "Speedy",
-      "Better Wand",
-      "Learn Move"
-    ],
     "Voice": "",
     "Deaths": 0,
     "Inventory": [],

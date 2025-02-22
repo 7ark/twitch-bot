@@ -1,9 +1,9 @@
 import fs from "fs";
 import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
-import {AllInventoryObjects, InventoryObject, ObjectTier} from "../inventoryDefinitions";
-import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates, GetUpgradeDescription} from "./utils";
-import {BanUser,WhisperUser} from "./twitchUtils";
+import {AllInventoryObjects, InventoryObject, ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
+import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDates} from "./utils";
+import {BanUser, WhisperUser} from "./twitchUtils";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {HandleQuestProgress} from "./questUtils";
 import {DamageType, LoadMonsterData} from "./monsterUtils";
@@ -22,6 +22,7 @@ import {
 } from "../valueDefinitions";
 import {UpgradeDefinitions} from "../upgradeDefinitions";
 import {MoveDefinitions} from "../movesDefinitions";
+import {CleanMessage} from "./messageUtils";
 
 const COZY_POINT_HEALTH_CONVERSION = 5;
 
@@ -29,12 +30,12 @@ const COZY_POINT_HEALTH_CONVERSION = 5;
 export function TryLoadPlayer(displayName: string): Player | null {
     displayName = displayName.toLowerCase();
 
-    if(fs.existsSync('playerData.json')) {
+    if (fs.existsSync('playerData.json')) {
         let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
         for (let i = 0; i < allPlayerData.length; i++) {
             let currPlayer: Player = allPlayerData[i];
 
-            if(currPlayer.Username == displayName) {
+            if (currPlayer.Username == displayName) {
                 return currPlayer;
             }
         }
@@ -46,7 +47,7 @@ export function TryLoadPlayer(displayName: string): Player | null {
 export function LoadAllPlayers(): Array<Player> {
     let allPlayers: Array<Player> = [];
 
-    if(fs.existsSync('playerData.json')) {
+    if (fs.existsSync('playerData.json')) {
         let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
         for (let i = 0; i < allPlayerData.length; i++) {
             let currPlayer: Player = allPlayerData[i];
@@ -108,75 +109,79 @@ export function LoadPlayer(displayName: string): Player {
         Mastery: 0
     }
 
-    if(fs.existsSync('playerData.json')) {
+    if (fs.existsSync('playerData.json')) {
         let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
         for (let i = 0; i < allPlayerData.length; i++) {
             let currPlayer: Player = allPlayerData[i];
 
-            if(currPlayer.Username == displayName) {
+            if (currPlayer.Username == displayName) {
                 player = currPlayer;
                 break;
             }
         }
     }
 
-    if(player.UpgradeOptions === undefined || player.UpgradeOptions === null) {
+    if (player.UpgradeOptions === undefined || player.UpgradeOptions === null) {
         player.UpgradeOptions = [];
     }
 
-    if(player.Upgrades === undefined || player.Upgrades === null) {
+    if (player.Upgrades === undefined || player.Upgrades === null) {
         player.Upgrades = [];
     }
 
-    if(player.PermanentUpgrades === undefined || player.PermanentUpgrades === null) {
+    if (player.PermanentUpgrades === undefined || player.PermanentUpgrades === null) {
         player.PermanentUpgrades = [];
     }
 
-    if(player.KnownMoves === undefined || player.KnownMoves === null || player.KnownMoves.length === 0) {
+    if (player.KnownMoves === undefined || player.KnownMoves === null || player.KnownMoves.length === 0) {
         player.KnownMoves = ["punch"];
     }
 
-    if(!player.KnownMoves.includes("punch")) {
+    if (!player.KnownMoves.includes("punch")) {
         player.KnownMoves.push("punch");
     }
 
-    if(player.Prestige === undefined) {
+    if(player.CurrentExp == null) {
+        player.CurrentExp = 0;
+    }
+
+    if (player.Prestige === undefined) {
         player.Prestige = 0;
     }
-    if(player.Mastery == undefined) {
+    if (player.Mastery == undefined) {
         player.Mastery = 0;
     }
 
-    if(player.Inventory === undefined) {
+    if (player.Inventory === undefined) {
         player.Inventory = [];
     }
     for (let i = 0; i < player.Classes.length; i++) {
-        if(player.Classes[i].Type === ClassType.Rogue) {
-            if(player.Classes[i].Level > 0 && !player.Inventory.includes("dagger")) {
+        if (player.Classes[i].Type === ClassType.Rogue) {
+            if (player.Classes[i].Level > 0 && !player.Inventory.includes("dagger")) {
                 player.Inventory.push("dagger");
             }
         }
-        if(player.Classes[i].Type === ClassType.Warrior) {
-            if(player.Classes[i].Level > 0 && !player.Inventory.includes("sword")) {
+        if (player.Classes[i].Type === ClassType.Warrior) {
+            if (player.Classes[i].Level > 0 && !player.Inventory.includes("sword")) {
                 player.Inventory.push("sword");
             }
-            if(player.Classes[i].Level > 0 && !player.Inventory.includes("hammer")) {
+            if (player.Classes[i].Level > 0 && !player.Inventory.includes("hammer")) {
                 player.Inventory.push("hammer");
             }
         }
-        if(player.Classes[i].Type === ClassType.Mage) {
-            if(player.Classes[i].Level > 0 && !player.Inventory.includes("wand")) {
+        if (player.Classes[i].Type === ClassType.Mage) {
+            if (player.Classes[i].Level > 0 && !player.Inventory.includes("wand")) {
                 player.Inventory.push("wand");
             }
         }
-        if(player.Classes[i].Type === ClassType.Cleric) {
-            if(player.Classes[i].Level > 0 && !player.Inventory.includes("healing amulet")) {
+        if (player.Classes[i].Type === ClassType.Cleric) {
+            if (player.Classes[i].Level > 0 && !player.Inventory.includes("healing amulet")) {
                 player.Inventory.push("healing amulet");
             }
         }
     }
 
-    if(!player.Classes.find(x => x.Type == ClassType.Cleric)) {
+    if (!player.Classes.find(x => x.Type == ClassType.Cleric)) {
         player.Classes.push(
             {
                 Type: ClassType.Cleric,
@@ -184,32 +189,32 @@ export function LoadPlayer(displayName: string): Player {
             });
     }
 
-    if(player.CurrentHealth === undefined || player.CurrentHealth <= 0) {
+    if (player.CurrentHealth === undefined || player.CurrentHealth <= 0) {
         player.CurrentHealth = CalculateMaxHealth(player);
     }
 
-    if(player.Deaths == undefined) {
+    if (player.Deaths == undefined) {
         player.Deaths = 0;
     }
-    if(player.HasVip == undefined) {
+    if (player.HasVip == undefined) {
         player.HasVip = false;
     }
 
-    if(player.StatusEffects === undefined) {
+    if (player.StatusEffects === undefined) {
         player.StatusEffects = [];
     }
-    if(player.CommandCooldowns === undefined) {
+    if (player.CommandCooldowns === undefined) {
         player.CommandCooldowns = [];
     }
 
-    if(player.Gems == undefined) {
+    if (player.Gems == undefined) {
         player.Gems = 0;
     }
-    if(player.SpendableGems == undefined){
+    if (player.SpendableGems == undefined) {
         player.SpendableGems = player.Gems;
     }
 
-    if(player.CozyPoints == undefined) {
+    if (player.CozyPoints == undefined) {
         player.CozyPoints = 0;
     }
 
@@ -218,14 +223,14 @@ export function LoadPlayer(displayName: string): Player {
 
         // console.log(`Checking ${se.Effect}: ${se.WhenEffectStarted}`)
 
-        if(GetSecondsBetweenDates(se.WhenEffectStarted, new Date()) >= se.EffectTimeInSeconds) {
+        if (GetSecondsBetweenDates(se.WhenEffectStarted, new Date()) >= se.EffectTimeInSeconds) {
             player.StatusEffects.splice(i, 1);
         }
     }
     for (let i = player.CommandCooldowns.length - 1; i >= 0; i--) {
         let command = player.CommandCooldowns[i];
 
-        if(GetSecondsBetweenDates(command.WhenDidCommand, new Date()) >= command.CommandCooldownInSeconds) {
+        if (GetSecondsBetweenDates(command.WhenDidCommand, new Date()) >= command.CommandCooldownInSeconds) {
             player.CommandCooldowns.splice(i, 1);
         }
     }
@@ -235,42 +240,41 @@ export function LoadPlayer(displayName: string): Player {
 
 export function SavePlayer(player: Player) {
     let allPlayers: Array<Player> = [];
-    if(fs.existsSync('playerData.json')) {
+    if (fs.existsSync('playerData.json')) {
         allPlayers = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
-    }
-    else {
+    } else {
         allPlayers = [];
     }
 
     let found: boolean = false;
     for (let i = 0; i < allPlayers.length; i++) {
-        if(allPlayers[i].Username == player.Username) {
+        if (allPlayers[i].Username == player.Username) {
             allPlayers[i] = player;
             found = true;
             break;
         }
     }
-    if(!found) {
+    if (!found) {
         allPlayers.push(player);
     }
 
-    fs.writeFileSync('playerData.json', JSON.stringify(allPlayers));
+    fs.writeFileSync('playerData.json', JSON.stringify(allPlayers, null, 2));
 }
 
 export function CalculateMaxHealth(player: Player): number {
     let max = 50;
     for (let i = 0; i < player.Classes.length; i++) {
-        if(player.Classes[i].Type === ClassType.Rogue) {
+        if (player.Classes[i].Type === ClassType.Rogue) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
                 max += 3;
             }
         }
-        if(player.Classes[i].Type === ClassType.Warrior) {
+        if (player.Classes[i].Type === ClassType.Warrior) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
                 max += 5;
             }
         }
-        if(player.Classes[i].Type === ClassType.Mage) {
+        if (player.Classes[i].Type === ClassType.Mage) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
                 max += 1;
             }
@@ -279,7 +283,7 @@ export function CalculateMaxHealth(player: Player): number {
 
     max += player.CozyPoints * COZY_POINT_HEALTH_CONVERSION;
 
-    DoPlayerUpgradeWithPlayer(player, UpgradeType.IncreaseMaxHP, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgradeWithPlayer(player, UpgradeType.IncreaseMaxHPPercent, (upgrade, strength, strengthPercentage) => {
         max += max * strengthPercentage;
     });
 
@@ -287,7 +291,11 @@ export function CalculateMaxHealth(player: Player): number {
 }
 
 export function CalculateExpNeeded(level: number) {
-    return 5 + (level * (3 + level));
+    if (level <= 5) {
+        return Math.floor(4 + Math.pow(level, 1.6) * 4);
+    } else {
+        return Math.floor(4 + Math.pow(level, 1.85) * 3.8);
+    }
 }
 
 export function GetScaledValueFromMaxHealth(player: Player, value: number, min: number = 0): number {
@@ -318,12 +326,12 @@ export function GetScaledValueFromMaxHealth(player: Player, value: number, min: 
 //     }
 // }
 
-export async function GivePlayerRandomObjectInTier(client: Client, playerName: string, tier: Array<ObjectTier>) {
+export async function GivePlayerRandomObjectInTier(client: Client, playerName: string, tier: Array<ObjectTier>, source: ObjectRetrievalType) {
     let player = LoadPlayer(playerName);
     let options: Array<InventoryObject> = [];
     for (let i = 0; i < AllInventoryObjects.length; i++) {
-        if(AllInventoryObjects[i].Rewardable && tier.includes(AllInventoryObjects[i].Tier)) {
-            if(AllInventoryObjects[i].Consumable || !player.Inventory.includes(AllInventoryObjects[i].ObjectName)) {
+        if (tier.includes(AllInventoryObjects[i].Tier) && AllInventoryObjects[i].Retrieval.includes(source)) {
+            if (AllInventoryObjects[i].Consumable || !player.Inventory.includes(AllInventoryObjects[i].ObjectName)) {
                 for (let j = 0; j < AllInventoryObjects[i].Rarity; j++) {
                     options.push(AllInventoryObjects[i]);
                 }
@@ -336,12 +344,12 @@ export async function GivePlayerRandomObjectInTier(client: Client, playerName: s
     await GivePlayerObject(client, playerName, obj.ObjectName);
 }
 
-export async function GivePlayerRandomObject(client: Client, playerName: string): Promise<InventoryObject> {
+export async function GivePlayerRandomObject(client: Client, playerName: string, source: ObjectRetrievalType): Promise<InventoryObject> {
     let player = LoadPlayer(playerName);
     let options: Array<InventoryObject> = [];
     for (let i = 0; i < AllInventoryObjects.length; i++) {
-        if(AllInventoryObjects[i].Rewardable) {
-            if(AllInventoryObjects[i].Consumable || !player.Inventory.includes(AllInventoryObjects[i].ObjectName)) {
+        if (AllInventoryObjects[i].Retrieval.includes(source)) {
+            if (AllInventoryObjects[i].Consumable || !player.Inventory.includes(AllInventoryObjects[i].ObjectName)) {
                 for (let j = 0; j < AllInventoryObjects[i].Rarity; j++) {
                     options.push(AllInventoryObjects[i]);
                 }
@@ -356,18 +364,20 @@ export async function GivePlayerRandomObject(client: Client, playerName: string)
     return obj;
 }
 
-export async function GivePlayerObject(client: Client, playerName: string, object: string) {
+export async function GivePlayerObject(client: Client, playerName: string, object: string, showText: boolean = true) {
     let player = LoadPlayer(playerName);
     player.Inventory.push(object);
     SavePlayer(player);
 
     let obj = AllInventoryObjects.find(x => x.ObjectName === object);
-    if(obj === undefined) {
+    if (obj === undefined) {
         console.error(`Could not find ${object}`)
         return;
     }
 
-    await WhisperUser(client, playerName, `@${playerName}, You've gained ${obj.ContextualName}. ${obj.Info}`);
+    if(showText) {
+        await WhisperUser(client, playerName, `@${playerName}, You've gained ${obj.ContextualName}. ${obj.Info}`);
+    }
 
     setTimeout(async () => {
         await HandleQuestProgress(client, playerName, QuestType.GetItem, 1);
@@ -376,7 +386,7 @@ export async function GivePlayerObject(client: Client, playerName: string, objec
 
 export function TakeObjectFromPlayer(playerName: string, object: string) {
     let player = LoadPlayer(playerName);
-    if(player.Inventory.includes(object)) {
+    if (player.Inventory.includes(object)) {
         const index = player.Inventory.indexOf(object, 0);
         if (index > -1) {
             player.Inventory.splice(index, 1);
@@ -386,54 +396,36 @@ export function TakeObjectFromPlayer(playerName: string, object: string) {
     SavePlayer(player);
 }
 
-export function GetRandomRewardableObjectFromPlayer(playerName: string, exclusions: Array<string> = []): InventoryObject | null {
-    let player = LoadPlayer(playerName);
-    let options = [];
-    for (let i = 0; i < player.Inventory.length; i++) {
-        let obj: InventoryObject = AllInventoryObjects.find(x => x.ObjectName == player.Inventory[i])!;
-
-        if(obj.Rewardable && !exclusions.includes(obj.ObjectName)) {
-            options.push(obj);
-        }
-    }
-
-    if(options.length == 0) {
-        return null;
-    }
-
-    return GetRandomItem(options);
-}
-
 async function CalculateDamageAmountForPlayer(client: Client, player: Player, amount: number, damageType: DamageType): Promise<number> {
     //Make amount positive just for each math
     amount = Math.abs(amount);
 
-    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.FireResistance) && damageType == DamageType.Fire) {
+    if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.FireResistance) && damageType == DamageType.Fire) {
         amount = Math.floor(amount * 0.5);
         await client.say(process.env.CHANNEL!, `${player.Username} resisted the fire damage and only took half damage!`);
     }
-    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.ColdResistance) && damageType == DamageType.Cold) {
+    if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.ColdResistance) && damageType == DamageType.Cold) {
         amount = Math.floor(amount * 0.5);
         await client.say(process.env.CHANNEL!, `${player.Username} resisted the cold damage and only took half damage!`);
     }
 
-    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllVulnerability)) {
+    if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllVulnerability)) {
         amount = Math.ceil(amount * 2);
         await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to the ${DamageType[damageType]} and took double damage!`);
     }
 
-    if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllResistance)) {
+    if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllResistance)) {
         amount = Math.floor(amount * 0.5);
         await client.say(process.env.CHANNEL!, `${player.Username} is resistant to the ${DamageType[damageType]} and only took half damage!`);
     }
 
     let isUsingObject = false
-    if(player.EquippedObject !== undefined) {
+    if (player.EquippedObject !== undefined) {
         let obj = GetObjectFromInputText(player.EquippedObject.ObjectName);
-        if(obj !== undefined) {
+        if (obj !== undefined) {
             let hasAtLeastOne = false;
             for (let i = 0; i < player.Classes.length; i++) {
-                if(obj!.ClassRestrictions?.includes(player.Classes[i].Type)) {
+                if (obj!.ClassRestrictions?.includes(player.Classes[i].Type)) {
                     hasAtLeastOne = true;
                     break;
                 }
@@ -443,9 +435,9 @@ async function CalculateDamageAmountForPlayer(client: Client, player: Player, am
         }
     }
 
-    if(isUsingObject) {
+    if (isUsingObject) {
         let obj = await GetObjectFromInputText(player.EquippedObject!.ObjectName);
-        if(obj !== undefined && obj.ObjectOnAttackedAction !== undefined) {
+        if (obj !== undefined && obj.ObjectOnAttackedAction !== undefined) {
             let defenseObjectInfo: {
                 resistances?: Array<DamageType>,
                 immunities?: Array<DamageType>,
@@ -453,15 +445,15 @@ async function CalculateDamageAmountForPlayer(client: Client, player: Player, am
                 armorAdjustment?: number
             } = obj?.ObjectOnAttackedAction(client, player);
             for (let i = 0; i < defenseObjectInfo.resistances?.length ?? 0; i++) {
-                if(damageType == defenseObjectInfo.resistances![i]) {
+                if (damageType == defenseObjectInfo.resistances![i]) {
                     amount = Math.floor(amount * 0.5);
                     await client.say(process.env.CHANNEL!, `${player.Username} resisted the ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and only took half damage!`);
                 }
-                if(damageType == defenseObjectInfo.immunities![i]) {
+                if (damageType == defenseObjectInfo.immunities![i]) {
                     amount = 0;
                     await client.say(process.env.CHANNEL!, `${player.Username} is immune to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took NO damage!`);
                 }
-                if(damageType == defenseObjectInfo.vulnerabilities![i]) {
+                if (damageType == defenseObjectInfo.vulnerabilities![i]) {
                     amount = Math.floor(amount * 2);
                     await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to ${DamageType[damageType]} damage from their ${player.EquippedObject!.ObjectName} and took DOUBLE damage!`);
                 }
@@ -475,48 +467,53 @@ async function CalculateDamageAmountForPlayer(client: Client, player: Player, am
     return amount;
 }
 
-export async function ChangePlayerHealth(client: Client, playerName: string, amount: number, damageType: DamageType, deathReason?: string) {
+export async function ChangePlayerHealth(client: Client, playerName: string, amount: number, damageType: DamageType, deathReason?: string, showText: boolean = true) {
     let player = LoadPlayer(playerName);
     let maxHealth = CalculateMaxHealth(player);
 
-    if(player.CurrentHealth > CalculateMaxHealth(player)) {
+    if (player.CurrentHealth > CalculateMaxHealth(player)) {
         player.CurrentHealth = CalculateMaxHealth(player);
     }
 
-    if(amount > 0 && player.CurrentHealth >= maxHealth) {
+    if (amount > 0 && player.CurrentHealth >= maxHealth) {
         return;
     }
 
     let poisonDamage = 0;
-    if(amount < 0) {
+    if (amount < 0) {
         amount = await CalculateDamageAmountForPlayer(client, player, amount, damageType);
 
-        if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.Poisoned)) {
+        if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.Poisoned)) {
             poisonDamage = await CalculateDamageAmountForPlayer(client, player, GetScaledValueFromMaxHealth(player, 0.05, 5), DamageType.Poison);
 
             amount -= poisonDamage;
         }
 
-        DoPlayerUpgrade(player.Username, UpgradeType.DamageReduction, (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(player.Username, UpgradeType.TakenDamageChangedByPercent, (upgrade, strength, strengthPercentage) => {
             let reduction = Math.floor(amount * strengthPercentage);
             amount -= reduction;
         });
 
-        if(amount == 0) {
+        if (amount == 0) {
             return;
         }
+    }
+
+    if (Math.floor(amount) == 0) {
+        console.log(`Player ${playerName} tried to change health by 0`)
+        return;
     }
 
     player = LoadPlayer(playerName);
     player.CurrentHealth += Math.floor(amount);
     player.CurrentHealth = Math.floor(player.CurrentHealth);
     SavePlayer(player);
-    if(player.CurrentHealth <= 0) {
+    if (player.CurrentHealth <= 0) {
         player = LoadPlayer(playerName);
         player.CurrentHealth = 0
         SavePlayer(player);
 
-        if(poisonDamage > 0) {
+        if (poisonDamage > 0) {
             await client.say(process.env.CHANNEL!, `${player.Username} is poisoned and took an additional ${poisonDamage} poison damage!`);
         }
         await client.say(process.env.CHANNEL!, `@${playerName} took ${Math.abs(amount)} ${DamageType[damageType]} damage and DIED! They've been banned for 5 minutes.`);
@@ -538,35 +535,50 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
 
         //Show dead stickman
         setTimeout(() => {
-            Broadcast(JSON.stringify({ type: 'changestickmanappearance', displayName: player.Username, changeType: 'died' }));
+            Broadcast(JSON.stringify({
+                type: 'changestickmanappearance',
+                displayName: player.Username,
+                changeType: 'died'
+            }));
         }, 1000);
 
         //Show revived stickman
         setTimeout(() => {
-            Broadcast(JSON.stringify({ type: 'changestickmanappearance', displayName: player.Username, changeType: 'revive' }));
+            Broadcast(JSON.stringify({
+                type: 'changestickmanappearance',
+                displayName: player.Username,
+                changeType: 'revive'
+            }));
         }, 1000 * 60 * 5);
 
         await BanUser(client, playerName, 5 * 60, deathReason);
-    }
-    else if(player.CurrentHealth > maxHealth) {
+    } else if (player.CurrentHealth > maxHealth) {
         player = LoadPlayer(playerName);
         player.CurrentHealth = maxHealth;
         SavePlayer(player);
-        client.say(process.env.CHANNEL!, `@${playerName} has healed to full.`);
-    }
-    else {
-        client.say(process.env.CHANNEL!, `@${playerName} has ${amount > 0 ? `healed by ${amount}` : `taken ${Math.abs(amount)} ${DamageType[damageType]} damage`}! [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`);
 
-        if(poisonDamage > 0) {
-            await client.say(process.env.CHANNEL!, `${player.Username} is poisoned and took an additional ${poisonDamage} poison damage!`);
+        if(showText) {
+            await client.say(process.env.CHANNEL!, `@${playerName} has healed to full.`);
+        }
+    } else {
+        if(showText) {
+            await client.say(process.env.CHANNEL!, `@${playerName} has ${amount > 0 ? `healed by ${amount}` : `taken ${Math.abs(amount)} ${DamageType[damageType]} damage`}! [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`);
+
+            if (poisonDamage > 0) {
+                await client.say(process.env.CHANNEL!, `${player.Username} is poisoned and took an additional ${poisonDamage} poison damage!`);
+            }
         }
     }
-    
-    Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: playerName, display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`, }));
+
+    Broadcast(JSON.stringify({
+        type: 'showfloatingtext',
+        displayName: playerName,
+        display: amount > 0 ? `+${amount}` : `-${Math.abs(amount)}`,
+    }));
 }
 
 async function CheckForPrestige(client: Client, player: Player, levelAddition: number): Promise<boolean> {
-    if(player.Level + levelAddition >= MAX_LEVEL) {
+    if (player.Level + levelAddition >= MAX_LEVEL) {
         player.Upgrades = [];
         player.KnownMoves = [];
         player.CurrentHealth = CalculateMaxHealth(player);
@@ -579,7 +591,7 @@ async function CheckForPrestige(client: Client, player: Player, levelAddition: n
         player.LevelUpAvailable = false;
         player.Prestige++;
 
-        if(player.Prestige >= MAX_PRESTIGE) {
+        if (player.Prestige >= MAX_PRESTIGE) {
             player.Prestige = 0;
             player.Mastery++;
 
@@ -602,11 +614,11 @@ async function CheckForPrestige(client: Client, player: Player, levelAddition: n
 }
 
 export async function GiveExp(client: Client, username: string, amount: number, affectedByModifiers: boolean = true) {
-    if(affectedByModifiers) {
-        if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp) || AdsRunning) {
+    if (affectedByModifiers) {
+        if (DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp) || AdsRunning) {
             amount *= 2;
         }
-    
+
         DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrade, strength, strengthPercentage) => {
             amount += Math.floor(amount * strengthPercentage);
         });
@@ -617,11 +629,11 @@ export async function GiveExp(client: Client, username: string, amount: number, 
     player.CurrentExp = Math.floor(player.CurrentExp);
     SavePlayer(player);
 
-    if(!player.LevelUpAvailable) {
-        if(player.CurrentExp >= player.CurrentExpNeeded) {
+    if (!player.LevelUpAvailable) {
+        if (player.CurrentExp >= player.CurrentExpNeeded) {
             player = LoadPlayer(username);
 
-            if(await CheckForPrestige(client, player, 1)) {
+            if (await CheckForPrestige(client, player, 1)) {
                 return;
             }
 
@@ -637,19 +649,18 @@ export async function GiveExp(client: Client, username: string, amount: number, 
                 : classOptions[0];
 
             let text = `@${username} has LEVELED UP! You may choose a class to level into. Use ${formattedOptions} to select a class.`;
-            if(player.Level == 0) {
+            if (player.Level == 0) {
                 text += ' Passive mode has now been disabled.';
             }
             await client.say(process.env.CHANNEL!, text);
 
             setTimeout(async () => {
-                Broadcast(JSON.stringify({ type: 'exp', displayName: username, display: `LEVEL UP!`, }));
+                Broadcast(JSON.stringify({type: 'exp', displayName: username, display: `LEVEL UP!`,}));
                 await ChangePlayerHealth(client, username, Math.floor(CalculateMaxHealth(player) * 0.05), DamageType.None);
             }, 700);
-        }
-        else {
+        } else {
             setTimeout(() => {
-                Broadcast(JSON.stringify({ type: 'exp', displayName: username, display: `+${amount}EXP`, }));
+                Broadcast(JSON.stringify({type: 'exp', displayName: username, display: `+${amount}EXP`,}));
             }, 700);
         }
     }
@@ -663,7 +674,7 @@ async function LearnRandomMove(client: Client, player: Player, classType: ClassT
             x.Type === def.ClassRequired &&
             x.Level >= (def.LevelRequirement ?? 0)));
 
-    if(validDefs.length > 0) {
+    if (validDefs.length > 0) {
         let chosenMove = GetRandomItem(validDefs);
 
         player.KnownMoves.push(chosenMove!.Command);
@@ -672,7 +683,7 @@ async function LearnRandomMove(client: Client, player: Player, classType: ClassT
 
         let desc = chosenMove!.Description;
 
-        while(desc.includes("{monster}")) {
+        while (desc.includes("{monster}")) {
             desc = desc.replace("{monster}", monsterStats.Name);
         }
 
@@ -683,13 +694,13 @@ async function LearnRandomMove(client: Client, player: Player, classType: ClassT
 export async function LevelUpPlayer(client: Client, username: string, classType: ClassType) {
     let player = LoadPlayer(username);
 
-    if(player.LevelUpAvailable) {
-        if(player.UpgradeOptions.length > 0) {
+    if (player.LevelUpAvailable) {
+        if (player.UpgradeOptions.length > 0) {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you must select your upgrade before you can level up again. Check what your choices are with !levelup`);
             return;
         }
 
-        if(await CheckForPrestige(client, player, 0)) {
+        if (await CheckForPrestige(client, player, 0)) {
             return;
         }
 
@@ -703,39 +714,39 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
         player.CurrentExp -= player.CurrentExpNeeded;
         player.Level++;
         player.CurrentExpNeeded = CalculateExpNeeded(player.Level);
-        if(player.CurrentExp < player.CurrentExpNeeded) {
+        if (player.CurrentExp < player.CurrentExpNeeded) {
             player.LevelUpAvailable = false;
         }
 
         for (let i = 0; i < player.Classes.length; i++) {
-            if(player.Classes[i].Type == classType) {
+            if (player.Classes[i].Type == classType) {
                 player.Classes[i].Level++;
             }
         }
 
-        if(playerClass && playerClass.Level === 0) {
+        if (playerClass && playerClass.Level === 1) {
             switch (classType) {
                 case ClassType.Warrior:
-                    if(!player.Inventory.includes("sword")) {
+                    if (!player.Inventory.includes("sword")) {
                         await GivePlayerObject(client, player.Username, "sword");
                         await GivePlayerObject(client, player.Username, "hammer");
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
                 case ClassType.Mage:
-                    if(!player.Inventory.includes("wand")) {
+                    if (!player.Inventory.includes("wand")) {
                         await GivePlayerObject(client, player.Username, "wand");
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
                 case ClassType.Rogue:
-                    if(!player.Inventory.includes("dagger")) {
+                    if (!player.Inventory.includes("dagger")) {
                         await GivePlayerObject(client, player.Username, "dagger");
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
                 case ClassType.Cleric:
-                    if(!player.Inventory.includes("healing amulet")) {
+                    if (!player.Inventory.includes("healing amulet")) {
                         await GivePlayerObject(client, player.Username, "healing amulet");
                     }
                     await LearnRandomMove(client, player, classType);
@@ -749,35 +760,38 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
         SavePlayer(player);
 
         await client.say(process.env.CHANNEL!, final);
-    }
-    else {
+    } else {
         await client.say(process.env.CHANNEL!, `@${player.Username}, you have no level ups available.`);
     }
 }
 
 async function GetUpgradeSelection(client: Client, player: Player, isForPermanent: boolean): Promise<string> {
     let allUpgradeOptions = UpgradeDefinitions.filter(def => {
-        if(isForPermanent) {
-            if(!def.IsPermanent) {
+        if (isForPermanent) {
+            if (!def.IsPermanent) {
                 return;
             }
-        }
-        else {
-            if(def.IsPermanent) {
-                return;
-            }
-        }
 
-        // Check if player already has this upgrade
-        if (player.Upgrades.includes(def.Name)) {
-            return false;
+            // Check if player already has this upgrade
+            if (player.PermanentUpgrades.includes(def.Name)) {
+                return false;
+            }
+        } else {
+            if (def.IsPermanent) {
+                return;
+            }
+
+            // Check if player already has this upgrade
+            if (player.Upgrades.includes(def.Name)) {
+                return false;
+            }
         }
 
         //Only show learn move you have moves to learn
-        if(def.Type === UpgradeType.LearnMove) {
+        if (def.Effects.some(x => x.Type === UpgradeType.LearnMove)) {
             let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
 
-            if(validDefs.length <= 0) {
+            if (validDefs.length <= 0) {
                 return false;
             }
         }
@@ -797,11 +811,11 @@ async function GetUpgradeSelection(client: Client, player: Player, isForPermanen
             def.UpgradeRequirements.some(requiredUpgradeType =>
                 player.Upgrades.some(upgradeNameOwned => {
                     const upgrade = UpgradeDefinitions.find(def => def.Name === upgradeNameOwned);
-                    return upgrade?.Type === requiredUpgradeType;
+                    return upgrade?.Effects.some(x => x.Type === requiredUpgradeType);
                 }) ||
                 player.PermanentUpgrades.some(upgradeNameOwned => {
                     const upgrade = UpgradeDefinitions.find(def => def.Name === upgradeNameOwned);
-                    return upgrade?.Type === requiredUpgradeType;
+                    return upgrade?.Effects.some(x => x.Type === requiredUpgradeType);
                 })
             );
 
@@ -839,10 +853,9 @@ async function GetUpgradeSelection(client: Client, player: Player, isForPermanen
 }
 
 export function GetUpgradeOptions(player: Player, permanent: boolean): string {
-    if(player.UpgradeOptions.length === 0) {
+    if (player.UpgradeOptions.length === 0) {
         return `@${player.Username}, you have no upgrade choices currently. Level up and choose a class to get some!`;
-    }
-    else {
+    } else {
         let upgradesFinal = `@${player.Username}, you have ${player.UpgradeOptions.length} ${permanent ? "prestige" : ""} upgrade choices! Use the following options to select: \n`;
 
         for (let i = 0; i < player.UpgradeOptions.length; i++) {
@@ -858,43 +871,42 @@ export async function SelectPlayerUpgrade(client: Client, username: string, sele
     let final = ``;
     let player = LoadPlayer(username);
 
-    if(player.UpgradeOptions.length === 0) {
+    if (player.UpgradeOptions.length === 0) {
         await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have any upgrade options right now! Level up or choose a class to get upgrades.`);
         return;
     }
 
-    if(selectedUpgrade >= player.UpgradeOptions.length) {
+    if (selectedUpgrade >= player.UpgradeOptions.length) {
         await client.say(process.env.CHANNEL!, `@${player.Username}, that is not an upgrade option!`);
         return;
     }
 
     let chosenUpgradeName = player.UpgradeOptions[selectedUpgrade];
     let chosenUpgrade = UpgradeDefinitions.find(x => x.Name == chosenUpgradeName);
-    if(chosenUpgrade === undefined) {
+    if (chosenUpgrade === undefined) {
         console.log(`Could not find upgrade ${chosenUpgradeName}`);
         return;
     }
 
-    if(chosenUpgrade.Savable) {
+    if (chosenUpgrade.Savable) {
         player.Upgrades.push(chosenUpgradeName);
-    }
-    else {
-        if(chosenUpgrade.Type === UpgradeType.LearnMove) {
+    } else {
+        if (chosenUpgrade.Effects.some(x => x.Type === UpgradeType.LearnMove)) {
             let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
 
-            if(validDefs.length > 0) {
+            if (validDefs.length > 0) {
                 let chosenMove = GetRandomItem(validDefs);
 
                 player.KnownMoves.push(chosenMove!.Command);
 
                 let monsterStats = LoadMonsterData().Stats;
-                
+
                 let desc = chosenMove!.Description;
 
-                while(desc.includes("{monster}")) {
+                while (desc.includes("{monster}")) {
                     desc = desc.replace("{monster}", monsterStats.Name);
                 }
-                
+
                 final = `@${username}, you have learned !${chosenMove!.Command}: ${desc}`;
             }
         }
@@ -902,7 +914,7 @@ export async function SelectPlayerUpgrade(client: Client, username: string, sele
 
     player.UpgradeOptions = [];
 
-    if(final === ``) {
+    if (final === ``) {
         final += `@${player.Username}, you have selected ${chosenUpgrade.Name}! `;
         final += GetPlayerStatsDisplay(player);
     }
@@ -912,36 +924,51 @@ export async function SelectPlayerUpgrade(client: Client, username: string, sele
     SavePlayer(player);
 }
 
+export function GetUpgradeDescription(upgradeName: string): string {
+    let upgrade = UpgradeDefinitions.find(x => x.Name.toLowerCase() === upgradeName.toLowerCase());
+    if (upgrade !== undefined) {
+        let desc = upgrade.Description;
+        for (let i = 0; i < upgrade.Effects.length; i++) {
+            while (desc.includes(`{${i}}`)) {
+                desc = desc.replace(`{${i}}`, upgrade.Effects[i].Strength.toString());
+            }
+        }
+        return desc
+    }
+    return "";
+}
+
 export function DoesPlayerHaveUpgrade(username: string, upgradeType: UpgradeType): boolean {
     let player = LoadPlayer(username);
-    return player.Upgrades.some(upgrade => UpgradeDefinitions.find(x => x.Name === upgrade)?.Type === upgradeType);
+    return player.Upgrades.some(upgrade => UpgradeDefinitions.find(x => x.Name === upgrade)?.Effects.some(x => x.Type === upgradeType));
 }
 
 export function DoPlayerUpgrade(username: string, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
     let player = LoadPlayer(username);
-    let totalStrength = 0;
-    let matchingUpgrades = player.Upgrades
-        .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Type === upgradeType))
-        .filter(upgrade => upgrade !== undefined);
 
-    if (matchingUpgrades.length > 0) {
-
-        totalStrength = matchingUpgrades.reduce((sum, upgrade) => sum + upgrade!.Strength, 0);
-        out(matchingUpgrades[0]!, totalStrength, totalStrength / 100);
-        return true;
-    }
-    return false;
+    return DoPlayerUpgradeWithPlayer(player, upgradeType, out);
 }
 
 export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
     let totalStrength = 0;
     let matchingUpgrades = player.Upgrades
-        .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Type === upgradeType))
+        .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Effects.some(x => x.Type === upgradeType)))
         .filter(upgrade => upgrade !== undefined);
 
     if (matchingUpgrades.length > 0) {
+        totalStrength = matchingUpgrades.reduce((sum, upgrade) => {
+            // First ensure upgrade exists
+            if (!upgrade || !upgrade.Effects) {
+                return sum;
+            }
 
-        totalStrength = matchingUpgrades.reduce((sum, upgrade) => sum + upgrade!.Strength, 0);
+            // Calculate sum of effect strengths for this upgrade
+            const upgradeSum = upgrade.Effects.reduce((strengthSum, effect) => {
+                return strengthSum + (effect.Type === upgradeType ? effect.Strength : 0);
+            }, 0); // Important: Add initial value of 0 here
+
+            return sum + upgradeSum;
+        }, 0);
         out(matchingUpgrades[0]!, totalStrength, totalStrength / 100);
         return true;
     }
@@ -951,47 +978,46 @@ export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeTy
 export function GetPlayerStatsDisplay(player: Player): string {
     let classesAbove0 = 0;
     for (let i = 0; i < player.Classes.length; i++) {
-        if(player.Classes[i].Level > 0) {
+        if (player.Classes[i].Level > 0) {
             classesAbove0++;
         }
     }
 
     let currClassCount = 0;
     let final = `@${player.Username} is level ${player.Level}.`;
-    if(player.Level > 0) {
+    if (player.Level > 0) {
         final += " They are ";
     }
     for (let i = 0; i < player.Classes.length; i++) {
-        if(player.Classes[i].Level > 0) {
+        if (player.Classes[i].Level > 0) {
             final += `a ${GetNumberWithOrdinal(player.Classes[i].Level)} level ${ClassType[player.Classes[i].Type]}`;
             currClassCount++;
 
-            if(currClassCount < classesAbove0 - 1) {
+            if (currClassCount < classesAbove0 - 1) {
                 final += ", ";
-            }
-            else if(currClassCount == classesAbove0 - 1) {
+            } else if (currClassCount == classesAbove0 - 1) {
                 final += " and ";
-            }
-            else {
+            } else {
                 final += ".";
             }
         }
     }
 
-    if(player.LevelUpAvailable) {
+    if (player.LevelUpAvailable) {
         final += ` They have a level up available.`;
     }
 
-    if(player.EquippedObject !== undefined) {
+    if (player.EquippedObject !== undefined) {
         final += ` Their equipped ${player.EquippedObject!.ObjectName} has a durability left of ${player.EquippedObject!.RemainingDurability}.`;
     }
 
-    final += ` They've died ${player.Deaths} times! [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${CalculateMaxHealth(player)}]HP`;
+    let maxHp = CalculateMaxHealth(player);
+    final += ` They've died ${player.Deaths} times! [${player.CurrentExp}/${player.CurrentExpNeeded}]EXP [${player.CurrentHealth}/${maxHp}]HP`;
 
-    if(player.Prestige > 0) {
+    if (player.Prestige > 0) {
         final += ` [${player.Prestige}]Prestige`
     }
-    if(player.Mastery > 0) {
+    if (player.Mastery > 0) {
         final += ` [${player.Mastery}]Mastery`
     }
 
@@ -1000,22 +1026,27 @@ export function GetPlayerStatsDisplay(player: Player): string {
 
 export async function RandomlyGiveExp(client: Client, username: string, chanceOutOfTen: number, exp: number) {
     let chance = Math.round(Math.random() * 10);
-    if(chance <= chanceOutOfTen) {
+    if (chance <= chanceOutOfTen) {
         await GiveExp(client, username, GetRandomIntI(1, 2));
     }
 }
 
 export function GetObjectFromInputText(text: string): InventoryObject | undefined {
+    let initialFind = CheckTextInstance(CleanMessage(text.trim()));
+    if(initialFind !== undefined) {
+        return initialFind;
+    }
+
     let pieces = text.toLowerCase().trim().split(' ');
     for (let i = 0; i < pieces.length; i++) {
         let textPiece = "";
         for (let j = i; j < pieces.length; j++) {
-            if(textPiece != "") {
+            if (textPiece != "") {
                 textPiece += " ";
             }
             textPiece += pieces[j];
             let foundObject = CheckTextInstance(textPiece);
-            if(foundObject !== undefined) {
+            if (foundObject !== undefined) {
                 return foundObject;
             }
         }
@@ -1025,7 +1056,7 @@ export function GetObjectFromInputText(text: string): InventoryObject | undefine
 function CheckTextInstance(text: string): InventoryObject | undefined {
     let inventoryObject: InventoryObject | undefined = AllInventoryObjects.find(x => text === (x.ObjectName) || (x.Alias != undefined && x.Alias.some(y => text === (y))))!;
 
-    if(inventoryObject === undefined) {
+    if (inventoryObject === undefined) {
         inventoryObject = AllInventoryObjects.find(x => text.includes(x.ObjectName) || (x.Alias != undefined && x.Alias.some(y => text.includes(y))))!;
     }
 
@@ -1041,26 +1072,25 @@ export function TriggerCommandCooldownOnPlayer(username: string, command: string
 
     let cancel = false;
     DoPlayerUpgrade(username, UpgradeType.CooldownCancelChance, async (upgrade, strength, strengthPercentage) => {
-        if(GetRandomIntI(0, 100) <= strength) {
+        if (GetRandomIntI(0, 100) <= strength) {
             cancel = true;
         }
     });
 
-    if(cancel) {
+    if (cancel) {
         return;
     }
 
     timeInSeconds = Math.max(1, timeInSeconds);
 
     let existingEffectIndex = player.CommandCooldowns.findIndex(x => x.Command == command);
-    if(existingEffectIndex == -1) {
+    if (existingEffectIndex == -1) {
         player.CommandCooldowns.push({
             Command: command,
             WhenDidCommand: new Date(),
             CommandCooldownInSeconds: timeInSeconds * CurrentStreamSettings.cooldownMultiplier
         })
-    }
-    else {
+    } else {
         player.CommandCooldowns[existingEffectIndex].WhenDidCommand = new Date();
         player.CommandCooldowns[existingEffectIndex].CommandCooldownInSeconds = timeInSeconds;
     }
@@ -1072,14 +1102,13 @@ export function AddStatusEffectToPlayer(username: string, effect: StatusEffect, 
     let player = LoadPlayer(username);
 
     let existingEffectIndex = player.StatusEffects.findIndex(x => x.Effect == effect);
-    if(existingEffectIndex == -1) {
+    if (existingEffectIndex == -1) {
         player.StatusEffects.push({
             Effect: effect,
             WhenEffectStarted: new Date(),
             EffectTimeInSeconds: timeInSeconds
         })
-    }
-    else {
+    } else {
         player.StatusEffects[existingEffectIndex].WhenEffectStarted = new Date();
         player.StatusEffects[existingEffectIndex].EffectTimeInSeconds = timeInSeconds;
     }
@@ -1105,7 +1134,7 @@ export function GetCommandCooldownTimeLeftInSeconds(username: string, command: s
     let player = LoadPlayer(username);
     let existingEffectIndex = player.CommandCooldowns.findIndex(x => x.Command == command);
 
-    if(existingEffectIndex != -1) {
+    if (existingEffectIndex != -1) {
         let commandCooldown = player.CommandCooldowns[existingEffectIndex];
         let secondsLeft = commandCooldown.CommandCooldownInSeconds - GetSecondsBetweenDates(commandCooldown.WhenDidCommand, new Date());
 
@@ -1124,11 +1153,11 @@ export function GiveCozyPoints(username: string, points: number) {
 
 export function ProcessCozyPointTick(username: string) {
     let player = LoadPlayer(username);
-    if(player.CozyPoints > 0) {
+    if (player.CozyPoints > 0) {
         player.CozyPoints--;
 
         let max = CalculateMaxHealth(player);
-        if(player.CurrentHealth >= max) {
+        if (player.CurrentHealth >= max) {
             player.CurrentHealth = max;
         }
         SavePlayer(player);

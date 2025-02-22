@@ -146,6 +146,19 @@ export async function RotateOBSSource(name: string, rotationDegrees: number) {
     });
 }
 
+export async function AddChapterMarker(chapterName: string) {
+    try {
+        // noinspection TypeScriptValidateTypes
+        await obs.call('CreateRecordChapter', {
+            chapterName: chapterName
+        });
+        console.log(`Chapter marker "${chapterName}" added successfully.`);
+    } catch (error) {
+        console.error(`Failed to add chapter marker: ${error.message}`);
+    }
+}
+
+
 export async function SetTextValue(sourceName: string, text: string) {
     const response = await obs.call('SetInputSettings', {
         inputName: sourceName,
@@ -162,6 +175,19 @@ export async function GetTextValue(sourceName: string): Promise<string> {
 
     return response.inputSettings.text;
 }
+export async function SetTextColor(sourceName: string, red: number, green: number, blue: number) {
+    // Convert decimal color to hexadecimal format that OBS expects
+    const hexColor = `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
+
+    const bgrColor = (blue << 16) | (green << 8) | red;
+    const response = await obs.call('SetInputSettings', {
+        inputName: sourceName,
+        inputSettings: {
+            color: bgrColor
+        }
+    });
+}
+
 
 export async function ToggleObject(name: string) {
     if(!await GetSceneItemEnabled(name)) {

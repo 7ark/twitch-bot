@@ -2,37 +2,46 @@ import {Client} from "tmi.js";
 import {Affliction, ClassType, MoveType, Player, StatusEffect} from "./valueDefinitions";
 import {
     AddSpacesBeforeCapitals,
+    GetItemsAsPages,
     GetNumberWithOrdinal,
+    GetPageNumberFromCommand,
     GetRandomIntI,
     GetSecondsBetweenDates,
-    GetUpgradeDescription,
     IsCommand
 } from "./utils/utils";
-import {isNaN} from "@tensorflow/tfjs-node";
 import {
     DoesPlayerHaveStatusEffect,
-    GetCommandCooldownTimeLeftInSeconds, GetObjectFromInputText,
-    GetPlayerStatsDisplay, GetUpgradeOptions, GiveExp, GivePlayerObject,
+    GetCommandCooldownTimeLeftInSeconds,
+    GetObjectFromInputText,
+    GetPlayerStatsDisplay,
+    GetUpgradeDescription,
+    GetUpgradeOptions,
+    GiveExp,
+    GivePlayerObject,
     IsCommandOnCooldown,
-    LevelUpPlayer, LoadAllPlayers, LoadPlayer, SavePlayer,
-    SelectPlayerUpgrade, TakeObjectFromPlayer,
+    LevelUpPlayer,
+    LoadAllPlayers,
+    LoadPlayer,
+    SavePlayer,
+    SelectPlayerUpgrade,
+    TakeObjectFromPlayer,
     TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {WhisperUser} from "./utils/twitchUtils";
 import {LoadMonsterData} from "./utils/monsterUtils";
 import {GetMove, MoveDefinitions} from "./movesDefinitions";
-import {CurrentGTARider, IsMonsterActive} from "./globals";
+import {CurrentCaller, CurrentGTARider, IsMonsterActive} from "./globals";
 import {BattlecryStarted, CreditsGoing, DoBattleCry} from "./utils/commandUtils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./utils/audioUtils";
 import {AudioType, CurrentStreamSettings} from "./streamSettings";
 import fs from "fs";
 import {Broadcast} from "./bot";
 import {GetStringifiedSessionData} from "./utils/playerSessionUtils";
-import {DrunkifyText, GetParameterFromCommand} from "./utils/messageUtils";
-import {AllInventoryObjects, InventoryObject} from "./inventoryDefinitions";
+import {DrunkifyText, GetAllParameterTextAfter, GetParameterFromCommand} from "./utils/messageUtils";
+import {AllInventoryObjects, InventoryObject, ObjectRetrievalType} from "./inventoryDefinitions";
 import {UpgradeDefinitions} from "./upgradeDefinitions";
 import {
-    GetCurrentShopItems, HandleMinigames,
+    HandleMinigames,
     IsCommandMinigame,
     MinigameType,
     ResetLeaderboard,
@@ -43,21 +52,36 @@ import {DoesPlayerHaveQuest, GetQuestText} from "./utils/questUtils";
 import {
     GTA_CurrentRating,
     GTA_CurrentRiders,
-    GTA_CurrentRidersVehicle, GTA_Ratings, GTA_Reviews,
-    LetsRide, SaveGTA,
+    GTA_CurrentRidersVehicle,
+    GTA_Ratings,
+    GTA_Reviews,
+    LetsRide,
+    SaveGTA,
     UpdateStarVisuals,
     VEHICLE_OPTIONS
-} from "./utils/challengeUtils";
+} from "./utils/gtaUtils";
 import {DoesSceneContainItem, GetOpenScene, SetSceneItemEnabled} from "./utils/obsutils";
 import {
     ExchangeCoinsForGems,
     ExchangeGemsForCoins,
     GetBankStatusText,
     GetExchangeRateText,
-    LoadBankData, SaveBankData,
+    LoadBankData,
+    SaveBankData,
     UpdateExchangeRate
 } from "./utils/bankUtils";
 import {GetUserMinigameCount} from "./actionqueue";
+import {
+    AddOrder,
+    AddPendingCustomer,
+    Checkout,
+    COOK_CurrentCustomers,
+    COOK_CustomerQueue,
+    COOK_PendingCustomer,
+    OrderUp
+} from "./utils/cookingSimUtils";
+import {GetCurrentGroceryStoreItems, GetCurrentSalesmanItems} from "./utils/shopUtils";
+import {GatherType, StartGathering} from "./utils/gatherUtils";
 
 export interface CommandDefinition {
     Commands: Array<string>;
@@ -79,11 +103,15 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             let context = contextPieces.length > 0 ? contextPieces[0] : "";
 
             //TODO: Way to see all help commands?
-            if(context == "") {
-                await client.say(process.env.CHANNEL!, `Chat is interactive! Use !commands to see all command options. Use '!help fight' to learn about fighting monsters. Use '!help minigames' to learn about playing small minigames. Use '!help interact' to learn about more interactive elements of chat.`);
-            }
-            else {
+            if (context == "") {
+                await client.say(process.env.CHANNEL!, `Chat is interactive! Use '!help options' to see all subjects to learn about. Use !commands to see all command options. Use '!help fight' to learn about fighting monsters. Use '!help minigames' to learn about playing small minigames. Use '!help interact' to learn about more interactive elements of chat.`);
+            } else {
                 switch (context) {
+                    case "options":
+                    case "option":
+                        await client.say(process.env.CHANNEL!, `You can use !help [subject] to learn about specific subjects in depth. Here is the current list of options: 
+                        monster, minigame, interact, quest, coins, bank, stats, exp, shop, craft, food, heal, items, forage, hunt`);
+                        break;
                     case "monster":
                     case "monsters":
                     case "fight":
@@ -113,6 +141,68 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     case "bank":
                         await client.say(process.env.CHANNEL!, `The bank can be used to exchange gems for Bytecoins, and vise versa. Most things can be purchased with Bytecoins. Use !exgems to exchange a number of gems for Bytecoins, and !excoins to exchange Bytecoins back to gems. The banks exchange rate changes every stream. Check it with !exchangerate`);
                         break;
+                    case "stats":
+                    case "stat":
+                        await client.say(process.env.CHANNEL!, `Everyone has their own unique character sheet. Use !stats to check out what your current statistics are, including health, exp, level, etc. You can also use !upgrades to see your current upgrades. Use !info [upgrade name] to get more info on any given upgrade`);
+                        break;
+                    case "exp":
+                    case "xp":
+                        await client.say(process.env.CHANNEL!, `You earn exp by chatting, attacking monsters, winning chat challenges, and lots of small things. When you earn enough exp you will level up. You can see if you have a level up available with !levelup`);
+                        break;
+                    case "shop":
+                    case "store":
+                    case "shopping":
+                    case "grocery":
+                        await client.say(process.env.CHANNEL!, `There are currently two stores. !shop or !grocery. The shop sells misc random items, the grocery store sells food you can use to craft better food. Use !help craft to learn more about crafting`);
+                        break;
+                    case "craft":
+                    case "crafting":
+                    case "recipe":
+                        await client.say(process.env.CHANNEL!, `Specific items are able to be crafted. Use !recipe [object name] to see it's recipe, and then use !craft [object name] to attempt to craft it. Use !recipes to see all available recipes`);
+                        break;
+                    case "food":
+                        await client.say(process.env.CHANNEL!, `Food can be purchased at the grocery store. You can then craft food out of individual ingredients. Food generally heals you. Use !help grocery to learn more about the grocery store.`);
+                        break;
+                    case "scam":
+                        await client.say(process.env.CHANNEL!, `Chat likes to act like I've scammed them. I haven't, it's all lies.`);
+                        break;
+                    case "info":
+                        await client.say(process.env.CHANNEL!, `You can use !info [subject] to get information about a specific item, move, or upgrade.`);
+                        break;
+                    case "cook":
+                        await client.say(process.env.CHANNEL!, `You can cook various ingredients you have to make a cooked version. Not everything can be cooked. You can use !help craft to learn about putting ingredients together. You can use !roast [food] on a cookable item to try and cook it. Normally an item that says "raw" in the name is cookable.`);
+                        break;
+                    case "forage":
+                    case "hunt":
+                        await client.say(process.env.CHANNEL!, `You can you !forage or !hunt to go out on an expedition to try and get raw food. It will take a while, but you may come back with new ingredients. You could also encounter danger. Beware!`);
+                        break;
+                    case "heal":
+                    case "healing":
+                    case "health":
+                    case "hp":
+                        await client.say(process.env.CHANNEL!, `You heal through items (health potions or food), leveling up, or a cleric healing you, generally. Use !help items to learn more about where to find items.`);
+                        break;
+                    case "item":
+                    case "items":
+                        await client.say(process.env.CHANNEL!, `You can get items in lots of ways! Through the gambling channel point redeem, completing chat challenges, buying from the shop (!help shop), or participating in defeating the current monster!`);
+                        break;
+                    case "voice":
+                    case "voices":
+                        await client.say(process.env.CHANNEL!, `When using text-to-speech, you can set what voice you'd like to use with !setvoice [voicename]. You can get a list of supported voice names with !voices. You can also use emotions in your messages by typing something like "*shouting* Hello! *angry* You suck!". Use !emotions to check which I support. (Not all voices support all emotions, check https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts#voice-styles-and-roles to see whats supported)`);
+                        break;
+                    default:
+                        await client.say(process.env.CHANNEL!, `This subject doesn't exist in the help command yet! Cory is taking note and will update it in the future.`);
+
+                        let helpLogs: Array<string> = [];
+                        if (fs.existsSync('helplogs.json')) {
+                            helpLogs = JSON.parse(fs.readFileSync('helplogs.json', 'utf-8'));
+                        }
+
+                        helpLogs.push(command);
+
+                        fs.writeFileSync('helplogs.json', JSON.stringify(helpLogs));
+
+                        break;
                 }
             }
         }
@@ -129,6 +219,21 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 case "gta_needride":
                     await client.say(process.env.CHANNEL!, `Today Cory is driving around his viewers. Use !ineedaride to be entered into the list to be chosen to ride in Cory's vehicle. You can then use !locations to see options for where you'd like to go. You just say the location (no commands necessary) and he will drive you. All messages said while in Cory's vehicle are said out loud in TTS.`);
                     break;
+                case "cook":
+                    await client.say(process.env.CHANNEL!, `Today Cory is running a fine dining restaurant. You can use !ineedfood to get in line. Once you're seated, everything you say will be said out loud through text to speech, and you'll be able to place your order with !order 'your order'. When you've finished your meal you can use !checkout [money] to give Cory a tip.`);
+                    break;
+            }
+        }
+    },
+    {
+        Commands: ["hangup"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if(player.Username.toLowerCase() == CurrentCaller.toLowerCase()) {
+                PlaySound("hangup", AudioType.ImportantStreamEffects)
+                await client.say(process.env.CHANNEL!, `@${player.Username}, thanks for your call!`);
+                CurrentCaller = ``;
             }
         }
     },
@@ -138,6 +243,14 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, have a nice lurk!`);
+        }
+    },
+    {
+        Commands: ["emotions"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await client.say(process.env.CHANNEL!, `The current voice emotions I support are: cheerful, angry, sad, whisper, scared/terrified, excited, hopeful, shouting, unfriendly. Not all voices support all emotions, check https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts#voice-styles-and-roles to see.`);
         }
     },
     {
@@ -214,17 +327,16 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             let split = command.replace('!upgrade', '').trim().split(' ');
-            if(split.length > 0) {
+            if (split.length > 0) {
                 let value: number = parseInt(split[0]);
                 console.log("Parsed value:", value);
-                if(Number.isNaN(value)) {
+                if (Number.isNaN(value)) {
                     await WhisperUser(client, player.Username, `@${player.Username}, that is not a valid upgrade option number. Use !levelup to check your options.`);
                     return;
                 }
 
                 await SelectPlayerUpgrade(client, player.Username, value - 1);
-            }
-            else {
+            } else {
                 console.log(`No number in message: ${command}}`);
                 await WhisperUser(client, player.Username, `@${player.Username}, you must select a number. Use !levelup to check your options. Ex. !upgrade 2`);
             }
@@ -236,14 +348,14 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.Upgrades.length === 0 && player.PermanentUpgrades.length === 0) {
+            if (player.Upgrades.length === 0 && player.PermanentUpgrades.length === 0) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you don't have any upgrades yet! You can get upgrades when leveling up.`);
                 return;
             }
 
             let text = `@${player.Username}, `;
 
-            if(player.PermanentUpgrades.length > 0) {
+            if (player.PermanentUpgrades.length > 0) {
                 text += `your permanent upgrades are: ${player.PermanentUpgrades.join(', ')} and `
             }
 
@@ -261,16 +373,16 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             let text = `${monsterInfo.Stats.Name} currently has ${monsterInfo.Health}HP`;
 
             for (let i = 0; i < monsterInfo.Afflictions.length; i++) {
-                if(monsterInfo.Afflictions[i].Amount > 0) {
+                if (monsterInfo.Afflictions[i].Amount > 0) {
                     text += ` (${monsterInfo.Afflictions[i].Amount} ${Affliction[monsterInfo.Afflictions[i].AfflictionType]})`;
                 }
             }
 
-            await WhisperUser(client, displayName, text);
+            await WhisperUser(client, player.Username, text);
         }
     },
     {
-        Commands: ["stats", "stat", "level", "status"],
+        Commands: ["stats", "stat", "level", "status", "health", "hp"],
         Description: "See your current statistics",
         AdminCommand: false,
 
@@ -279,10 +391,10 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
             let playerToStats = player;
 
-            if(split.length > 1) {
+            if (split.length > 1) {
                 let otherPlayer = TryLoadPlayer(split[1].replace("@", ""));
 
-                if(otherPlayer != undefined) {
+                if (otherPlayer != undefined) {
                     playerToStats = otherPlayer;
                 }
             }
@@ -300,13 +412,12 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
             for (let i = 0; i < player.KnownMoves.length; i++) {
                 let move = GetMove(player.KnownMoves[i]);
-                if(IsMonsterActive || (move !== undefined && move.Type !== MoveType.Attack)) {
+                if (IsMonsterActive || (move !== undefined && move.Type !== MoveType.Attack)) {
                     text += `!${player.KnownMoves[i]}`;
 
-                    if(i < player.KnownMoves.length - 2) {
+                    if (i < player.KnownMoves.length - 2) {
                         text += ", ";
-                    }
-                    else if(i === player.KnownMoves.length - 2 && player.KnownMoves.length > 1) {
+                    } else if (i === player.KnownMoves.length - 2 && player.KnownMoves.length > 1) {
                         text += " and ";
                     }
                 }
@@ -327,7 +438,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(IsCommandOnCooldown(player.Username, 'battlecry')) {
+            if (IsCommandOnCooldown(player.Username, 'battlecry')) {
                 let cooldownSecondsLeft = GetCommandCooldownTimeLeftInSeconds(player.Username, 'battlecry');
 
                 await client.say(process.env.CHANNEL!, `@${player.Username}, this move is currently on cooldown! You can do this again in ${cooldownSecondsLeft} seconds.`);
@@ -354,7 +465,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            await TryToSetVoice(client, player.Username,  command.replace("!setvoice", "").trim());
+            await TryToSetVoice(client, player.Username, command.replace("!setvoice", "").trim());
         }
     },
     {
@@ -363,24 +474,28 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(CurrentGTARider != "" && CurrentGTARider.toLowerCase() != player.Username.toLowerCase()) {
+            if (CurrentGTARider != "" && CurrentGTARider.toLowerCase() != player.Username.toLowerCase()) {
                 await WhisperUser(client, player.Username, `@${player.Username}, only the current Rider may yell at this time.`);
                 return;
             }
             let textToSay = command.replace("!yell", "");
 
-            if(DoesPlayerHaveStatusEffect(player.Username, StatusEffect.Drunk)) {
+            if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.Drunk)) {
                 textToSay = DrunkifyText(textToSay);
             }
 
-            if(textToSay.length > 250) {
+            if (textToSay.length > 250) {
                 textToSay = textToSay.slice(0, 250) + "...";
             }
 
             PlayTextToSpeech(textToSay, AudioType.UserTTS, TryGetPlayerVoice(player));
 
             setTimeout(() => {
-                Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: player.Username, display: textToSay, }));
+                Broadcast(JSON.stringify({
+                    type: 'showfloatingtext',
+                    displayName: player.Username,
+                    display: textToSay,
+                }));
             }, 700);
         },
     },
@@ -390,41 +505,41 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.Inventory.length === 0) {
+            if (player.Inventory.length === 0) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you have no items in your inventory`);
-            }
-            else {
-                let final = `@${player.Username}, you have `;
-                let uniqueItems: Array<{item: InventoryObject, count: number}> = [];
+            } else {
+                let page = GetPageNumberFromCommand(command);
+
+                let inventoryList = [];
+
+                let uniqueItems: Array<{ item: InventoryObject, count: number }> = [];
 
                 for (let i = 0; i < player.Inventory.length; i++) {
                     let inventoryObj: InventoryObject = AllInventoryObjects.find(x => x.ObjectName === player.Inventory[i])!;
 
                     let foundObj = uniqueItems.find(x => x.item === inventoryObj);
-                    if(foundObj !== undefined) {
+                    if (foundObj !== undefined) {
                         foundObj.count++;
-                    }
-                    else {
-                        if(inventoryObj === undefined)
+                    } else {
+                        if (inventoryObj === undefined)
                             console.log(`FAILED TO FIND INVENTORY ITEM: ${player.Inventory[i]}`)
                         uniqueItems.push({item: inventoryObj, count: 1})
                     }
                 }
 
                 for (let i = 0; i < uniqueItems.length; i++) {
-                    final += uniqueItems[i].count > 1 ? uniqueItems[i].item.PluralName : uniqueItems[i].item.ContextualName;
-                    if(uniqueItems[i].count > 1) {
-                        final += ` (x${uniqueItems[i].count})`;
+                    let txt = uniqueItems[i].count > 1 ? uniqueItems[i].item.PluralName : uniqueItems[i].item.ContextualName;
+
+                    if (uniqueItems[i].count > 1) {
+                        txt += ` (x${uniqueItems[i].count})`;
                     }
 
-                    if(i < uniqueItems.length - 2 && uniqueItems.length > 2) {
-                        final += ", "
-                    }
-
-                    if(i === uniqueItems.length - 2) {
-                        final += " and ";
-                    }
+                    inventoryList.push(txt);
                 }
+
+                let pageTxt = GetItemsAsPages("inventory", inventoryList, page, 15);
+
+                let final = `Inventory: ${pageTxt}`;
 
                 final += `. You also have ${player.SpendableGems} gems.`;
 
@@ -442,17 +557,38 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             let objectUsed = command.replace("!use", "").trim();
             let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
 
-            if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
+            if (inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you don't have that!`);
-            }
-            else {
+            } else {
                 let wasUsed = await inventoryObject.UseAction(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
-                if(inventoryObject.Consumable && wasUsed) {
+                if (inventoryObject.Consumable && wasUsed) {
                     TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
                 }
             }
         }
     },
+    // {
+    //     Commands: ["eat"],
+    //     AdminCommand: false,
+    //
+    //     Action: async (client: Client, player: Player, command: string) => {
+    //         let objectUsed = command.replace("!use", "").trim();
+    //         let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
+    //
+    //         if(inventoryObject !== undefined && inventoryObject.Retrieval.includes(ObjectRetrievalType.Foragable)) {
+    //
+    //         }
+    //
+    //         if (inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
+    //             await WhisperUser(client, player.Username, `@${player.Username}, you don't have that!`);
+    //         } else {
+    //             let wasUsed = await inventoryObject.UseAction(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
+    //             if (inventoryObject.Consumable && wasUsed) {
+    //                 TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
+    //             }
+    //         }
+    //     }
+    // },
     {
         Commands: ["equip"],
         Description: "Equip a valid item",
@@ -462,26 +598,24 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             let objectUsed = command.replace("!equip", "").trim().toLowerCase();
             let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
 
-            if(inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
+            if (inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you don't have that!`);
-            }
-            else {
-                if(inventoryObject.Equippable) {
-                    if(player.EquippedBacklog === undefined) {
+            } else {
+                if (inventoryObject.Equippable) {
+                    if (player.EquippedBacklog === undefined) {
                         player.EquippedBacklog = [];
                     }
 
-                    if(player.EquippedObject !== undefined) {
+                    if (player.EquippedObject !== undefined) {
                         player.EquippedBacklog.push(player.EquippedObject);
                         await WhisperUser(client, player.Username, `@${player.Username}, you have unequipped your ${player.EquippedObject.ObjectName}`);
                     }
 
                     let existingObjectIndex = player.EquippedBacklog.findIndex(x => x.ObjectName === inventoryObject.ObjectName);
-                    if(existingObjectIndex !== -1) {
+                    if (existingObjectIndex !== -1) {
                         player.EquippedObject = player.EquippedBacklog[existingObjectIndex];
                         player.EquippedBacklog.splice(existingObjectIndex, 1);
-                    }
-                    else {
+                    } else {
                         player.EquippedObject = {
                             ObjectName: inventoryObject.ObjectName,
                             RemainingDurability: GetRandomIntI(inventoryObject.Durability!.min, inventoryObject.Durability!.max)
@@ -489,20 +623,17 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     }
 
                     let attackClassInfo = "It will work with ";
-                    if(inventoryObject.ClassRestrictions!.length === 3) {
+                    if (inventoryObject.ClassRestrictions!.length === 3) {
                         attackClassInfo += "all classes.";
-                    }
-                    else if(inventoryObject.ClassRestrictions!.length === 1) {
+                    } else if (inventoryObject.ClassRestrictions!.length === 1) {
                         attackClassInfo += `the ${ClassType[inventoryObject.ClassRestrictions![0]]} class.`;
-                    }
-                    else {
+                    } else {
                         attackClassInfo += `the ${ClassType[inventoryObject.ClassRestrictions![0]]} and ${ClassType[inventoryObject.ClassRestrictions![1]]} classes.`;
                     }
 
                     await WhisperUser(client, player.Username, `@${player.Username}, you have equipped your ${player.EquippedObject.ObjectName}. ${attackClassInfo}`);
                     SavePlayer(player);
-                }
-                else {
+                } else {
                     await WhisperUser(client, player.Username, `@${player.Username}, you can't equip that object.`);
                 }
             }
@@ -514,17 +645,16 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.EquippedBacklog === undefined) {
+            if (player.EquippedBacklog === undefined) {
                 player.EquippedBacklog = [];
             }
 
-            if(player.EquippedObject != undefined) {
+            if (player.EquippedObject != undefined) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you have unequipped your ${player.EquippedObject.ObjectName}`);
                 player.EquippedBacklog.push(player.EquippedObject);
                 player.EquippedObject = undefined;
                 SavePlayer(player);
-            }
-            else {
+            } else {
                 await WhisperUser(client, player.Username, `@${player.Username}, you have nothing equipped right now`);
             }
         }
@@ -535,11 +665,10 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.EquippedObject != undefined) {
-                await WhisperUser(client, displayName, `@${player.Username}, your ${player.EquippedObject.ObjectName} has a remaining durability of ${player.EquippedObject.RemainingDurability}`);
-            }
-            else {
-                await WhisperUser(client, displayName, `@${player.Username}, you have nothing equipped right now`);
+            if (player.EquippedObject != undefined) {
+                await WhisperUser(client, player.Username, `@${player.Username}, your ${player.EquippedObject.ObjectName} has a remaining durability of ${player.EquippedObject.RemainingDurability}`);
+            } else {
+                await WhisperUser(client, player.Username, `@${player.Username}, you have nothing equipped right now`);
             }
         }
     },
@@ -552,22 +681,19 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             let infoFocus = command.replace("!info", "").trim();
             let inventoryObject: InventoryObject = GetObjectFromInputText(infoFocus)!;
 
-            if(inventoryObject === undefined || inventoryObject === null) {
+            if (inventoryObject === undefined || inventoryObject === null) {
                 let move = GetMove(infoFocus);
-                if(move !== undefined) {
+                if (move !== undefined) {
                     await WhisperUser(client, player.Username, move.Description);
-                }
-                else {
+                } else {
                     let upgrade = UpgradeDefinitions.find(x => x.Name.toLowerCase() === infoFocus.toLowerCase());
-                    if(upgrade !== undefined) {
+                    if (upgrade !== undefined) {
                         await WhisperUser(client, player.Username, `${upgrade.Name}: ${GetUpgradeDescription(upgrade.Name)}`);
-                    }
-                    else {
+                    } else {
                         await WhisperUser(client, player.Username, `${player.Username}, I'm not sure what that is. You need to use !info [item or move name]`);
                     }
                 }
-            }
-            else {
+            } else {
                 await WhisperUser(client, player.Username, inventoryObject.Info);
             }
         }
@@ -589,20 +715,30 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            let players = LoadAllPlayers().sort((x, y) => {
-                return x.Deaths - y.Deaths;
+            let players = LoadAllPlayers();
+
+            players = [...players].sort((x, y) => {
+                // If either value is undefined, sort it to the end
+                if (x.Deaths === undefined) return 1;
+                if (y.Deaths === undefined) return -1;
+                // If either value is 0, sort it to the end but before undefined
+                if (x.Deaths === 0) return 1;
+                if (y.Deaths === 0) return -1;
+                // Normal numeric sort for other values
+                return y.Deaths - x.Deaths;
             });
+
 
             let text = "Deaths Leaderboard: \n";
             let max = Math.min(5, players.length);
             for (let i = 0; i < max; i++) {
-                if(players[i].Deaths == undefined || players[i].Deaths == 0) {
+                if (players[i].Deaths == undefined || players[i].Deaths == 0) {
                     break;
                 }
 
                 text += `${GetNumberWithOrdinal(i + 1)}: @${players[i].Username} - ${players[i].Deaths} Deaths`;
 
-                if(i != 5) {
+                if (i != max - 1) {
                     text += " | ";
                 }
             }
@@ -634,12 +770,11 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(DoesPlayerHaveQuest(player.Username)) {
+            if (DoesPlayerHaveQuest(player.Username)) {
                 let questText = GetQuestText(player.CurrentQuest!.Type, player.CurrentQuest!.Goal);
 
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you currently have a difficulty ${player.CurrentQuest!.FiveStarDifficulty} quest to: ${questText}. Your current progress is at ${player.CurrentQuest!.Progress}/${player.CurrentQuest!.Goal}`);
-            }
-            else {
+            } else {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you do not currently have a quest. You can get a quest with a channel point redeem!`);
             }
         }
@@ -650,26 +785,28 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.UpgradeOptions.length > 0) {
+            if (player.UpgradeOptions.length > 0) {
                 let isPermanent = UpgradeDefinitions.find(x => x.Name == player.UpgradeOptions[0]).IsPermanent;
                 await client.say(process.env.CHANNEL!, GetUpgradeOptions(player, isPermanent));
-            }
-            else if(player.LevelUpAvailable) {
+            } else if (player.LevelUpAvailable) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you have a level up available! You can use !mage, !warrior, or !rogue to choose a class to level up in`);
-            }
-            else {
+            } else {
                 await WhisperUser(client, player.Username, `@${player.Username}, you need more exp to level up. You get exp by chatting, fighting monsters, or other interactions in chat.`);
             }
         }
     },
     {
         Commands: ["shop", "store"],
-        Description: "See what the current shop has to offer",
+        Description: "See what the traveling salesman has to offer",
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            let shopItems = GetCurrentShopItems();
-            let text = `Todays Shop:${shopItems.map((x, i) => ` (${(i + 1)}): ${x.obj} for ${x.cost} ByteCoins`)}`;
+            let shopItems = GetCurrentSalesmanItems();
+
+            let page = GetPageNumberFromCommand(command);
+            let txt = GetItemsAsPages("shop", shopItems.map((x, i) => ` ${x.obj} for ${x.cost} ByteCoins`), page, 10);
+
+            let text = `A travelling salesman is currently offering: ${txt}`;
 
             await client.say(process.env.CHANNEL!, text);
             await WhisperUser(client, player.Username, `Use "!buy [objectname]" to choose something to purchase`);
@@ -679,34 +816,205 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         }
     },
     {
+        Commands: ["grocery", "grocerystore", "gstore", "gshop"],
+        Description: "See what the grocery store has to offer",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let shopItems = GetCurrentGroceryStoreItems();
+            let page = GetPageNumberFromCommand(command);
+            let txt = GetItemsAsPages("grocery", shopItems.map((x, i) => ` ${x.obj} for ${x.cost} ByteCoins`), page, 10);
+
+            let text = `The local grocery store is currently offering: ${txt}`;
+
+            await client.say(process.env.CHANNEL!, text);
+            await WhisperUser(client, player.Username, `Use "!buy [objectname]" to choose something to purchase`);
+        }
+    },
+    {
         Commands: ["buy"],
-        Description: "Purchase a specific item from the shop",
+        Description: "Purchase a specific item from a shop",
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
             let chosenObject = GetObjectFromInputText(command.replace("!buy", "").trim());
 
-            if(chosenObject === undefined || chosenObject === null) {
+            if (chosenObject === undefined || chosenObject === null) {
                 await WhisperUser(client, player.Username, `@${player.Username}, could not find object with name ${chosenObject}`);
-            }
-            else {
-                let shopItems = GetCurrentShopItems();
-                let foundIndex = shopItems.findIndex(x => x.obj === chosenObject?.ObjectName);
-                if(foundIndex !== -1) {
-                    let cost = shopItems[foundIndex].cost;
+            } else {
+                let retrieval = ObjectRetrievalType.TravelingSalesman;
+                let salesmanItems = GetCurrentSalesmanItems();
+                let groceryStoreItems = GetCurrentGroceryStoreItems();
+                let foundIndex = salesmanItems.findIndex(x => x.obj === chosenObject?.ObjectName);
+                if (foundIndex == -1) {
+                    foundIndex = groceryStoreItems.findIndex(x => x.obj === chosenObject?.ObjectName);
+                    retrieval = ObjectRetrievalType.GroceryStore;
+                }
+                if (foundIndex !== -1) {
+                    let cost = 999999999999;
+                    switch (retrieval) {
+                        case ObjectRetrievalType.TravelingSalesman:
+                            cost = salesmanItems[foundIndex].cost;
+                            break;
+                        case ObjectRetrievalType.GroceryStore:
+                            cost = groceryStoreItems[foundIndex].cost;
+                            break;
+                    }
 
-                    if(player.ByteCoins >= cost) {
+                    if (player.ByteCoins >= cost) {
                         player.ByteCoins -= cost;
                         SavePlayer(player);
                         await GivePlayerObject(client, player.Username, chosenObject.ObjectName);
+                    } else {
+                        await WhisperUser(client, player.Username, `@${player.Username}, you don't have enough ByteCoins! You need ${(cost - player.ByteCoins)} more ByteCoins.`);
                     }
-                    else {
-                        await WhisperUser(client, player.Username, `@${player.Username}, you don't have enough ByteCoins! You need ${(shopItems[foundIndex].cost - player.ByteCoins)} more ByteCoins.`);
-                    }
-                }
-                else {
+                } else {
                     await WhisperUser(client, player.Username, `@${player.Username}, that object is not for sale!`);
                 }
+            }
+        }
+    },
+    {
+        Commands: ["craft", "make"],
+        Description: "Purchase a specific item from a shop",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let parameter = GetAllParameterTextAfter(command, 1);
+            let inventoryItems = [...player.Inventory];
+
+            let obj = GetObjectFromInputText(parameter);
+            if (obj !== undefined) {
+                if (obj.Retrieval.includes(ObjectRetrievalType.Craftable) && obj.CraftingRecipe !== undefined) {
+                    let notEnoughItems = false;
+                    for (let i = 0; i < obj.CraftingRecipe.length; i++) {
+                        let ingredient = obj.CraftingRecipe[i].Resource;
+                        let amount = obj.CraftingRecipe[i].Amount;
+                        if (inventoryItems.filter(x => x == ingredient).length < amount) {
+                            notEnoughItems = true;
+                            break;
+                        }
+                    }
+
+                    if (notEnoughItems) {
+                        let txt = `@${player.Username}, you don't have enough items to craft a ${obj.ContextualName}. It requires the following: `;
+
+                        for (let i = 0; i < obj.CraftingRecipe.length; i++) {
+                            let ingredient = obj.CraftingRecipe[i].Resource;
+                            let ingredientObj = AllInventoryObjects.find(x => x.ObjectName == ingredient);
+                            let amount = obj.CraftingRecipe[i].Amount;
+                            let playerAmount = player.Inventory.filter(x => x == ingredient).length;
+                            txt += `[${playerAmount}/${amount} ${(amount > 1 ? ingredientObj.PluralName : ingredientObj.ObjectName)}]`;
+
+                            if (i < obj.CraftingRecipe.length - 1) {
+                                txt += " ";
+                            }
+                        }
+
+                        await WhisperUser(client, player.Username, txt);
+                    } else {
+                        for (let i = 0; i < obj.CraftingRecipe.length; i++) {
+                            let ingredient = obj.CraftingRecipe[i].Resource;
+                            let amount = obj.CraftingRecipe[i].Amount;
+
+                            for (let j = 0; j < amount; j++) {
+                                let index = player.Inventory.indexOf(ingredient);
+                                player.Inventory.splice(index, 1);
+                            }
+                        }
+
+                        SavePlayer(player);
+
+                        await GivePlayerObject(client, player.Username, obj.ObjectName);
+                    }
+                } else {
+                    await WhisperUser(client, player.Username, `@${player.Username}, you cannot craft ${obj.ContextualName}`);
+                }
+            } else {
+                await WhisperUser(client, player.Username, `@${player.Username}, could not find an object by the name of ${parameter}`);
+            }
+        }
+    },
+    {
+        Commands: ["recipe"],
+        Description: "Check the recipe to craft a given item",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let parameter = GetAllParameterTextAfter(command, 1);
+
+            let obj = GetObjectFromInputText(parameter);
+            if (obj !== undefined) {
+                if (obj.Retrieval.includes(ObjectRetrievalType.Craftable) && obj.CraftingRecipe !== undefined) {
+                    let txt = `A ${obj.ContextualName} requires the following: `;
+
+                    for (let i = 0; i < obj.CraftingRecipe.length; i++) {
+                        let ingredient = obj.CraftingRecipe[i].Resource;
+                        let ingredientObj = AllInventoryObjects.find(x => x.ObjectName == ingredient);
+                        let amount = obj.CraftingRecipe[i].Amount;
+                        let playerAmount = player.Inventory.filter(x => x == ingredient).length;
+                        txt += `[${playerAmount}/${amount} ${(amount > 1 ? ingredientObj.PluralName : ingredientObj.ObjectName)}]`;
+
+                        if (i < obj.CraftingRecipe.length - 1) {
+                            txt += " ";
+                        }
+                    }
+
+                    await WhisperUser(client, player.Username, txt);
+                } else {
+                    await WhisperUser(client, player.Username, `@${player.Username}, could not find an object by the name of ${parameter}`);
+                }
+            }
+        }
+    },
+    {
+        Commands: ["recipes"],
+        Description: "Check the recipe to craft a given item. Adding an number after selects a page. Ex. !recipes 2",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let page = GetPageNumberFromCommand(command);
+
+            let craftableObjs = [];
+            for (let i = 0; i < AllInventoryObjects.length; i++) {
+                if(AllInventoryObjects[i].Retrieval.includes(ObjectRetrievalType.Craftable)) {
+                    craftableObjs.push(AllInventoryObjects[i].ObjectName);
+                }
+            }
+
+            console.log(craftableObjs)
+
+            let txt = GetItemsAsPages("recipes", craftableObjs, page, 10);
+
+            await WhisperUser(client, player.Username, `Recipes: ${txt}`);
+        }
+    },
+    {
+        Commands: ["roast", "bake", "boil", "fry", "grill", "steam", "smoke"],
+        Description: "Cook a specific food item you have. Ex. !roast raw venison",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let parameter = GetAllParameterTextAfter(command, 1);
+
+            let obj = GetObjectFromInputText(parameter);
+
+            if(obj !== undefined) {
+                if(obj.CookTimeInSeconds !== undefined && obj.CookTimeInSeconds > 0 && obj.CookedVersion !== undefined) {
+                    await WhisperUser(client, player.Username, `@${player.Username}, you begin cooking your ${obj.ObjectName}`);
+
+                    await new Promise(resolve => setTimeout(resolve, 1000 * obj?.CookTimeInSeconds));
+
+                    await WhisperUser(client, player.Username, `@${player.Username}, you have finished cooking your ${obj.ObjectName} and now have ${obj.CookedVersion}`);
+                    TakeObjectFromPlayer(player.Username, obj.ObjectName);
+                    await GivePlayerObject(client, player.Username, obj.CookedVersion, false);
+                }
+                else {
+                    await WhisperUser(client, player.Username, `@${player.Username}, ${obj.ContextualName} is not cookable!`);
+                }
+            }
+            else {
+                await WhisperUser(client, player.Username, `@${player.Username}, could not find an object by the name of ${parameter}`);
             }
         }
     },
@@ -716,22 +1024,37 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.StatusEffects.length > 0) {
+            if (player.StatusEffects.length > 0) {
                 let text = `@${player.Username}, you have the follow status effects active: `;
                 for (let i = 0; i < player.StatusEffects.length; i++) {
                     let secondsLeft = player.StatusEffects[i].EffectTimeInSeconds - GetSecondsBetweenDates(player.StatusEffects[i].WhenEffectStarted, new Date());
                     text += `${AddSpacesBeforeCapitals(StatusEffect[player.StatusEffects[i].Effect])} (${secondsLeft}s)`;
 
-                    if(i < player.StatusEffects.length - 1) {
+                    if (i < player.StatusEffects.length - 1) {
                         text += ", ";
                     }
                 }
 
                 await WhisperUser(client, player.Username, text);
-            }
-            else {
+            } else {
                 await WhisperUser(client, player.Username, `@${player.Username}, you have no status effects`);
             }
+        }
+    },
+    {
+        Commands: ["forage"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            StartGathering(client, player, GatherType.Forage);
+        }
+    },
+    {
+        Commands: ["hunt"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            StartGathering(client, player, GatherType.Hunt);
         }
     },
     {
@@ -745,30 +1068,27 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
             let otherPlayer = TryLoadPlayer(pieces[0].replace("@", ""));
 
-            if(otherPlayer?.Username == player.Username) {
+            if (otherPlayer?.Username == player.Username) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you throw it up in the air and catch it again`);
             }
 
-            if(otherPlayer != null) {
+            if (otherPlayer != null) {
                 let item = GetObjectFromInputText(option.trim().replace(pieces[0] + " ", ""))!;
 
-                if(item !== undefined) {
-                    if(player.Inventory.includes(item.ObjectName)) {
+                if (item !== undefined) {
+                    if (player.Inventory.includes(item.ObjectName)) {
                         await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${item.ContextualName}!`);
                         await GivePlayerObject(client, otherPlayer.Username, item.ObjectName);
                         let index = player.Inventory.indexOf(item.ObjectName);
                         player.Inventory.splice(index, 1);
                         SavePlayer(player);
-                    }
-                    else {
+                    } else {
                         await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that item. Ex !give the7ark bananas`);
                     }
-                }
-                else {
+                } else {
                     await client.say(process.env.CHANNEL!, `@${player.Username}, I couldn't find that item. Ex !give the7ark bananas`);
                 }
-            }
-            else {
+            } else {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player. Ex !give the7ark bananas`);
             }
         }
@@ -779,7 +1099,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.ByteCoins === undefined) player.ByteCoins = 0;
+            if (player.ByteCoins == undefined) player.ByteCoins = 0;
             await client.say(process.env.CHANNEL!, `@${player.Username}, you have ${player.ByteCoins} ByteCoins and ${player.SpendableGems} gems.`);
         }
     },
@@ -789,7 +1109,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(player.ByteCoins === undefined) player.ByteCoins = 0;
+            if (player.ByteCoins == undefined) player.ByteCoins = 0;
             await client.say(process.env.CHANNEL!, `@${player.Username}, you have ${player.ByteCoins} ByteCoins.`);
         }
     },
@@ -828,35 +1148,35 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         Action: async (client: Client, player: Player, command: string) => {
             let input = GetParameterFromCommand(command, 1);
 
-            if(!input) {
+            if (!input) {
                 await client.say(process.env.CHANNEL!, GetExchangeRateText());
                 return;
             }
 
             let gemsToExchange = parseInt(input);
-            if(Number.isNaN(gemsToExchange) || gemsToExchange <= 0) {
+            if (Number.isNaN(gemsToExchange) || gemsToExchange <= 0) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, please specify a valid number of gems to exchange`);
                 return;
             }
 
-            if(player.SpendableGems < gemsToExchange) {
+            if (player.SpendableGems < gemsToExchange) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have enough gems! You need ${gemsToExchange - player.SpendableGems} more gems.`);
                 return;
             }
 
             let coinsToReceive = ExchangeGemsForCoins(gemsToExchange);
-            if(coinsToReceive <= 0) {
+            if (coinsToReceive <= 0) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you need to exchange at least ${UpdateExchangeRate()} gems to get 1 ByteCoin`);
                 return;
             }
 
             let bankData = LoadBankData();
-            if(bankData.totalCoins < coinsToReceive) {
+            if (bankData.totalCoins < coinsToReceive) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, the bank doesn't have enough ByteCoins for this exchange!`);
                 return;
             }
 
-            if(player.ByteCoins === undefined) player.ByteCoins = 0;
+            if (player.ByteCoins === undefined) player.ByteCoins = 0;
 
             player.SpendableGems -= gemsToExchange;
             player.ByteCoins += coinsToReceive;
@@ -904,10 +1224,10 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             //     return;
             // }
 
-            if (player.ByteCoins === undefined) player.ByteCoins = 0;
+            if (player.ByteCoins == undefined) player.ByteCoins = 0;
 
             player.ByteCoins -= coinsToExchange;
-            player.Gems += gemsToReceive;
+            player.SpendableGems += gemsToReceive;
             bankData.totalCoins += coinsToExchange;
 
             SavePlayer(player);
@@ -927,10 +1247,9 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             const MAX_INSTANCES = 3;
             let activeInstances = GetUserMinigameCount(player.Username);
 
-            if(activeInstances >= MAX_INSTANCES) {
+            if (activeInstances >= MAX_INSTANCES) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you have reached the max amount of queued minigames you can do! Please wait.`);
-            }
-            else {
+            } else {
                 await HandleMinigames(client, player.Username, command);
             }
         }
@@ -940,21 +1259,12 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            let parameterText = GetParameterFromCommand(command, 1);
-            const commandsPerPage = 5;
+            let page = GetPageNumberFromCommand(command);
             let displayableCommands = COMMAND_DEFINITIONS.filter(x => x.Description != undefined && x.Description != "");
 
-            let page = 1;
-            if(parameterText != "") {
-                page = parseInt(parameterText);
-            }
+            let txt = GetItemsAsPages("commands", displayableCommands.map(x => `!${x.Commands[0]} - ${x.Description}`), page);
 
-            let final = `Commands Page [Page ${page}] (Use !commands # to see other pages):`;
-            let start = page * commandsPerPage;
-            for (let i = start; i < Math.min(displayableCommands.length, start + commandsPerPage); i++) {
-                final += ` | !${displayableCommands[i].Commands[0]} - ${displayableCommands[i].Description}`
-            }
-            await client.say(process.env.CHANNEL!, final);
+            await WhisperUser(client, player.Username, `Commands: ${txt}`);
         }
     },
     // {
@@ -967,12 +1277,111 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
     //     }
     // },
 
+    //COOKING SIMUALTOR STUFF
+    {
+        Commands: ["ineedfood"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (CurrentStreamSettings.challengeType != "cook") {
+                return;
+            }
+            if (!COOK_CustomerQueue.includes(player.Username) && !COOK_CurrentCustomers.includes(player.Username)) {
+                COOK_CustomerQueue.push(player.Username);
+
+                if (COOK_CurrentCustomers.length < 3 && COOK_PendingCustomer == "") {
+                    COOK_PendingCustomer = player.Username;
+                    COOK_CustomerQueue = COOK_CustomerQueue.filter(x => x != player.Username);
+                    await AddPendingCustomer(client);
+                } else {
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, you're in line for the restaurant. Please wait to be seated.`);
+                }
+            }
+        }
+    },
+    {
+        Commands: ["confirm"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (COOK_PendingCustomer != "" && player.Username == COOK_PendingCustomer) {
+                await AddPendingCustomer(client);
+            }
+        }
+    },
+    {
+        Commands: ["order"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (COOK_CurrentCustomers.includes(player.Username)) {
+                await AddOrder(client, player.Username, command.toLowerCase().replace("!order ", ""))
+            }
+        }
+    },
+    {
+        Commands: ["menu"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (CurrentStreamSettings.challengeType != "cook") {
+                return;
+            }
+            await client.say(process.env.CHANNEL!, `https://cooking-simulator.fandom.com/wiki/Category:Cooking_Simulator_Recipes`);
+        }
+    },
+    {
+        Commands: ["checkout"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (COOK_CurrentCustomers.includes(player.Username)) {
+                let money: number | undefined = 0;
+                let parameter = GetParameterFromCommand(command, 1).toLowerCase().replace("$", "");
+                console.log(parameter);
+                if (parameter == "") {
+                    money = undefined;
+                } else {
+                    money = parseFloat(parameter);
+                    console.log(money);
+                    if (Number.isNaN(money)) {
+                        await client.say(process.env.CHANNEL!, `@${player.Username}, ${parameter} is not a valid money amount to tip. Please try again.`);
+                        return;
+                    } else if (money > 100 || money < -100) {
+                        await client.say(process.env.CHANNEL!, `@${player.Username}, ${parameter} your tip must be between -$100 and $100. Please try again.`);
+                        return;
+                    }
+                }
+                let review = command.replace("!checkout ", "");
+                if (money != undefined) {
+                    review = review.replace(money.toString(), "");
+                }
+                await Checkout(client, player.Username, money, review)
+            }
+        }
+    },
+    {
+        Commands: ["orderup"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let parameter = GetParameterFromCommand(command, 1).toLowerCase().replace("@", "");
+
+            if (COOK_CurrentCustomers.includes(parameter)) {
+                await OrderUp(client, parameter)
+            }
+        }
+    },
+
     //GTA CHALLENGE STUFF
     {
         Commands: ["rides"],
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
+            if(CurrentStreamSettings.challengeType == "gta_needride"){
+                return;
+            }
             await WhisperUser(client, player.Username, `The following ride options are available in GTA for travel: ${VEHICLE_OPTIONS.join(`, `)}`);
         }
     },
@@ -982,19 +1391,22 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(CurrentGTARider.toLowerCase() == player.Username.toLowerCase()) {
+            if(CurrentStreamSettings.challengeType == "gta_needride"){
+                return;
+            }
+            if (CurrentGTARider.toLowerCase() == player.Username.toLowerCase()) {
                 let option = command.trim();
                 let pieces = option.trim().split(' ');
                 let saidVehicle = "";
                 let allGood = true;
-                if(pieces.length > 1) {
+                if (pieces.length > 1) {
                     allGood = false;
                     saidVehicle = pieces[1].toLowerCase();
                     await WhisperUser(client, player.Username, `@${player.Username}, swapping vehicle to: '${saidVehicle}'`);
 
-                    Broadcast(JSON.stringify({ type: 'ridechange',vehicle: saidVehicle }));
+                    Broadcast(JSON.stringify({type: 'ridechange', vehicle: saidVehicle}));
                 }
-                if(!allGood) {
+                if (!allGood) {
                     await WhisperUser(client, player.Username, `@${player.Username}, vehicle of type '${saidVehicle}' doesn't exist. Use !rides to select a vehicle type.`);
                     return;
                 }
@@ -1007,28 +1419,31 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(!GTA_CurrentRiders.includes(player.Username)) {
+            if(CurrentStreamSettings.challengeType == "gta_needride"){
+                return;
+            }
+            if (!GTA_CurrentRiders.includes(player.Username)) {
                 let option = command.trim();
                 let pieces = option.trim().split(' ');
                 let saidVehicle = "";
                 let allGood = true;
-                if(pieces.length > 1) {
+                if (pieces.length > 1) {
                     allGood = false;
                     saidVehicle = pieces[1].toLowerCase();
 
-                    if(VEHICLE_OPTIONS.includes(saidVehicle)) {
+                    if (VEHICLE_OPTIONS.includes(saidVehicle)) {
                         GTA_CurrentRidersVehicle.set(player.Username, saidVehicle);
                         allGood = true;
                     }
                 }
-                if(!allGood) {
+                if (!allGood) {
                     await WhisperUser(client, player.Username, `@${player.Username}, vehicle of type '${saidVehicle}' doesn't exist. Use !rides to select a vehicle type.`);
                     return;
                 }
                 GTA_CurrentRiders.push(player.Username);
                 await WhisperUser(client, player.Username, `@${player.Username}, you've requested a pickup!`);
 
-                if(GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
+                if (GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
                     await LetsRide(client, player.Username);
                 }
             }
@@ -1040,6 +1455,9 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
+            if(CurrentStreamSettings.challengeType == "gta_needride"){
+                return;
+            }
             await WhisperUser(client, player.Username, `The following locations are available in GTA for travel: bank, vinewood sign, legion square, city hall, airport, rural airport, casino, concert, pier, arena, fort, prison, laboratory, plaza, market, vinewood hills, franklin house, michael house, trevor trailer, mount chiliad, mount gordo, forest, hills, beach, north chumash, port, el burro heights, terminal`)
         }
     },
@@ -1048,16 +1466,20 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         Description: "",
         AdminCommand: false,
 
-        Action: async (client: Client, player: Player, command: string) => {        if(displayName.toLowerCase() != CurrentGTARider.toLowerCase()) {
-            return;
-        }
+        Action: async (client: Client, player: Player, command: string) => {
+            if(CurrentStreamSettings.challengeType == "gta_needride"){
+                return;
+            }
+            if (player.Username.toLowerCase() != CurrentGTARider.toLowerCase()) {
+                return;
+            }
             let review = command.toLowerCase().replace("!review", "").replace("!rate", "").trim();
             let rating = parseInt(review.split(' ')[0]);
-            if(!Number.isNaN(rating)) {
-                if(rating > 5) {
+            if (!Number.isNaN(rating)) {
+                if (rating > 5) {
                     rating = 5;
                 }
-                if(rating < 1){
+                if (rating < 1) {
                     rating = 1;
                 }
                 GTA_Ratings.push(rating);
@@ -1076,7 +1498,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 const taxiGroup = "TaxiGroup";
                 let sceneName = await GetOpenScene();
 
-                if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
+                if (!await DoesSceneContainItem(sceneName, taxiGroup)) {
                     return;
                 }
 
@@ -1089,40 +1511,37 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 let hadReview = reviewText.trim() !== "";
                 let extraReviewText = hadReview ? `They had this to say about their ride:` : "";
 
-                if(rating > 3) {
+                if (rating > 3) {
                     PlayTextToSpeech(`${player.Username} just gave us a rating of ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", async () => {
-                        if(hadReview){
+                        if (hadReview) {
                             PlayTextToSpeech(reviewText, AudioType.ImportantStreamEffects, TryGetPlayerVoice(player), async () => {
                                 PlaySound("cheering", AudioType.ImportantStreamEffects, "wav", async () => {
-                                    if(GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
+                                    if (GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
                                         await LetsRide(client, player.Username);
                                     }
                                 });
                             });
-                        }
-                        else {
+                        } else {
                             PlaySound("cheering", AudioType.ImportantStreamEffects, "wav", async () => {
-                                if(GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
+                                if (GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
                                     await LetsRide(client, player.Username);
                                 }
                             });
                         }
                     });
-                }
-                else {
-                    PlayTextToSpeech(`${displayName} just rated us ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", async () => {
-                        if(hadReview) {
+                } else {
+                    PlayTextToSpeech(`${player.Username} just rated us ${rating}! ${extraReviewText}`, AudioType.ImportantStreamEffects, "en-US-BrianNeural", async () => {
+                        if (hadReview) {
                             PlayTextToSpeech(reviewText, AudioType.ImportantStreamEffects, TryGetPlayerVoice(player), async () => {
                                 PlaySound("booing", AudioType.ImportantStreamEffects, "wav", async () => {
-                                    if(GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
+                                    if (GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
                                         await LetsRide(client, player.Username);
                                     }
                                 });
                             });
-                        }
-                        else {
+                        } else {
                             PlaySound("booing", AudioType.ImportantStreamEffects, "wav", async () => {
-                                if(GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
+                                if (GTA_CurrentRiders.length >= 3 && CurrentGTARider === '') {
                                     await LetsRide(client, player.Username);
                                 }
                             });
@@ -1130,9 +1549,8 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     });
                 }
 
-                Broadcast(JSON.stringify({ type: 'rider', rider: "" }));
-            }
-            else {
+                Broadcast(JSON.stringify({type: 'rider', rider: ""}));
+            } else {
                 await WhisperUser(client, player.Username, `Invalid rating format! Please respond as such: !review # text`);
             }
         }
@@ -1157,7 +1575,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             const taxiGroup = "TaxiGroup";
             let sceneName = await GetOpenScene();
 
-            if(!await DoesSceneContainItem(sceneName, taxiGroup)) {
+            if (!await DoesSceneContainItem(sceneName, taxiGroup)) {
                 return;
             }
 
@@ -1172,7 +1590,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: true,
 
         Action: async (client: Client, player: Player, command: string) => {
-            if(CurrentGTARider == ''){
+            if (CurrentGTARider == '') {
                 return;
             }
             await WhisperUser(client, player.Username, `@${CurrentGTARider}: Thanks for riding in Cory's Limo! Please leave a review with !review # Review text`)
@@ -1193,11 +1611,10 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             console.log(`giving ${expAmount} to ${user}`);
 
             let playerToGiveExp = LoadPlayer(user);
-            if(playerToGiveExp.CurrentExp === 0 && playerToGiveExp.Level === 0) {
+            if (playerToGiveExp.CurrentExp === 0 && playerToGiveExp.Level === 0) {
                 await client.say(process.env.CHANNEL!, `No found user by that name`);
                 return;
-            }
-            else {
+            } else {
                 await client.say(process.env.CHANNEL!, `Giving ${expAmount} to @${user}`);
                 await GiveExp(client, user, expAmount);
             }
@@ -1223,7 +1640,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: true,
 
         Action: async (client: Client, player: Player, command: string) => {
-            Broadcast(JSON.stringify({ type: 'startadventure' }));
+            Broadcast(JSON.stringify({type: 'startadventure'}));
         }
     },
     {
@@ -1232,26 +1649,21 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             PlaySound("credits", AudioType.StreamInfrastructure);
-            Broadcast(JSON.stringify({ type: 'showcredits', data: GetStringifiedSessionData() }));
+            Broadcast(JSON.stringify({type: 'showcredits', data: GetStringifiedSessionData()}));
             CreditsGoing = true;
         }
     },
     {
-        Commands: ["give"],
+        Commands: ["giveitem"],
         AdminCommand: true,
 
         Action: async (client: Client, player: Player, command: string) => {
-            let afterText = command.replace('!give', '').trim().split(' ');
-            let user = afterText[0].replace("@", "");
-            let objectUsed = "";
-            for (let i = 1; i < afterText.length; i++) {
-                objectUsed += afterText[i];
-                if(i != afterText.length - 1) {
-                    objectUsed += " ";
-                }
-            }
+            let user = GetParameterFromCommand(command, 1).replace("@", "");
+            let objText = GetAllParameterTextAfter(command, 2);
 
-            await GivePlayerObject(client, user, objectUsed);
+            let obj = GetObjectFromInputText(objText)!;
+
+            await GivePlayerObject(client, user, obj.ObjectName);
         }
     },
     {
@@ -1260,6 +1672,16 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             await ResetLeaderboard(client);
+        }
+    },
+    {
+        Commands: ["raid"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await client.say(process.env.CHANNEL!, `Copy the following messages to prepare to raid!`);
+            await client.say(process.env.CHANNEL!, `Non subs: the7arWave 7ARK IS RAIDING the7arWave`);
+            await client.say(process.env.CHANNEL!, `Subs:  the7arChaos 7ARK IS RAIDING the7arChaos`);
         }
     },
     // {

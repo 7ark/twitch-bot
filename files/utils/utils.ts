@@ -1,5 +1,7 @@
 import {Client} from "tmi.js";
 import { UpgradeDefinitions } from "../upgradeDefinitions";
+import {GetParameterFromCommand} from "./messageUtils";
+import {AllInventoryObjects, ObjectRetrievalType} from "../inventoryDefinitions";
 
 export function GetRandomNumber(min: number, max: number): number {
     // The maximum is inclusive and the minimum is inclusive
@@ -121,6 +123,33 @@ export function LevenshteinDistance(a: string, b: string): number {
     return matrix[bn][an];
 }
 
+export function GetPageNumberFromCommand(command: string): number {
+    let parameterText = GetParameterFromCommand(command, 1);
+    let page = 1;
+    if (parameterText != "") {
+        page = parseInt(parameterText);
+        if(Number.isNaN(page)) {
+            page = 1;
+        }
+    }
+
+    return page;
+}
+
+export function GetItemsAsPages(commandName: string, texts: Array<string>, page: number, entriesPerPage: number = 5) {
+    let totalPages = Math.ceil(texts.length / entriesPerPage);
+    if(page > totalPages) {
+        return `${page} is higher than the total pages of ${totalPages}`;
+    }
+    let final = `[Page ${page}/${totalPages}] (Use !${commandName} # to see other pages):`;
+    let start = (page - 1) * entriesPerPage;
+    for (let i = start; i < Math.min(texts.length, start + entriesPerPage); i++) {
+        final += ` | ${texts[i]}`
+    }
+
+    return final;
+}
+
 export function CheckMessageSimilarity(text: string, previousMessages: Array<string>): boolean {
     for (let i = 0; i < previousMessages.length; i++) {
         let previousText = previousMessages[i];
@@ -153,14 +182,12 @@ export function GetEnumKeys(enumObj: object): string[] {
         .filter(key => isNaN(Number(key)));
 }
 
-export function GetUpgradeDescription(upgradeName: string): string {
-    let upgrade = UpgradeDefinitions.find(x => x.Name.toLowerCase() === upgradeName.toLowerCase());
-    if(upgrade !== undefined) {
-        return upgrade.Description.replace("{0}", upgrade.Strength.toString());
-    }
-    return "";
-}
-
 export function IsCommand(message: string, command: string): boolean {
     return message.toLowerCase() === `!${command}` || message.toLowerCase().includes(`!${command} `);
+}
+
+export function GetInventoryObjectsBySource(source: ObjectRetrievalType) {
+    let allObjs = [...AllInventoryObjects];
+
+    return allObjs.filter(x => x.Retrieval.includes(source));
 }

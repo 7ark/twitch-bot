@@ -2,7 +2,7 @@ import axios from "axios";
 import fs from "fs";
 import {Client} from "tmi.js";
 import Process from "process";
-import ngrok from "ngrok";
+import * as ngrok from "ngrok";
 import {ConvertUnixToDateTime, GetRandomItem, GetSecondsBetweenDates} from "./utils";
 import {Broadcast, options} from "../bot";
 import {ProcessBits, ProcessRedemptions} from "../redemptions";
@@ -10,8 +10,8 @@ import {MakeRainbowLights} from "./lightsUtils";
 import {ProcessAds} from "./adUtils";
 import {OnWhisper} from "./messageUtils";
 import {GetAllPlayerSessions} from "./playerSessionUtils";
-import {PlayHypeTrainAlert} from "./alertUtils";
-const ngrok = require('ngrok');
+import {PlayHypeTrainAlert} from "./chatGamesUtils";
+// const ngrok = require('ngrok');
 
 let ngrokUrl: string = '';
 let mostRecentPollId: string = '';
@@ -194,7 +194,10 @@ async function GetAppAccessToken(bot: boolean = false) {
 export async function SubscribeToEventSub() {
     console.log("Attempting to subscribe to EventSub");
 
-    ngrokUrl = await ngrok.connect(3000);
+    ngrokUrl = await ngrok.connect({
+        addr: 3000,
+        subdomain: "7arkstream"
+    });
     console.log("Started Ngrok")
     console.log("Ngrok URL:", ngrokUrl);
 
@@ -546,24 +549,32 @@ async function GetUserId(username: string): Promise<string | null> {
 }
 
 export async function UpdateViewerCountInfo() {
-    let viewerCount = await GetViewerCount();
-    if(viewerCount !== null) {
-        let viewerNames: Array<string> = [];
-        let sessions = GetAllPlayerSessions();
-        sessions = sessions.sort((x,y) => {
-            let timeBetweenX = GetSecondsBetweenDates(x.LastMessageTime, new Date());
-            let timeBetweenY = GetSecondsBetweenDates(y.LastMessageTime, new Date());
+    try {
+        let viewerCount = await GetViewerCount();
+        if(viewerCount !== null) {
+            let viewerNames: Array<string> = [];
+            let sessions = GetAllPlayerSessions();
+            sessions = sessions.sort((x,y) => {
+                let timeBetweenX = GetSecondsBetweenDates(x.LastMessageTime, new Date());
+                let timeBetweenY = GetSecondsBetweenDates(y.LastMessageTime, new Date());
 
-            return (timeBetweenX - timeBetweenY);// || (y.Messages.length - x.Messages.length);
-        });
+                return (timeBetweenX - timeBetweenY);// || (y.Messages.length - x.Messages.length);
+            });
 
-        // console.log(sessions);
+            // console.log(sessions);
 
-        for (let i = 0; i < Math.min(sessions.length, viewerCount); i++) {
-            viewerNames.push(sessions[i].NameAsDisplayed);
+            for (let i = 0; i < Math.min(sessions.length, viewerCount); i++) {
+                viewerNames.push(sessions[i].NameAsDisplayed);
+            }
+
+            Broadcast(JSON.stringify({ type: 'viewerCount', count: viewerCount, names: viewerNames }));
         }
-        
-        Broadcast(JSON.stringify({ type: 'viewerCount', count: viewerCount, names: viewerNames }));
+    }
+    catch (error: any) {
+        console.error("Error updating viewer count:", error.data);
+
+        console.log("Will attempt to refresh token");
+        await RefreshAccessToken();
     }
 }
 

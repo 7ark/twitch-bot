@@ -13,25 +13,18 @@ import {
     CalculateMaxHealth,
     ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
-    DoesPlayerHaveUpgrade,
     DoPlayerUpgrade,
     GetObjectFromInputText,
-    GiveExp, GivePlayerObject,
+    GiveExp,
     GivePlayerRandomObject,
-    LoadPlayer,
+    LoadPlayer, SavePlayer,
 } from "./playerGameUtils";
 import {SetSceneItemEnabled} from "./obsutils";
-import {
-    GetEnumValues,
-    GetRandomEnum,
-    GetRandomIntI,
-    GetRandomItem,
-    GetRandomNumber
-} from "./utils";
+import {GetEnumValues, GetRandomEnum, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils";
 import {HandleQuestProgress} from "./questUtils";
 import {PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
-import {InventoryObject} from "../inventoryDefinitions";
+import {InventoryObject, ObjectRetrievalType} from "../inventoryDefinitions";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {Affliction, ClassType, QuestType, StatusEffect, UpgradeType} from "../valueDefinitions";
 
@@ -103,13 +96,13 @@ function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
                 Type: MonsterType.FrankTheTrafficCone,
                 AttackMessage: `{monster} shoves you into a pot hole!`,
                 AttackAddition: 20,
-                ArmorRange: {min: 28, max: 35},
+                ArmorRange: {min: 10, max: 12},
                 DamageRange: {
                     min: 3,
                     max: 8
                 },
                 DamageTypes: [DamageType.Bludgeoning, DamageType.Fire],
-                MaxHealth: 10,
+                MaxHealth: 3000,
                 MonsterAttackRateRange: { min: 15, max: 20 },
                 ResistImmuneDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Psychic],
                 VulnerabilityDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Fire, DamageType.Cold, DamageType.Poison, DamageType.Piercing],
@@ -182,6 +175,7 @@ const VULNERABILITY_COUNT = 1;
 let currentMonsterResistances: Array<string> = [];
 let currentMonsterImmunities: Array<string> = [];
 let currentMonsterVulnerabilities: Array<string> = [];
+export let MonsterCurrentlyDead = false;
 
 export function SetupMonsterDamageTypes() {
     let monsterStats = LoadMonsterData().Stats;
@@ -335,6 +329,9 @@ export function GetAfflictionCount(affliction: Affliction) {
 }
 
 function TriggerAffliction(client: Client, monsterInfo: MonsterInfo, affliction: Affliction) {
+    if(MonsterCurrentlyDead) {
+        return;
+    }
     switch (affliction) {
         case Affliction.Burning:
             HandleDamage(client, 1, DamageType.Fire);
@@ -342,6 +339,13 @@ function TriggerAffliction(client: Client, monsterInfo: MonsterInfo, affliction:
         case Affliction.Poison:
             HandleDamage(client, 1, DamageType.Poison);
             break;
+    }
+
+    let allPlayersInSession = GetAllPlayerSessions();
+    for (let i = 0; i < allPlayersInSession.length; i++) {
+        DoPlayerUpgrade(allPlayersInSession[i].NameAsDisplayed.toLowerCase(), UpgradeType.HealWhenMonsterTakesAfflictionDamage, async (upgrade, strength, strengthPercentage) => {
+            await ChangePlayerHealth(client, allPlayersInSession[i].NameAsDisplayed.toLowerCase(), strength, DamageType.None, "", false);
+        });
     }
 }
 
@@ -359,6 +363,26 @@ export async function TriggerMonsterAttack(client: Client) {
     })
 
     await client.say(process.env.CHANNEL!, currentMonsterStats.AttackMessage.replace("{monster}", currentMonsterStats.Name));
+
+    let playersWithShield: Array<{
+        player: string,
+        reduce: number
+    }> = [];
+
+    let unshieldedPlayers = 0;
+    for (const [key, player] of allPlayerSessionData.entries()) {
+        if(player.TimesAttackedEnemy !== 0) {
+            unshieldedPlayers++;
+            DoPlayerUpgrade(player.NameAsDisplayed.toLowerCase(), UpgradeType.ShieldDamageFromOtherPlayers, (upgrade, strength, strengthPercentage) => {
+                playersWithShield.push({
+                    player: player.NameAsDisplayed.toLowerCase(),
+                    reduce: strength
+                })
+            });
+        }
+    }
+
+    unshieldedPlayers -= playersWithShield.length;
 
     for (const [key, player] of allPlayerSessionData.entries()) {
         if(player.TimesAttackedEnemy !== 0 && (player.TimesAttackedEnemy !== 1 || GetRandomIntI(0, 1) === 0)) {
@@ -472,10 +496,48 @@ export async function TriggerMonsterAttack(client: Client) {
                         }
                     });
 
-                    await ChangePlayerHealth(client, playerClassInfo.Username, -damage, damageType, `Dying to ${currentMonsterStats.Name}`);
+                    let shieldedPlayer = playersWithShield.find(x => x.player == playerClassInfo.Username);
+                    if(shieldedPlayer != undefined) {
+                        damage += shieldedPlayer.reduce * unshieldedPlayers;
+                    }
+                    else if(playersWithShield.length > 0) {
+                        let damageReduction = 0;
+                        for (let i = 0; i < playersWithShield.length; i++) {
+                            damageReduction += playersWithShield[i].reduce;
+                        }
+                        damage -= damageReduction;
+                    }
+
+                    damage = Math.floor(damage);
+
+                    if(damage > 0) {
+                        await ChangePlayerHealth(client, playerClassInfo.Username, -damage, damageType, `Dying to ${currentMonsterStats.Name}`);
+                    }
                 }
             }
         }
+    }
+
+    if(playersWithShield.length > 0) {
+        let shieldText = "Thanks to ";
+        for (let i = 0; i < playersWithShield.length; i++) {
+            shieldText += `@${playersWithShield[i].player}`;
+            if(i < playersWithShield.length - 2) {
+                shieldText += ", ";
+            }
+            else if(i < playersWithShield.length - 1) {
+                shieldText += " and ";
+            }
+        }
+
+        let damageReduction = 0;
+        for (let i = 0; i < playersWithShield.length; i++) {
+            damageReduction += playersWithShield[i].reduce;
+        }
+
+        shieldText += `, everyone took ${damageReduction} less damage!`;
+
+        await client.say(process.env.CHANNEL!, shieldText);
     }
 
     for (const [key, player] of allPlayerSessionData.entries()) {
@@ -514,7 +576,7 @@ export async function GetAdjustedDamage(client: Client, damage: number, damageTy
     let result = damage;
 
     if(IsMonsterResistant(damageType)) {
-        result = Math.floor(damage * 0.5);
+        result = Math.ceil(damage * 0.5);
 
         if(showDamageTypeResponse) {
             await client.say(process.env.CHANNEL!, GetDamageTypeText(damageType));
@@ -552,15 +614,15 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         damage *= 1.5;
     }
 
-    damage = await GetAdjustedDamage(client, damage, damageType, showDamageTypeResponse);
-
     DoPlayerUpgrade(username, UpgradeType.ApplyAffliction, (upgrade, strength, strengthPercentage) => {
-        for (let i = 0; i < upgrade.AfflictionsImposed.length; i++) {
-            let afflictionCount = strength;
-            DoPlayerUpgrade(username, UpgradeType.MoreAfflictions, (upgrade, strength, strengthPercentage) => {
-                afflictionCount += strength;
-            });
-            AddAffliction(upgrade.AfflictionsImposed[i], afflictionCount);
+        for (let j = 0; j < upgrade.Effects.length; j++) {
+            for (let i = 0; i < upgrade.Effects[j].AfflictionsImposed.length; i++) {
+                let afflictionCount = strength;
+                DoPlayerUpgrade(username, UpgradeType.MoreAfflictions, (upgrade, strength, strengthPercentage) => {
+                    afflictionCount += strength;
+                });
+                AddAffliction(upgrade.Effects[j].AfflictionsImposed[i], afflictionCount);
+            }
         }
     });
 
@@ -570,7 +632,7 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         }
     });
 
-    DoPlayerUpgrade(username, UpgradeType.IncreasedDamage, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.DamageChangePercentage, (upgrade, strength, strengthPercentage) => {
         damage += damage * strengthPercentage;
     });
 
@@ -582,8 +644,15 @@ export async function DoDamageToMonster(client: Client, username: string, damage
     }
 
     if(GetAfflictionCount(Affliction.Curse) > 0) {
-        damage += Math.floor((damage * 0.01) * GetAfflictionCount(Affliction.Curse));
+        damage += Math.floor((damage * 0.05) * GetAfflictionCount(Affliction.Curse));
     }
+
+    //Min 1 damage
+    if(damage <= 0) {
+        damage = 1;
+    }
+
+    damage = await GetAdjustedDamage(client, damage, damageType, showDamageTypeResponse);
 
     DoPlayerUpgrade(username, UpgradeType.LifestealChance, async (upgrade, strength, strengthPercentage) => {
         if(GetRandomIntI(0, 100) <= strength) {
@@ -595,6 +664,7 @@ export async function DoDamageToMonster(client: Client, username: string, damage
     DoPlayerUpgrade(username, UpgradeType.GemsForDamageChance, async (upgrade, strength, strengthPercentage) => {
         if(GetRandomIntI(0, 100) <= strength) {
             player.SpendableGems += Math.floor(damage);
+            SavePlayer(player)
             await client.say(process.env.CHANNEL!, `@${username} gained ${Math.floor(damage)} gems from their ${upgrade.Name}!`);
         }
     });
@@ -673,10 +743,12 @@ function HandleDamage(client: Client, damage: number, damageType: DamageType): b
 
                     let expToGive = GetRandomIntI(monsterInfo.Stats.ExpRange.min, monsterInfo.Stats.ExpRange.max) * player.Level;
                     DoPlayerUpgrade(sessions[i].NameAsDisplayed, UpgradeType.DefeatGems, async (upgrade, strength, strengthPercentage) => {
-                        expToGive += strength;
+                        player.SpendableGems += strength;
+                        SavePlayer(player);
+                        await client.say(process.env.CHANNEL!, `${player.Username} received ${strength} extra gems for defeating ${monsterInfo.Stats.Name}!`);
                     });
                     await GiveExp(client, sessions[i].NameAsDisplayed, expToGive);
-                    await GivePlayerRandomObject(client, sessions[i].NameAsDisplayed);
+                    await GivePlayerRandomObject(client, sessions[i].NameAsDisplayed, ObjectRetrievalType.RandomReward);
                     // await GivePlayerObject(client, sessions[i].NameAsDisplayed, "present")
                 }
             }
@@ -712,6 +784,17 @@ function HandleDamage(client: Client, damage: number, damageType: DamageType): b
     SaveMonsterData(monsterInfo);
 
     return false;
+}
+
+export async function InitialMonsterSetup() {
+    let monsterInfo = LoadMonsterData();
+    if(monsterInfo.Health == 0) {
+        GenerateNewMonster();
+        SetupMonsterDamageTypes();
+
+        await SetSceneItemEnabled("Dragon Fight", true);
+        await SetSceneItemEnabled("Dragon Fight Instructions", true);
+    }
 }
 
 export function GenerateNewMonster(): MonsterInfo {

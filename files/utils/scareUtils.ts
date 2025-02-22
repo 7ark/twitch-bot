@@ -9,10 +9,10 @@ import {
     ChangePlayerHealth,
     GivePlayerObject,
     GivePlayerRandomObject,
-    LoadPlayer,
-    StatusEffect
+    LoadPlayer
 } from "./playerGameUtils";
 import {DamageType, TriggerMonsterAttack} from "./monsterUtils";
+import {ObjectRetrievalType} from "../inventoryDefinitions";
 
 let scareWords: Array<string> = [
     `boo`,
@@ -539,7 +539,7 @@ export async function TrickOrTreat(client: Client, username: string) {
                 }
             },
             async () => {
-                await GivePlayerRandomObject(client, username);
+                await GivePlayerRandomObject(client, username, ObjectRetrievalType.RandomReward);
             },
         ])!;
 

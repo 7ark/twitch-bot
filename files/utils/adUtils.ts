@@ -28,7 +28,7 @@ function ScheduleAdAlarms() {
     if(minutesUntilAds > 3) {
         console.log(`Setting ad timer for ${threeMinuteWarning}ms`)
         setTimeout(() => {
-            PlaySound("adprewarning", AudioType.ImportantStreamEffects);
+            PlaySound("adprewarning", AudioType.Ads);
         }, threeMinuteWarning)
     }
     else {
@@ -39,7 +39,7 @@ function ScheduleAdAlarms() {
     if(secondsUntilAds > 30) {
         console.log(`Setting ad timer for ${thirtySecondWarning}ms`)
         setTimeout(() => {
-            PlaySound("adstarting", AudioType.ImportantStreamEffects);
+            PlaySound("adstarting", AudioType.Ads);
         }, thirtySecondWarning)
     }
     else {
