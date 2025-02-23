@@ -100,6 +100,7 @@ export function LoadPlayer(displayName: string): Player {
         Gems: 0,
         SpendableGems: 0,
         CurrentQuest: undefined,
+        GatheringResources: false,
         CozyPoints: 0,
         HasVip: false,
         HitStreak: 0,

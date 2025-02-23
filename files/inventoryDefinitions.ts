@@ -1093,7 +1093,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await client.say(process.env.CHANNEL!, `@${player.Username}, you bite into a raw tomato, I guess.`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1125,7 +1125,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1145,7 +1145,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 20, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1174,7 +1174,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1194,7 +1194,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1223,7 +1223,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1243,7 +1243,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1272,7 +1272,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1292,7 +1292,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 10, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1321,7 +1321,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1341,7 +1341,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 10, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1370,7 +1370,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1390,7 +1390,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1419,7 +1419,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0
@@ -1439,7 +1439,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
             await ChangePlayerHealth(client, player.Username, 25, DamageType.None);
 
-            return false;
+            return true;
         },
         Consumable: true,
         Rarity: 0

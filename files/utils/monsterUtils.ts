@@ -384,8 +384,20 @@ export async function TriggerMonsterAttack(client: Client) {
 
     unshieldedPlayers -= playersWithShield.length;
 
+    let finalText = `${currentMonsterStats.Name} `;
+
+    let iCount = 0;
+    let entryCount = 0;
+
     for (const [key, player] of allPlayerSessionData.entries()) {
-        if(player.TimesAttackedEnemy !== 0 && (player.TimesAttackedEnemy !== 1 || GetRandomIntI(0, 1) === 0)) {
+        if(player.TimesAttackedEnemy !== 0) {
+            entryCount++;
+        }
+    }
+
+
+    for (const [key, player] of allPlayerSessionData.entries()) {
+        if(player.TimesAttackedEnemy !== 0) { // && (player.TimesAttackedEnemy !== 1 || GetRandomIntI(0, 1) === 0)) {
             let playerClassInfo = LoadPlayer(player.NameAsDisplayed.toLowerCase());
 
             //Try to hit
@@ -443,22 +455,31 @@ export async function TriggerMonsterAttack(client: Client) {
             let maxRoll = 20 + currentMonsterStats.AttackAddition;
 
             if(roll < ac) {
-                let text = `${currentMonsterStats.Name} missed @${playerClassInfo.Username} after rolling a ${roll} (Needed ${ac})!`;
+                finalText += `missed @${playerClassInfo.Username}`;
                 if(isUsingObject && gotArmorAdjustment > 0) {
-                    text += ` Their armor was increased by ${gotArmorAdjustment} because of their ${playerClassInfo.EquippedObject!.ObjectName}.`
+                    finalText += ` (+${gotArmorAdjustment}AC - ${playerClassInfo.EquippedObject!.ObjectName})`;
+                }
+                if(iCount < entryCount - 2) {
+                    finalText += ",";
+                }
+                else if(iCount < entryCount - 1) {
+                    finalText += " and ";
                 }
 
                 DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.DodgeHeal, async (upgrade, strength, strengthPercentage) => {
                     await ChangePlayerHealth(client, playerClassInfo.Username, Math.floor(strength), DamageType.None);
                 });
 
-                await client.say(process.env.CHANNEL!, text);
             }
             else {
                 let damagePercentage = player.TimesAttackedEnemy / highestNumberOfAttacks;
 
                 if(roll === maxRoll) {
-                    await client.say(process.env.CHANNEL!, `${currentMonsterStats.Name} critical hit ${playerClassInfo.Username}!`);
+                    finalText += `CRITICAL HIT @${playerClassInfo.Username} `;
+                    // await client.say(process.env.CHANNEL!, `${currentMonsterStats.Name} critical hit ${playerClassInfo.Username}!`);
+                }
+                else {
+                    finalText += `hit @${playerClassInfo.Username} `;
                 }
 
                 let damage = Math.floor(GetRandomNumber(currentMonsterStats.DamageRange.min, currentMonsterStats.DamageRange.max) * damagePercentage);
@@ -511,14 +532,25 @@ export async function TriggerMonsterAttack(client: Client) {
                     damage = Math.floor(damage);
 
                     if(damage > 0) {
-                        await ChangePlayerHealth(client, playerClassInfo.Username, -damage, damageType, `Dying to ${currentMonsterStats.Name}`);
+                        finalText += `for ${damage} ${DamageType[damageType]} damage`;
+                        if(iCount < entryCount - 2) {
+                            finalText += ",";
+                        }
+                        else if(iCount < entryCount - 1) {
+                            finalText += " and ";
+                        }
+                        await ChangePlayerHealth(client, playerClassInfo.Username, -damage, damageType, `Dying to ${currentMonsterStats.Name}`, false);
                     }
                 }
             }
         }
+
+        iCount++;
     }
 
-    if(playersWithShield.length > 0) {
+    await client.say(process.env.CHANNEL!, finalText);
+
+    if(playersWithShield.length > 0 && playersWithShield.length != entryCount) {
         let shieldText = "Thanks to ";
         for (let i = 0; i < playersWithShield.length; i++) {
             shieldText += `@${playersWithShield[i].player}`;
@@ -745,7 +777,7 @@ function HandleDamage(client: Client, damage: number, damageType: DamageType): b
                     DoPlayerUpgrade(sessions[i].NameAsDisplayed, UpgradeType.DefeatGems, async (upgrade, strength, strengthPercentage) => {
                         player.SpendableGems += strength;
                         SavePlayer(player);
-                        await client.say(process.env.CHANNEL!, `${player.Username} received ${strength} extra gems for defeating ${monsterInfo.Stats.Name}!`);
+                        await client.say(process.env.CHANNEL!, `${player.Username} received ${strength} extra gems for defeating ${monsterInfo.Stats.Name} because of ${upgrade.Name}!`);
                     });
                     await GiveExp(client, sessions[i].NameAsDisplayed, expToGive);
                     await GivePlayerRandomObject(client, sessions[i].NameAsDisplayed, ObjectRetrievalType.RandomReward);

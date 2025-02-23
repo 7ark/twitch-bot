@@ -358,7 +358,7 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
 //     </voice>
 // </speak>`;
 
-    const ssml = ParseEmotionalText(text, emotionMappings).generateSSML(voice);
+    const ssml = ParseEmotionalText(text).generateSSML(voice);
 
     // let voices = await synthesizer.getVoicesAsync("en-US");
 

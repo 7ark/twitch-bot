@@ -114,4 +114,4 @@ const COOK_CHALLENGE: StreamSettings = {
 }
 
 //I SET MY SETTINGS HERE
-export const CurrentStreamSettings: StreamSettings = SOLO_CHILL_SETTINGS;
+export const CurrentStreamSettings: StreamSettings = SOLO_SETTINGS;

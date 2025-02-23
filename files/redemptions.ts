@@ -58,25 +58,25 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
 
             // await CompleteRedemption(rewardId, redemptionId);
             break;
-        case REDEEM_LEARN_A_MOVE:
-
-            let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
-
-            if(validDefs.length > 0) {
-                let chosenMove = GetRandomItem(validDefs);
-
-                player.KnownMoves.push(chosenMove!.Command);
-                let monsterStats = LoadMonsterData().Stats;
-                await client.say(process.env.CHANNEL!, `@${username}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description.replace("{monster}", monsterStats.Name)}`);
-
-                SavePlayer(player);
-            }
-            else {
-                await client.say(process.env.CHANNEL!, `@${username}, you have no moves left to be found. Level up, or try a new class!`);
-            }
-
-            await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))
-            break;
+        // case REDEEM_LEARN_A_MOVE:
+        //
+        //     let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+        //
+        //     if(validDefs.length > 0) {
+        //         let chosenMove = GetRandomItem(validDefs);
+        //
+        //         player.KnownMoves.push(chosenMove!.Command);
+        //         let monsterStats = LoadMonsterData().Stats;
+        //         await client.say(process.env.CHANNEL!, `@${username}, you have learned !${chosenMove!.Command}: ${chosenMove!.Description.replace("{monster}", monsterStats.Name)}`);
+        //
+        //         SavePlayer(player);
+        //     }
+        //     else {
+        //         await client.say(process.env.CHANNEL!, `@${username}, you have no moves left to be found. Level up, or try a new class!`);
+        //     }
+        //
+        //     await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))
+        //     break;
         case REDEEM_PLAY_CHEERING:
             PlaySound("cheering", AudioType.ImportantStreamEffects);
             break;

@@ -708,6 +708,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
     if(rollToHit + extraRollAddition < monsterArmor || rollToHit === 1) {
         client.say(process.env.CHANNEL!, `@${username} missed rolling ${rollDisplay}, they needed at least ${monsterArmor}`);
 
+        player = LoadPlayer(player.Username);
         player.HitStreak = 0;
         SavePlayer(player);
 
@@ -839,12 +840,13 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
                 extraObjectDamageInfo = await obj.ObjectAttackAction(client, player);
                 extraObjectName = GetObjectFromInputText(player.EquippedObject!.ObjectName)!.ContextualName;
 
+                player = LoadPlayer(player.Username);
                 if(extraObjectDamageInfo.damage > 0) {
                     player.EquippedObject!.RemainingDurability--;
                     if(player.EquippedObject!.RemainingDurability <= 0) {
                         TakeObjectFromPlayer(player.Username, player.EquippedObject!.ObjectName);
 
-                        client.say(process.env.CHANNEL!, `@${username}, your ${player.EquippedObject!.ObjectName} ran out of durability and broke!`);
+                        await client.say(process.env.CHANNEL!, `@${username}, your ${player.EquippedObject!.ObjectName} ran out of durability and broke!`);
                         player.EquippedObject = undefined;
                     }
 
@@ -874,6 +876,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             }
         }
 
+        player = LoadPlayer(player.Username);
         player.HitStreak++;
         SavePlayer(player);
 
