@@ -69,7 +69,6 @@ import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./a
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./displayUtils";
 import {DrunkifyText, GetLastParameterFromCommand} from "./messageUtils";
 import {
-    GetCurrentShopItems,
     HandleMinigames,
     IsCommandMinigame,
     MinigameType,

@@ -1,5 +1,4 @@
 import {exec} from "child_process";
-import play, {AudioPlayHandle} from "audio-play";
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import {Client} from "tmi.js";
@@ -8,7 +7,9 @@ import {GetRandomItem} from "./utils";
 import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {Player} from "../valueDefinitions";
 import fs from "fs";
-import axios from "axios";
+import prism from 'prism-media';
+import Speaker from 'speaker';
+import { getDevices } from 'naudiodon';
 
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
@@ -58,35 +59,74 @@ function convertMp3ToWav(mp3FilePath: string, wavFilePath: string): Promise<void
     });
 }
 
+console.log(getDevices());
+
+
 export function PlaySound(soundName: string, type: AudioType, extension: string = "wav", callback?: () => void) {
-    try {
-        let fileLoc = `files/extras/${soundName}.${extension}`;
-        console.log(`Playing audio at: ${fileLoc}`);
-        if(!fs.existsSync(fileLoc)) {
-            console.log(`COULD NOT FIND FILE, WE'RE ABORTING OH GOD`);
-            return;
-        }
-
-        let audioBuffer = load(fileLoc);//.then(play);
-
-        audioBuffer.then((buffer) => {
-            let playHandle: AudioPlayHandle = play(buffer, {
-                start: 0,
-                end: buffer.duration,
-                volume: CurrentStreamSettings.volume.get(type)
-            }, () => {});
-
-            setTimeout(() => {
-                if(callback != undefined) {
-                    callback();
-                }
-            }, buffer.duration * 1000)
-        })
-
+    let filepath = `files/extras/${soundName}.${extension}`;
+    if (!fs.existsSync(filepath)) {
+        console.error(`File not found: ${filepath}`);
+        return;
     }
-    catch (e) {
-        console.log(e);
-    }
+
+    const decoder = new prism.FFmpeg({
+        args: [
+            '-analyzeduration', '0',
+            '-loglevel', '0',
+            '-i', filepath,
+            '-f', 's16le',
+            '-ar', '48000',
+            '-ac', '2',
+        ],
+    });
+
+    let volume = CurrentStreamSettings.volume.get(type);
+    const volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume });
+
+    const speaker = new Speaker({
+        channels: 2,
+        bitDepth: 16,
+        sampleRate: 48000,
+    });
+
+    let called = false;
+    decoder
+        .pipe(volumeTransform)
+        .pipe(speaker)
+        .on('close', () => {
+            if (!called && callback){
+                called = true;
+                callback();
+            }
+        });
+    // try {
+    //     let fileLoc = `files/extras/${soundName}.${extension}`;
+    //     console.log(`Playing audio at: ${fileLoc}`);
+    //     if(!fs.existsSync(fileLoc)) {
+    //         console.log(`COULD NOT FIND FILE, WE'RE ABORTING OH GOD`);
+    //         return;
+    //     }
+    //
+    //     let audioBuffer = load(fileLoc);//.then(play);
+    //
+    //     audioBuffer.then((buffer) => {
+    //         let playHandle: AudioPlayHandle = play(buffer, {
+    //             start: 0,
+    //             end: buffer.duration,
+    //             volume: CurrentStreamSettings.volume.get(type)
+    //         }, () => {});
+    //
+    //         setTimeout(() => {
+    //             if(callback != undefined) {
+    //                 callback();
+    //             }
+    //         }, buffer.duration * 1000)
+    //     })
+    //
+    // }
+    // catch (e) {
+    //     console.log(e);
+    // }
 }
 
 export interface Voice {
