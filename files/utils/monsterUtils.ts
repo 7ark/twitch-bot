@@ -20,7 +20,7 @@ import {
     LoadPlayer, SavePlayer,
 } from "./playerGameUtils";
 import {SetSceneItemEnabled} from "./obsutils";
-import {GetEnumValues, GetRandomEnum, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils";
+import {FormatListNicely, GetEnumValues, GetRandomEnum, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils";
 import {HandleQuestProgress} from "./questUtils";
 import {PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
@@ -94,7 +94,7 @@ function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
             return {
                 Name: "Frank the Traffic Cone",
                 Type: MonsterType.FrankTheTrafficCone,
-                AttackMessage: `{monster} shoves you into a pot hole!`,
+                AttackMessage: `Frank shoves everyone into a pot hole!`,
                 AttackAddition: 20,
                 ArmorRange: {min: 10, max: 12},
                 DamageRange: {
@@ -362,7 +362,7 @@ export async function TriggerMonsterAttack(client: Client) {
         }
     })
 
-    await client.say(process.env.CHANNEL!, currentMonsterStats.AttackMessage.replace("{monster}", currentMonsterStats.Name));
+    let finalText = `${currentMonsterStats.AttackMessage.replace("{monster}", currentMonsterStats.Name)} ${currentMonsterStats.Name} `;
 
     let playersWithShield: Array<{
         player: string,
@@ -384,17 +384,8 @@ export async function TriggerMonsterAttack(client: Client) {
 
     unshieldedPlayers -= playersWithShield.length;
 
-    let finalText = `${currentMonsterStats.Name} `;
-
-    let iCount = 0;
-    let entryCount = 0;
-
-    for (const [key, player] of allPlayerSessionData.entries()) {
-        if(player.TimesAttackedEnemy !== 0) {
-            entryCount++;
-        }
-    }
-
+    let misses: Array<string> = [];
+    let hits: Array<string> = [];
 
     for (const [key, player] of allPlayerSessionData.entries()) {
         if(player.TimesAttackedEnemy !== 0) { // && (player.TimesAttackedEnemy !== 1 || GetRandomIntI(0, 1) === 0)) {
@@ -455,31 +446,29 @@ export async function TriggerMonsterAttack(client: Client) {
             let maxRoll = 20 + currentMonsterStats.AttackAddition;
 
             if(roll < ac) {
-                finalText += `missed @${playerClassInfo.Username}`;
+                let txt = `@${playerClassInfo.Username}`;
                 if(isUsingObject && gotArmorAdjustment > 0) {
                     finalText += ` (+${gotArmorAdjustment}AC - ${playerClassInfo.EquippedObject!.ObjectName})`;
                 }
-                if(iCount < entryCount - 2) {
-                    finalText += ",";
-                }
-                else if(iCount < entryCount - 1) {
-                    finalText += " and ";
-                }
+                misses.push(txt);
 
                 DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.DodgeHeal, async (upgrade, strength, strengthPercentage) => {
-                    await ChangePlayerHealth(client, playerClassInfo.Username, Math.floor(strength), DamageType.None);
+                    setTimeout(async () => {
+                        await ChangePlayerHealth(client, playerClassInfo.Username, Math.floor(strength), DamageType.None);
+                    }, 10)
                 });
 
             }
             else {
                 let damagePercentage = player.TimesAttackedEnemy / highestNumberOfAttacks;
 
+                let txt = ``;
                 if(roll === maxRoll) {
-                    finalText += `CRITICAL HIT @${playerClassInfo.Username} `;
+                    txt += `CRITICAL HIT @${playerClassInfo.Username} `;
                     // await client.say(process.env.CHANNEL!, `${currentMonsterStats.Name} critical hit ${playerClassInfo.Username}!`);
                 }
                 else {
-                    finalText += `hit @${playerClassInfo.Username} `;
+                    txt += `hit @${playerClassInfo.Username} `;
                 }
 
                 let damage = Math.floor(GetRandomNumber(currentMonsterStats.DamageRange.min, currentMonsterStats.DamageRange.max) * damagePercentage);
@@ -491,7 +480,7 @@ export async function TriggerMonsterAttack(client: Client) {
                 let damageType = GetRandomItem(currentMonsterStats.DamageTypes)!;
 
                 if(isUsingObject && gotArmorAdjustment < 0) {
-                    await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s armor was lowered by ${gotArmorAdjustment} because of their ${playerClassInfo.EquippedObject!.ObjectName}!`);
+                    txt += `(-${gotArmorAdjustment}AC - ${playerClassInfo.EquippedObject!.ObjectName}) `
                 }
 
                 if(damage > 0) {
@@ -503,8 +492,8 @@ export async function TriggerMonsterAttack(client: Client) {
                         if(healthPercentage < 0.3) {
                             let reduction = Math.ceil(damage * strengthPercentage);
                             damage -= reduction;
-    
-                            await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s damage was reduced by ${reduction} because of their ${upgrade.Name}!`);
+
+                            txt += `(-${reduction}DMG - ${upgrade.Name}) `;
                         }
                     });
 
@@ -512,7 +501,9 @@ export async function TriggerMonsterAttack(client: Client) {
                         if(damage >= CalculateMaxHealth(playerClassInfo)) {
                             if(GetRandomIntI(0, 100) <= strength) {
                                 damage = CalculateMaxHealth(playerClassInfo) - 1;
-                                await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s ${upgrade.Name} saved them from death!`);
+                                setTimeout(async () => {
+                                    await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s ${upgrade.Name} saved them from death!`);
+                                }, 10)
                             }
                         }
                     });
@@ -532,25 +523,31 @@ export async function TriggerMonsterAttack(client: Client) {
                     damage = Math.floor(damage);
 
                     if(damage > 0) {
-                        finalText += `for ${damage} ${DamageType[damageType]} damage`;
-                        if(iCount < entryCount - 2) {
-                            finalText += ",";
-                        }
-                        else if(iCount < entryCount - 1) {
-                            finalText += " and ";
-                        }
-                        await ChangePlayerHealth(client, playerClassInfo.Username, -damage, damageType, `Dying to ${currentMonsterStats.Name}`, false);
+                        txt += `for ${damage} ${DamageType[damageType]} damage`;
+                        hits.push(txt);
+                        setTimeout(async () => {
+                            await ChangePlayerHealth(client, playerClassInfo.Username, -damage, damageType, `Dying to ${currentMonsterStats.Name}`, false);
+                        }, 10)
                     }
                 }
             }
         }
+    }
 
-        iCount++;
+    if(misses.length > 0) {
+        finalText += `missed ${FormatListNicely(misses)}`;
+
+        if(hits.length > 0) {
+            finalText += ". They ";
+        }
+    }
+    if(hits.length > 0) {
+        finalText += FormatListNicely(hits);
     }
 
     await client.say(process.env.CHANNEL!, finalText);
 
-    if(playersWithShield.length > 0 && playersWithShield.length != entryCount) {
+    if(playersWithShield.length > 0 && playersWithShield.length != (hits.length + misses.length)) {
         let shieldText = "Thanks to ";
         for (let i = 0; i < playersWithShield.length; i++) {
             shieldText += `@${playersWithShield[i].player}`;
@@ -676,7 +673,7 @@ export async function DoDamageToMonster(client: Client, username: string, damage
     }
 
     if(GetAfflictionCount(Affliction.Curse) > 0) {
-        damage += Math.floor((damage * 0.05) * GetAfflictionCount(Affliction.Curse));
+        damage += Math.floor((damage * 0.02) * GetAfflictionCount(Affliction.Curse));
     }
 
     //Min 1 damage

@@ -275,6 +275,11 @@ export function CalculateMaxHealth(player: Player): number {
                 max += 5;
             }
         }
+        if (player.Classes[i].Type === ClassType.Cleric) {
+            for (let j = 0; j < player.Classes[i].Level; j++) {
+                max += 7;
+            }
+        }
         if (player.Classes[i].Type === ClassType.Mage) {
             for (let j = 0; j < player.Classes[i].Level; j++) {
                 max += 1;
@@ -593,6 +598,7 @@ async function CheckForPrestige(client: Client, player: Player, levelAddition: n
         player.Prestige++;
 
         if (player.Prestige >= MAX_PRESTIGE) {
+            player.PermanentUpgrades = [];
             player.Prestige = 0;
             player.Mastery++;
 
@@ -890,7 +896,12 @@ export async function SelectPlayerUpgrade(client: Client, username: string, sele
     }
 
     if (chosenUpgrade.Savable) {
-        player.Upgrades.push(chosenUpgradeName);
+        if(chosenUpgrade.IsPermanent) {
+            player.PermanentUpgrades.push(chosenUpgradeName);
+        }
+        else {
+            player.Upgrades.push(chosenUpgradeName);
+        }
     } else {
         if (chosenUpgrade.Effects.some(x => x.Type === UpgradeType.LearnMove)) {
             let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
@@ -955,6 +966,14 @@ export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeTy
     let matchingUpgrades = player.Upgrades
         .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Effects.some(x => x.Type === upgradeType)))
         .filter(upgrade => upgrade !== undefined);
+
+    let permanents = player.PermanentUpgrades
+        .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Effects.some(x => x.Type === upgradeType)))
+        .filter(upgrade => upgrade !== undefined);
+
+    for (let i = 0; i < permanents.length; i++) {
+        matchingUpgrades.push(permanents[i]);
+    }
 
     if (matchingUpgrades.length > 0) {
         totalStrength = matchingUpgrades.reduce((sum, upgrade) => {

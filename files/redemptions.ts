@@ -22,9 +22,11 @@ import {AudioType} from "./streamSettings";
 import {MakeRainbowLights, SetDefaultLightColor} from "./utils/lightsUtils";
 import {TrickOrTreat} from "./utils/scareUtils";
 import {IconType, QuestType} from "./valueDefinitions";
+import {AddChapterMarker} from "./utils/obsutils";
 
 const REDEEM_GAIN_5_EXP = '2c1c1337-583b-4a51-a169-b79c3cdd3d08';
 const REDEEM_GAIN_20_EXP = '8ed9b9a2-89d3-48e5-9783-f12ae4fe2c61';
+const REDEEM_GAIN_100_EXP = '3d3b5857-b676-4302-b29e-ae74e82b53e8';
 const REDEEM_LEARN_A_MOVE = `f6cb8127-4ee6-4018-ac6b-5c27591093f2`;
 const REDEEM_PLAY_CRICKETS = `feca362e-5609-4b0c-95b8-7e1e4d8ad5fc`;
 const REDEEM_PLAY_CHEERING = `777bf16a-998f-4e9e-b44e-4e1196c47c9f`;
@@ -32,8 +34,10 @@ const REDEEM_PLAY_BOOING = `553becbd-579e-4819-9a0e-df1204b4e4fe`;
 const REDEEM_PLAY_LAUGHTER = '5b9628ff-6828-4278-9a5c-355fecc547a3';
 const REDEEM_TELL_A_JOKE = `f24fe80c-c6f4-4412-9832-ae4a96d5a767`;
 const REDEEM_GAMBLE_LOW = `0e234a4a-6932-4a54-9482-3e5ed01479c0`;
-const REDEEM_GAMBLE_MID = `72efd413-6fc0-4762-a8aa-7ebc155eabd4`;
-const REDEEM_GAMBLE_HIGH = `2974cacd-564b-44d3-923c-650962e2177f`;
+const REDEEM_GAMBLE_LOWMID = `72efd413-6fc0-4762-a8aa-7ebc155eabd4`;
+const REDEEM_GAMBLE_LOWMIDHIGH = `2974cacd-564b-44d3-923c-650962e2177f`;
+const REDEEM_GAMBLE_MID = `958016db-052e-4abd-9488-d17c418aaf53`;
+const REDEEM_GAMBLE_MIDHIGH = `260ea0f7-fa4c-447e-acbb-a58c1b3f2d47`;
 const REDEEM_CHAT_CHALLENGE = `37318946-604c-4b3a-8b84-21f2f8c7dd2b`;
 const REDEEM_FULL_HEAL = `2f11982a-179a-47cb-86d5-26478c186693`;
 const REDEEM_OFFER_SIDEQUEST = `4dba9b6d-dbe2-413e-b94c-04670c678561`;
@@ -55,8 +59,9 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             break;
         case REDEEM_GAIN_20_EXP:
             await GiveExp(client, username, 20);
-
-            // await CompleteRedemption(rewardId, redemptionId);
+            break;
+        case REDEEM_GAIN_100_EXP:
+            await GiveExp(client, username, 100);
             break;
         // case REDEEM_LEARN_A_MOVE:
         //
@@ -137,17 +142,27 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             }, 60)
             break;
         case REDEEM_GAMBLE_LOW:
-            CreateAndBuildGambleAlert(client, username, ObjectTier.Low);
+            CreateAndBuildGambleAlert(client, username, [ObjectTier.Low]);
+
+            await HandleQuestProgress(client, username, QuestType.Gamble, 1);
+            break;
+        case REDEEM_GAMBLE_LOWMID:
+            CreateAndBuildGambleAlert(client, username, [ObjectTier.Low, ObjectTier.Mid]);
+
+            await HandleQuestProgress(client, username, QuestType.Gamble, 1);
+            break;
+        case REDEEM_GAMBLE_LOWMIDHIGH:
+            CreateAndBuildGambleAlert(client, username, [ObjectTier.Low, ObjectTier.Mid, ObjectTier.High]);
 
             await HandleQuestProgress(client, username, QuestType.Gamble, 1);
             break;
         case REDEEM_GAMBLE_MID:
-            CreateAndBuildGambleAlert(client, username, ObjectTier.Mid);
+            CreateAndBuildGambleAlert(client, username, [ObjectTier.Mid]);
 
             await HandleQuestProgress(client, username, QuestType.Gamble, 1);
             break;
-        case REDEEM_GAMBLE_HIGH:
-            CreateAndBuildGambleAlert(client, username, ObjectTier.High);
+        case REDEEM_GAMBLE_MIDHIGH:
+            CreateAndBuildGambleAlert(client, username, [ObjectTier.Mid, ObjectTier.High]);
 
             await HandleQuestProgress(client, username, QuestType.Gamble, 1);
             break;
@@ -263,6 +278,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
             await TrickOrTreat(client, username);
             break;
         case REDEEM_CALLIN:
+            await AddChapterMarker(`Phone call from ${username}`)
             PlaySound("phonering", AudioType.ImportantStreamEffects);
 
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -279,7 +295,7 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                     await client.say(process.env.CHANNEL!, `@${username}, your call has concluded.`);
                     CurrentCaller = ``;
                 }
-            }, 1000 * 60) //1 minute call
+            }, 1000 * 60 * 3) //3 minute call
             break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))

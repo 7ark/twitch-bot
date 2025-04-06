@@ -11,10 +11,12 @@ import {DoesPlayerHaveQuest, GivePlayerRandomQuest} from "./questUtils";
 import {AudioType} from "../streamSettings";
 import {CheckForScare} from "./scareUtils";
 import {StatusEffect} from "../valueDefinitions";
-import {WhisperUser} from "./twitchUtils";
-import {CheckIfShouldHaveNPCResponse, GetNPCResponse} from "./npcUtils";
+import {BanUser, WhisperUser} from "./twitchUtils";
+import {CheckIfShouldHaveNPCResponse, GetNPCResponse} from "./timmyUtils";
 import {COOK_CurrentCustomers, ShowCustomerText} from "./cookingSimUtils";
-import {AddChapterMarker} from "./obsutils";
+import {AddChapterMarker, GetOpenScene} from "./obsutils";
+import {AD_CurrentAngel, AD_CurrentDevil, ShowADText} from "./angelDevilUtils";
+import {ShowMeetingText} from "./meetingUtils";
 
 let lastMessageTimestamp = new Date();
 
@@ -55,10 +57,19 @@ export async function OnWhisper(client: Client, message: string, username: strin
     }
 }
 
+function EvaluateIfBot(message: string): boolean {
+    return message.includes("( remove the space )");
+}
+
 export async function OnMessage(client: Client, userState: ChatUserstate, message: string){
     let displayName = userState['display-name']!;
     message = CleanMessage(message);
     console.log(`${displayName}: ${message}`);
+
+    if(EvaluateIfBot(message)){
+        await BanUser(client, displayName.toLowerCase(), 0, "They're a dirty bot")
+        return;
+    }
 
     for (let i = 0; i < MessageDelegate.length; i++) {
         MessageDelegate[i](displayName, message);
@@ -96,12 +107,27 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
         }
         else {
             if((CurrentGTARider != "" && CurrentGTARider == displayName.toLowerCase()) ||
-                (COOK_CurrentCustomers.includes(displayName.toLowerCase()))) {
+                (COOK_CurrentCustomers.includes(displayName.toLowerCase())) ||
+                (displayName.toLowerCase() == AD_CurrentDevil.toLowerCase() || displayName.toLowerCase() == AD_CurrentAngel.toLowerCase())
+            ) {
                 PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
                 setTimeout(() => {
                     Broadcast(JSON.stringify({ type: 'showfloatingtext', displayName: userState['display-name']!, display: message, }));
                 }, 700);
+            }
+
+            if(COOK_CurrentCustomers.includes(displayName.toLowerCase())) {
                 await ShowCustomerText(player.Username, message);
+            }
+
+            if(displayName.toLowerCase() == AD_CurrentDevil.toLowerCase() || displayName.toLowerCase() == AD_CurrentAngel.toLowerCase()) {
+                await ShowADText(displayName.toLowerCase(), message);
+            }
+
+            if(await GetOpenScene() == "Meeting") {
+                PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
+
+                await ShowMeetingText(displayName.toLowerCase(), message);
             }
         }
     }
@@ -143,8 +169,8 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
         }
         session.Messages.push(message.trim());
 
-        await CheckIfShouldHaveNPCResponse(client, message, userState['display-name']!);
     }
+    await CheckIfShouldHaveNPCResponse(client, message, userState['display-name']!);
 
     // if(addedFirstMessage) {
     //     await GivePlayerObject(client, displayName, "present");
@@ -178,7 +204,7 @@ const regularMessages: Array<string> = [
     "Check out my socials - Discord: https://discord.gg/6dEKeStTEM, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
     `Chat is interactive! Use '!help options' to see all subjects to learn about. Use !commands to see all command options. Use '!help fight' to learn about fighting monsters. Use '!help minigames' to learn about playing small minigames. Use '!help interact' to learn about more interactive elements of chat.`,
     `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`,
-    `Check out my latest Youtube video: https://youtu.be/WpT1y_0o7iE`
+    `Check out my latest Youtube video: https://youtu.be/DO38Nx-51Zc`
 ];
 let regularMessageIndex: number = GetRandomInt(0, regularMessages.length);
 

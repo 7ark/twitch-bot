@@ -28,6 +28,8 @@ import {PlayTextToSpeech} from "./utils/audioUtils";
 import {SelectCustomer} from "./utils/cookingSimUtils";
 import {InitializeGroceryStore, InitializeSalesman} from "./utils/shopUtils";
 import {WipePlayerGatherState} from "./utils/gatherUtils";
+import {SelectRole} from "./utils/angelDevilUtils";
+import {ClearMeeting} from "./utils/meetingUtils";
 
 const ngrok = require('ngrok');
 
@@ -112,6 +114,7 @@ export function Broadcast(message: string) {
 }
 
 let initialized = false;
+let turningOff = false;
 
 async function InitializeBot() {
 
@@ -157,6 +160,7 @@ async function InitializeBot() {
 
                 }, 200);
 
+                await ClearMeeting();
                 await SetLightVisible(true);
                 await FadeOutLights();
                 await SetupNextAdsTime();
@@ -166,6 +170,7 @@ async function InitializeBot() {
             }
 
             console.log("Initialized");
+            await client.say(process.env.CHANNEL!, `THE CODE HAS TURNED ON. You may game.`);
 
         } else {
             // For all other notifications, you can acknowledge the receipt
@@ -226,6 +231,12 @@ async function InitializeBot() {
             SelectCustomer(client);
         }, 1000 * 60 * 3);
     }
+    if(CurrentStreamSettings.challengeType == "angeldevil") {
+        setInterval(() => {
+            SelectRole(true, client);
+            SelectRole(false, client);
+        }, 1000 * 60 * 3);
+    }
 
     setInterval(() => {
         TickAllCozyPoints();
@@ -250,6 +261,17 @@ async function InitializeBot() {
         }, 1800000); //30 minutes
 
     await InitialMonsterSetup();
+
+    process.on('SIGINT', async (code) => {
+        if(turningOff) {
+            return;
+        }
+
+        turningOff = true;
+        await client.say(process.env.CHANNEL!, `THE CODE IS TURNING OFF! This may mean Cory is restarting it, or it may mean it has broken.`);
+
+    });
+
 }
 
 // export let CanGrabGifts: boolean = false;
@@ -258,6 +280,7 @@ HandleLoadingSession();
 InitializeSalesman();
 InitializeGroceryStore();
 WipePlayerGatherState();
+
 
 process.on('SIGINT', async (code) => {
     await SetLightVisible(false);

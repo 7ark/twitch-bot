@@ -37,7 +37,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 1, max: 2 },
         DamageTypes: [DamageType.Bludgeoning],
         SuccessText: [`{name} rolled {roll} and smashes {monster} with a hammer for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'slash',
@@ -50,7 +50,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 2, max: 3 },
         DamageTypes: [DamageType.Slashing],
         SuccessText: [`@{name} rolled {roll} and slashes at {monster} with a blade for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'shoot',
@@ -64,7 +64,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 5, max: 8 },
         DamageTypes: [DamageType.Piercing],
         SuccessText: [`@{name} rolled {roll} and shoots an arrow at {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'stab',
@@ -78,7 +78,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 7, max: 12 },
         DamageTypes: [DamageType.Piercing],
         SuccessText: [`@{name} rolled {roll} and stabs at {monster} with a sword for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'charge',
@@ -93,7 +93,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 7, max: 12 },
         DamageTypes: [DamageType.Bludgeoning],
         SuccessText: [`@{name} rolled {roll} and charges at {monster}, slamming their shield into him for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'rage',
@@ -107,7 +107,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 10, max: 20 },
         DamageTypes: [DamageType.Bludgeoning],
         SuccessText: [`@{name} rolled {roll} and gets into a frenzied rage, and starts beating the shit out of {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'focus jab',
@@ -121,7 +121,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 20, max: 40 },
         DamageTypes: [DamageType.Bludgeoning],
         SuccessText: [`@{name} rolled {roll} and moves their mind to a place of extreme concentration, and then lets forth a series of devastating kicks and punches in quick succession, hurting {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
 
     //MAGE
@@ -136,7 +136,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 3, max: 6 },
         DamageTypes: [DamageType.Fire, DamageType.Cold],
         SuccessText: [`@{name} rolled {roll} and fires a bolt at {monster} and it hits for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cast fireball',
@@ -149,7 +149,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 5, max: 10 },
         DamageTypes: [DamageType.Fire],
         SuccessText: [`@{name} rolled {roll} and shoots a fireball at {monster} and it explodes for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cast freezing ray',
@@ -163,7 +163,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 8, max: 12 },
         DamageTypes: [DamageType.Cold],
         SuccessText: [`@{name} rolled {roll} and blasts {monster} with a freezing ray for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cast feels',
@@ -177,7 +177,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 7, max: 12 },
         DamageTypes: [DamageType.Psychic],
         SuccessText: [`@{name} rolled {roll} and uses 'feels' on {monster}, making him very sad, and causing him to take {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cast lightning',
@@ -191,7 +191,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 10, max: 15 },
         DamageTypes: [DamageType.Lightning],
         SuccessText: [`@{name} rolled {roll} and calls down a bolt of lightning on {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cast meteor shower',
@@ -205,7 +205,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 5, max: 25 },
         DamageTypes: [DamageType.Bludgeoning, DamageType.Fire],
         SuccessText: [`@{name} rolled {roll} and summons a meteor shower and rains massive rocks down on {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cast devastation',
@@ -219,7 +219,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 10, max: 25 },
         DamageTypes: [DamageType.Cold, DamageType.Fire],
         SuccessText: [`@{name} rolled {roll} and sends torrents of ice and fire in all directions, destroying the land around {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
 
     //ROGUE
@@ -232,7 +232,7 @@ export const MoveDefinitions: Array<ClassMove> = [
 
         HitModifier: 2,
         SuccessText: [`@{name} rolled {roll} and throws {object} at {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'backstab',
@@ -245,7 +245,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 4, max: 6 },
         DamageTypes: [DamageType.Piercing],
         SuccessText: [`@{name} rolled {roll} and backstabs {monster} using a dagger for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'sneak attack',
@@ -259,7 +259,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 8, max: 15 },
         DamageTypes: [DamageType.Piercing],
         SuccessText: [`@{name} rolled {roll} and stabs {monster} while hidden in the shadows for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'blackmail',
@@ -273,7 +273,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 3, max: 13 },
         DamageTypes: [DamageType.Psychic],
         SuccessText: [`@{name} rolled {roll} and blackmails {monster} with sensitive information, and he takes {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'poison dart',
@@ -288,7 +288,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 3, max: 13 },
         DamageTypes: [DamageType.Poison],
         SuccessText: [`@{name} rolled {roll} and shoots a poisoned dart at Byte, causing him to take {0} damage, and extra damage for the next minute!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'cancel',
@@ -309,7 +309,7 @@ export const MoveDefinitions: Array<ClassMove> = [
             `@{name} rolled {roll} and cancels {monster} after some jokes he made, and he takes {0} damage to his reputation!`,
             `@{name} rolled {roll} and cancels {monster} after burning people to a crisp, and he takes {0} damage to his reputation!`,
         ],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'frozen shadow',
@@ -326,7 +326,7 @@ export const MoveDefinitions: Array<ClassMove> = [
             `@{name} rolled {roll} and lurks just behind {monster}, where he can never see. {monster} feels the cold chill emanating from you, and he takes {0} damage!`,
             `@{name} rolled {roll} and shadowy tentacles wrap around {monster}, cold tentacles of shadow that chill his scales, and he takes {0} damage!`,
         ],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
 
     //CLERIC
@@ -341,7 +341,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 5, max: 10 },
         DamageTypes: [DamageType.Fire],
         SuccessText: [`@{name} rolled {roll} and smites {monster} using a powerful smite for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'heal',
@@ -366,7 +366,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 10, max: 15 },
         DamageTypes: [DamageType.Fire],
         SuccessText: [`@{name} rolled {roll} and drives a radiant burst of flame into {monster}, channeling their magical energy into the attack for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'banish',
@@ -380,7 +380,7 @@ export const MoveDefinitions: Array<ClassMove> = [
         Damage: { min: 10, max: 15 },
         DamageTypes: [DamageType.Psychic],
         SuccessText: [`@{name} rolled {roll} and sends a barrage of otherworldly horrors into the mind of {monster} for {0} damage!`],
-        PersonalMoveCooldownInSeconds: 30
+        PersonalMoveCooldownInSeconds: 60
     },
     {
         Command: 'restore',

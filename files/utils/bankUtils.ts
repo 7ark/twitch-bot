@@ -25,25 +25,43 @@ export function SaveBankData(data: BankData) {
     fs.writeFileSync('bankData.json', JSON.stringify(data));
 }
 
+
 export function UpdateExchangeRate(): number {
     let bankData = LoadBankData();
-    
+
     // Only update once per day
-    if(bankData.lastUpdateDate === new Date().toDateString()) {
-        return bankData.exchangeRate;
+    // if(bankData.lastUpdateDate === new Date().toDateString()) {
+    //     return bankData.exchangeRate;
+    // }
+
+    // Base volatility (reduced range)
+    let volatility = GetRandomNumber(-0.15, 0.15);
+
+    // Calculate market pressure using a logarithmic scale
+    let balanceRatio = bankData.totalCoins / startingBankBalance;
+    // console.log(balanceRatio)
+    let marketPressure = -Math.log10(balanceRatio) * 0.1;
+    // console.log(marketPressure)
+
+    // Clamp market pressure to reasonable bounds
+    marketPressure = Math.max(-0.2, Math.min(0.2, marketPressure));
+    // console.log(marketPressure)
+
+    // Apply changes with dampening
+    let totalChange = (volatility + marketPressure) * 0.7; // 70% dampening factor
+    // console.log(totalChange)
+    let newRate = bankData.exchangeRate * (1 + totalChange);
+    // console.log(newRate)
+
+    // Keep rate between 5 and 30 (reduced upper limit)
+    newRate = Math.max(5, Math.min(30, Math.round(newRate)));
+    // console.log(newRate)
+
+    // Smooth large changes
+    if (Math.abs(newRate - bankData.exchangeRate) > 5) {
+        newRate = bankData.exchangeRate + (Math.sign(newRate - bankData.exchangeRate) * 5);
     }
-
-    // Base volatility
-    let volatility = GetRandomNumber(-0.5, 0.5);
-    
-    // Add market pressure based on bank balance
-    // Lower balance = higher rates (more expensive)
-    let marketPressure = (startingBankBalance - bankData.totalCoins) / startingBankBalance;
-    marketPressure = Math.max(-0.3, Math.min(0.3, marketPressure));
-
-    let newRate = bankData.exchangeRate * (1 + volatility + marketPressure);
-    // Keep rate between 5 and 50
-    newRate = Math.max(5, Math.min(50, Math.round(newRate)));
+    // console.log(newRate)
 
     bankData.exchangeRate = newRate;
     bankData.lastUpdateDate = new Date().toDateString();
@@ -71,3 +89,5 @@ export function GetExchangeRateText(): string {
     let rate = UpdateExchangeRate();
     return `Current exchange rate: ${rate} gems = 1 ByteCoin`;
 }
+
+UpdateExchangeRate();

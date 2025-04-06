@@ -1,7 +1,7 @@
 [
   {
     "Username": "the7ark",
-    "Level": 1,
+    "Level": 0,
     "Classes": [
       {
         "Type": 0,
@@ -9,7 +9,7 @@
       },
       {
         "Type": 1,
-        "Level": 1
+        "Level": 0
       },
       {
         "Type": 2,
@@ -21,11 +21,10 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 43,
-    "CurrentExpNeeded": 8,
+    "CurrentExp": 46,
+    "CurrentExpNeeded": 4,
     "KnownMoves": [
-      "punch",
-      "slash"
+      "punch"
     ],
     "ExpBoostMultiplier": 1,
     "Voice": "en-US-AriaNeural",
@@ -43,11 +42,43 @@
       "water",
       "venison",
       "cooked pheasant",
-      "egg"
+      "egg",
+      "raw salmon",
+      "wand",
+      "egg",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "pepperoni",
+      "apple"
     ],
-    "CurrentHealth": 14,
+    "CurrentHealth": 50,
     "PassiveModeEnabled": false,
-    "Deaths": 3,
+    "Deaths": 4,
     "StatusEffects": [],
     "EquippedBacklog": [
       {
@@ -55,8 +86,8 @@
         "RemainingDurability": 12
       }
     ],
-    "Gems": 328,
-    "SpendableGems": 235,
+    "Gems": 0,
+    "SpendableGems": 234,
     "CurrentQuest": {
       "Type": 4,
       "Progress": 4,
@@ -70,22 +101,18 @@
       "ObjectName": "pure nail",
       "RemainingDurability": 50
     },
-    "UpgradeOptions": [
-      "New Shield",
-      "Noodle Arms",
-      "Burning Hands"
-    ],
-    "Upgrades": [
-      "Weapon Mastery",
-      "Arcane Intelligence"
-    ],
+    "UpgradeOptions": [],
+    "Upgrades": [],
     "WaitingToSelectUpgrade": true,
-    "PermanentUpgrades": [],
-    "Prestige": 0,
+    "PermanentUpgrades": [
+      "SUPER SMACKER",
+      "SUPER SHIELD"
+    ],
+    "Prestige": 1,
     "Mastery": 0,
-    "ByteCoins": 2,
+    "ByteCoins": 5,
     "GatheringResources": false,
-    "HitStreak": 0
+    "HitStreak": 2
   },
   {
     "Username": "one_1egged_duck",
@@ -109,7 +136,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 558,
+    "CurrentExp": 1153,
     "CurrentExpNeeded": 9,
     "KnownMoves": [
       "punch",
@@ -152,9 +179,14 @@
       "power helmet",
       "beer",
       "beer",
-      "letter",
+      "egg",
       "cold resistance potion",
-      "cold resistance potion"
+      "cold resistance potion",
+      "beer",
+      "tinderbox",
+      "cold resistance potion",
+      "cold resistance potion",
+      "legendary healing potion"
     ],
     "CurrentHealth": 460,
     "PassiveModeEnabled": true,
@@ -214,7 +246,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 99,
+    "CurrentExp": 102,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -236,7 +268,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "thewadofkins",
@@ -310,8 +344,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 0,
+    "LevelUpAvailable": true,
+    "CurrentExp": 6,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -424,7 +458,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "akiryuto117",
@@ -456,7 +492,7 @@
     "ExpBoostMultiplier": 1,
     "Inventory": [
       "obsidian dagger",
-      "letter",
+      "egg",
       "tinderbox",
       "pure nail",
       "scroll of truth",
@@ -485,7 +521,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "dudemcdouchenuts",
@@ -534,7 +572,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 189,
+    "CurrentExp": 256,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -727,7 +765,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "gungogames",
@@ -774,7 +814,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "limitlesscupid",
@@ -844,7 +886,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "waxy_chris",
@@ -928,7 +972,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "drgambit__",
@@ -987,7 +1033,7 @@
       "pure nail",
       "pure nail",
       "pure nail",
-      "letter",
+      "egg",
       "repair hammer",
       "legendary healing potion",
       "accuracy potion"
@@ -1014,7 +1060,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "astormyz",
@@ -1060,7 +1108,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "i_sometimes_kappa",
@@ -1180,7 +1230,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "akabob56",
@@ -1274,7 +1326,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "toucantomm",
@@ -1402,7 +1456,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "perplexingmaurelle",
@@ -1463,7 +1519,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "ravingmage1",
@@ -1685,12 +1743,12 @@
   },
   {
     "Username": "mic00f_the_protogen",
-    "Level": 7,
-    "CurrentHealth": 26,
+    "Level": 18,
+    "CurrentHealth": 81,
     "Classes": [
       {
         "Type": 0,
-        "Level": 7
+        "Level": 18
       },
       {
         "Type": 1,
@@ -1705,12 +1763,15 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 114,
-    "CurrentExpNeeded": 143,
+    "LevelUpAvailable": true,
+    "CurrentExp": 952,
+    "CurrentExpNeeded": 802,
     "KnownMoves": [
       "punch",
-      "cast bolt"
+      "cast bolt",
+      "cast fireball",
+      "cast teleport",
+      "cast meteor shower"
     ],
     "ExpBoostMultiplier": 1,
     "Voice": "en-US-DavisNeural",
@@ -1718,16 +1779,14 @@
       "wand",
       "sword",
       "hammer",
+      "death rock",
       "wabbajack",
       "wabbajack",
-      "pure nail",
       "magic nuke",
       "obsidian dagger",
       "wabbajack",
       "cardboard box",
       "pool noodle",
-      "scroll of truth",
-      "pure nail",
       "diamond axe",
       "dagger",
       "cold resistance potion",
@@ -1738,12 +1797,8 @@
       "cold resistance potion",
       "great healing potion",
       "great healing potion",
-      "scroll of truth",
-      "scroll of truth",
-      "scroll of truth",
       "fire resistance potion",
       "fire resistance potion",
-      "scroll of truth",
       "great healing potion",
       "scroll of challenge",
       "healing amulet",
@@ -1759,9 +1814,6 @@
       "candy",
       "candy",
       "tinderbox",
-      "beer",
-      "beer",
-      "beer",
       "scroll of truth",
       "tinderbox",
       "scroll of truth",
@@ -1771,7 +1823,6 @@
       "duck hunt gun",
       "scroll of truth",
       "cold resistance potion",
-      "crystal",
       "beer",
       "beer",
       "crystal",
@@ -1859,7 +1910,6 @@
       "tinderbox",
       "scroll of challenge",
       "duck hunt gun",
-      "cake",
       "banana bunch",
       "cheese wheel",
       "cold resistance potion",
@@ -1895,7 +1945,6 @@
       "beer",
       "diamond axe",
       "accuracy potion",
-      "cake",
       "fire resistance potion",
       "scroll of challenge",
       "accuracy potion",
@@ -1905,9 +1954,7 @@
       "fire resistance potion",
       "beer",
       "cake",
-      "cake",
       "diamond axe",
-      "pure nail",
       "great healing potion",
       "banana bunch",
       "cold resistance potion",
@@ -1969,11 +2016,6 @@
       "honey",
       "tomato",
       "tomato",
-      "raw venison",
-      "raw mutton",
-      "raw pheasant",
-      "raw hare",
-      "raw sausage",
       "tinderbox",
       "scroll of truth",
       "legendary healing potion",
@@ -1993,16 +2035,228 @@
       "salt",
       "salt",
       "water",
-      "raw pork",
-      "raw pheasant",
-      "raw pork",
       "cold resistance potion",
       "healing potion",
-      "raw sausage",
+      "raw venison",
+      "salt",
+      "salt",
+      "raw salmon",
+      "beer",
+      "pepperoni",
+      "pepperoni",
+      "water",
+      "raw venison",
+      "apple",
+      "salt",
+      "tomato",
+      "scroll of truth",
+      "salt",
+      "egg",
+      "honey",
+      "apple",
+      "tomato",
+      "tomato",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "salt",
+      "salt",
+      "tomato",
+      "tomato",
+      "honey",
+      "salt",
+      "cocoa",
+      "egg",
+      "cake",
+      "tomato",
+      "raw salmon",
+      "raw salmon",
+      "egg",
+      "honey",
+      "tomato",
+      "raw venison",
+      "scroll of challenge",
+      "raw venison",
+      "cake",
+      "raw venison",
+      "scroll of challenge",
+      "cold resistance potion",
+      "raw salmon",
+      "raw salmon",
+      "cold resistance potion",
+      "scroll of challenge",
+      "scroll of truth",
+      "cake",
+      "raw venison",
       "raw beef",
-      "raw sausage"
+      "banana bunch",
+      "accuracy potion",
+      "raw venison",
+      "egg",
+      "magic nuke",
+      "magic nuke",
+      "raw salmon",
+      "fire resistance potion",
+      "tinderbox",
+      "raw salmon",
+      "raw beef",
+      "raw venison",
+      "raw salmon",
+      "raw beef",
+      "legendary healing potion",
+      "salt",
+      "salt",
+      "raw salmon",
+      "water",
+      "egg",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "water",
+      "water",
+      "water",
+      "healing potion",
+      "beer",
+      "egg",
+      "water",
+      "water",
+      "great healing potion",
+      "water",
+      "water",
+      "cake",
+      "fire resistance potion",
+      "egg",
+      "magic nuke",
+      "raw venison",
+      "raw beef",
+      "raw venison",
+      "honey",
+      "bread",
+      "raw beef",
+      "venison",
+      "venison",
+      "cooked pheasant",
+      "cooked pheasant",
+      "cooked pheasant",
+      "cooked pheasant",
+      "cooked pheasant",
+      "cooked pheasant",
+      "cooked pheasant",
+      "cooked pheasant",
+      "sausage",
+      "sausage",
+      "sausage",
+      "sausage",
+      "sausage",
+      "sausage",
+      "sausage",
+      "sausage",
+      "sausage",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "cooked hare",
+      "cooked hare",
+      "cooked hare",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "fire resistance potion",
+      "scroll of truth",
+      "magic nuke",
+      "banana bunch",
+      "raw sausage",
+      "raw pheasant",
+      "raw pork",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw hare",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw hare",
+      "raw salmon",
+      "magic nuke",
+      "raw pork",
+      "raw salmon",
+      "raw salmon",
+      "raw venison",
+      "raw hare",
+      "raw venison",
+      "raw venison",
+      "fire resistance potion",
+      "raw salmon",
+      "cake",
+      "egg",
+      "raw venison",
+      "raw hare",
+      "raw pheasant",
+      "cold resistance potion",
+      "raw pork",
+      "raw sausage",
+      "raw salmon",
+      "fire resistance potion",
+      "raw pheasant",
+      "raw pheasant",
+      "raw pheasant",
+      "raw sausage",
+      "raw salmon",
+      "raw salmon",
+      "raw pork",
+      "scroll of challenge",
+      "tinderbox",
+      "raw sausage",
+      "raw hare",
+      "raw salmon",
+      "raw pork",
+      "raw hare",
+      "raw pheasant",
+      "raw mutton",
+      "milk",
+      "raw sausage",
+      "raw pork",
+      "beef",
+      "beef",
+      "beef",
+      "beef",
+      "beef",
+      "beef",
+      "raw salmon",
+      "beef",
+      "raw venison",
+      "beef",
+      "beef",
+      "raw salmon",
+      "raw pheasant",
+      "magic nuke",
+      "tinderbox"
     ],
-    "Deaths": 60,
+    "Deaths": 67,
     "StatusEffects": [],
     "EquippedBacklog": [
       {
@@ -2014,8 +2268,8 @@
         "RemainingDurability": 8
       }
     ],
-    "Gems": 17455,
-    "SpendableGems": 23471,
+    "Gems": 0,
+    "SpendableGems": 2710,
     "CommandCooldowns": [],
     "CozyPoints": 0,
     "HasVip": false,
@@ -2030,24 +2284,32 @@
       "Inflict Curse",
       "Hardy",
       "Extra Strength",
-      "Recovery"
+      "Recovery",
+      "Hoarder",
+      "Double Afflictions",
+      "Arcane Intelligence",
+      "Fast Learner",
+      "New Shield",
+      "Arcane Focus",
+      "Better Wand",
+      "Rapid Strike"
     ],
     "WaitingToSelectUpgrade": true,
-    "HitStreak": 1,
-    "ByteCoins": 10,
+    "HitStreak": 0,
+    "ByteCoins": 881,
     "PermanentUpgrades": [],
     "Prestige": 3,
     "Mastery": 0,
     "GatheringResources": false,
     "EquippedObject": {
       "ObjectName": "wabbajack",
-      "RemainingDurability": 11
+      "RemainingDurability": 2
     },
     "CurrentQuest": {
-      "Type": 1,
-      "Progress": 1,
-      "Goal": 60,
-      "FiveStarDifficulty": 3
+      "Type": 0,
+      "Progress": 87,
+      "Goal": 125,
+      "FiveStarDifficulty": 4
     }
   },
   {
@@ -2141,12 +2403,14 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "arixama",
     "Level": 0,
-    "CurrentHealth": 35,
+    "CurrentHealth": 37,
     "Classes": [
       {
         "Type": 0,
@@ -2165,8 +2429,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 0,
+    "LevelUpAvailable": true,
+    "CurrentExp": 23,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -2194,7 +2458,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "darkflames341",
@@ -2428,7 +2694,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "sussybeanspy",
@@ -2716,7 +2984,7 @@
       "cheese wheel",
       "obsidian dagger",
       "banana bunch",
-      "letter",
+      "egg",
       "pure nail"
     ],
     "Deaths": 0,
@@ -2768,7 +3036,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "markie2_",
@@ -3039,12 +3309,12 @@
   },
   {
     "Username": "chillgreenbean",
-    "Level": 7,
-    "CurrentHealth": 57,
+    "Level": 10,
+    "CurrentHealth": 32,
     "Classes": [
       {
         "Type": 0,
-        "Level": 7
+        "Level": 10
       },
       {
         "Type": 1,
@@ -3059,12 +3329,13 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": true,
-    "CurrentExp": 553,
-    "CurrentExpNeeded": 143,
+    "LevelUpAvailable": false,
+    "CurrentExp": 156,
+    "CurrentExpNeeded": 273,
     "KnownMoves": [
       "punch",
-      "cast feels"
+      "cast feels",
+      "cast lightning"
     ],
     "ExpBoostMultiplier": 1,
     "Voice": "",
@@ -3077,9 +3348,9 @@
       "obsidian dagger",
       "obsidian dagger",
       "wabbajack",
-      "letter",
+      "egg",
       "diamond axe",
-      "letter",
+      "egg",
       "diamond axe",
       "scroll of truth",
       "wabbajack",
@@ -3091,16 +3362,16 @@
       "scroll of truth",
       "scroll of truth",
       "scroll of truth",
-      "letter",
+      "egg",
       "scroll of truth",
       "scroll of truth",
       "scroll of truth",
       "scroll of truth",
-      "letter",
+      "egg",
       "banana bunch",
       "beer",
       "banana bunch",
-      "letter",
+      "egg",
       "scroll of truth",
       "obsidian dagger",
       "obsidian dagger",
@@ -3137,10 +3408,10 @@
       "duck hunt gun",
       "great healing potion",
       "cheese wheel",
-      "letter",
+      "egg",
       "tinderbox",
       "healing potion",
-      "letter",
+      "egg",
       "beer",
       "cold resistance potion",
       "tinderbox",
@@ -3158,7 +3429,12 @@
       "fire resistance potion",
       "accuracy potion",
       "power helmet",
-      "cold resistance potion"
+      "cold resistance potion",
+      "salt",
+      "raw venison",
+      "raw sausage",
+      "cold resistance potion",
+      "raw pheasant"
     ],
     "PassiveModeEnabled": false,
     "Deaths": 47,
@@ -3177,8 +3453,8 @@
         "RemainingDurability": 7
       }
     ],
-    "Gems": 52,
-    "SpendableGems": 2578,
+    "Gems": 0,
+    "SpendableGems": 2633,
     "CozyPoints": 0,
     "CommandCooldowns": [],
     "HasVip": false,
@@ -3190,7 +3466,7 @@
     },
     "EquippedObject": {
       "ObjectName": "wabbajack",
-      "RemainingDurability": 9
+      "RemainingDurability": 8
     },
     "UpgradeOptions": [],
     "Upgrades": [
@@ -3199,14 +3475,17 @@
       "Cooldown Mastery",
       "Speedy",
       "Hoarder",
-      "Burning Hands"
+      "Burning Hands",
+      "Better Wand",
+      "Unkillable"
     ],
     "WaitingToSelectUpgrade": true,
     "HitStreak": 0,
     "PermanentUpgrades": [],
     "Prestige": 0,
     "Mastery": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "ByteCoins": null
   },
   {
     "Username": "reynatheproto",
@@ -3416,7 +3695,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mic00f3",
@@ -3650,7 +3931,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "krox034",
@@ -3832,7 +4115,7 @@
     "Voice": "",
     "Deaths": 0,
     "Inventory": [
-      "letter"
+      "egg"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
@@ -3882,7 +4165,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "traditionalsirew",
@@ -4133,7 +4418,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "kor_iik",
@@ -4182,7 +4469,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "elisaraven09",
@@ -4225,7 +4514,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "7uncg",
@@ -4268,7 +4559,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "devychan",
@@ -4311,7 +4604,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "pre_malone1234",
@@ -4354,7 +4649,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "delunelovin",
@@ -4397,7 +4694,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "valkyrie_0311",
@@ -4442,7 +4741,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "kiracolada",
@@ -4487,7 +4788,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "vittilus",
@@ -4532,7 +4835,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "dugoth",
@@ -4565,7 +4870,7 @@
     "Voice": "",
     "Deaths": 0,
     "Inventory": [
-      "letter"
+      "egg"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
@@ -4577,7 +4882,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "pooh_ke",
@@ -4620,7 +4927,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "greybolttv",
@@ -4667,7 +4976,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mattaul",
@@ -4710,7 +5021,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "livinglifewithserenity",
@@ -4735,7 +5048,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 39,
+    "CurrentExp": 71,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -4743,19 +5056,19 @@
     "Voice": "",
     "Deaths": 0,
     "Inventory": [
-      "letter",
+      "egg",
       "diamond axe",
       "scroll of challenge",
       "cheese wheel",
       "pool noodle",
-      "letter",
+      "egg",
       "healing potion",
       "present"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
     "Gems": 0,
-    "SpendableGems": 61,
+    "SpendableGems": 71,
     "CozyPoints": 0,
     "CommandCooldowns": [],
     "HasVip": false,
@@ -4768,12 +5081,12 @@
   },
   {
     "Username": "gamerjoecoffee",
-    "Level": 16,
-    "CurrentHealth": 7,
+    "Level": 17,
+    "CurrentHealth": 37,
     "Classes": [
       {
         "Type": 0,
-        "Level": 16
+        "Level": 17
       },
       {
         "Type": 1,
@@ -4789,8 +5102,8 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 623,
-    "CurrentExpNeeded": 645,
+    "CurrentExp": 196,
+    "CurrentExpNeeded": 721,
     "KnownMoves": [
       "punch",
       "cast confusion",
@@ -4800,10 +5113,11 @@
       "cast lightning",
       "cast meteor shower",
       "cast teleport",
-      "cast fireball"
+      "cast fireball",
+      "cast devastation"
     ],
     "Voice": "en-US-EricNeural",
-    "Deaths": 8,
+    "Deaths": 10,
     "Inventory": [
       "wand",
       "dagger",
@@ -4818,7 +5132,7 @@
       "cardboard box",
       "beer",
       "healing amulet",
-      "letter",
+      "egg",
       "diamond axe",
       "cold resistance potion",
       "healing potion",
@@ -4839,12 +5153,16 @@
       "beer",
       "cold resistance potion",
       "great healing potion",
-      "healing potion"
+      "healing potion",
+      "pool noodle",
+      "raw pheasant",
+      "raw pheasant",
+      "great healing potion"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
-    "Gems": 169,
-    "SpendableGems": 5923,
+    "Gems": 0,
+    "SpendableGems": 6007,
     "CozyPoints": 0,
     "EquippedBacklog": [
       {
@@ -4858,10 +5176,6 @@
       {
         "ObjectName": "obsidian dagger",
         "RemainingDurability": 7
-      },
-      {
-        "ObjectName": "pool noodle",
-        "RemainingDurability": 1
       }
     ],
     "CommandCooldowns": [],
@@ -4877,13 +5191,13 @@
       "Rapid Strike",
       "SUPER HURTER"
     ],
-    "HitStreak": 3,
+    "HitStreak": 1,
     "PermanentUpgrades": [],
     "Prestige": 0,
     "Mastery": 0,
     "CurrentQuest": {
       "Type": 3,
-      "Progress": 117,
+      "Progress": 579,
       "Goal": 1200,
       "FiveStarDifficulty": 2
     },
@@ -4932,7 +5246,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "keenanleearcher",
@@ -4975,7 +5291,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "texas_machinist",
@@ -5000,7 +5318,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 87,
+    "CurrentExp": 111,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -5014,7 +5332,7 @@
       "cake",
       "cheese wheel",
       "diamond axe",
-      "letter",
+      "egg",
       "pool noodle",
       "scroll of truth",
       "banana bunch",
@@ -5031,24 +5349,25 @@
       "candy",
       "candy",
       "cake",
-      "letter",
+      "egg",
       "scroll of challenge",
       "beer",
       "cold resistance potion",
       "tinderbox",
       "crystal",
-      "letter",
+      "egg",
       "repair hammer",
       "wabbajack",
       "cold resistance potion",
-      "letter",
+      "egg",
       "tinderbox",
       "great healing potion",
       "cold resistance potion",
-      "letter",
+      "egg",
       "present",
       "present",
-      "scroll of truth"
+      "scroll of truth",
+      "cake"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
@@ -5087,7 +5406,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 68,
+    "CurrentExp": 103,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -5102,7 +5421,7 @@
       "scroll of challenge",
       "legendary healing potion",
       "dagger",
-      "letter",
+      "egg",
       "crystal",
       "candy",
       "candy",
@@ -5112,13 +5431,13 @@
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
-    "Gems": 182,
-    "SpendableGems": 1894,
+    "Gems": 0,
+    "SpendableGems": 1981,
     "CozyPoints": 0,
     "CommandCooldowns": [],
     "CurrentQuest": {
       "Type": 2,
-      "Progress": 121,
+      "Progress": 130,
       "Goal": 180,
       "FiveStarDifficulty": 5
     },
@@ -5173,7 +5492,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "sampykee",
@@ -5218,7 +5539,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "nuby0305",
@@ -5261,7 +5584,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mork_souls",
@@ -5295,7 +5620,7 @@
     "Deaths": 0,
     "Inventory": [
       "magic nuke",
-      "letter"
+      "egg"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
@@ -5307,7 +5632,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "crashminecraft1",
@@ -5352,7 +5679,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "therealaffey",
@@ -5397,7 +5726,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "atomicburrito72",
@@ -5440,7 +5771,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "stel346",
@@ -5488,7 +5821,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "shinji257",
@@ -5539,7 +5874,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "malthemiracle",
@@ -5598,7 +5935,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "kilian_original",
@@ -5698,7 +6037,9 @@
     ],
     "PermanentUpgrades": [],
     "HitStreak": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "pmfd56",
@@ -5741,16 +6082,18 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "thelindenbookie",
-    "Level": 17,
-    "CurrentHealth": 1,
+    "Level": 21,
+    "CurrentHealth": 49,
     "Classes": [
       {
         "Type": 0,
-        "Level": 9
+        "Level": 11
       },
       {
         "Type": 1,
@@ -5758,26 +6101,29 @@
       },
       {
         "Type": 2,
-        "Level": 3
+        "Level": 4
       },
       {
         "Type": 3,
-        "Level": 5
+        "Level": 6
       }
     ],
-    "LevelUpAvailable": true,
-    "CurrentExp": 986,
-    "CurrentExpNeeded": 721,
+    "LevelUpAvailable": false,
+    "CurrentExp": 72,
+    "CurrentExpNeeded": 1065,
     "KnownMoves": [
       "punch",
       "backstab",
       "cast bolt",
       "throw",
       "cast lightning",
-      "divine strike"
+      "divine strike",
+      "heal",
+      "restore",
+      "cast feels"
     ],
     "Voice": "en-US-AriaNeural",
-    "Deaths": 6,
+    "Deaths": 8,
     "Inventory": [
       "dagger",
       "wand",
@@ -5795,11 +6141,11 @@
       "obsidian dagger",
       "diamond axe",
       "cold resistance potion",
-      "letter",
+      "egg",
       "duck hunt gun",
       "scroll of challenge",
       "duck hunt gun",
-      "letter",
+      "egg",
       "great healing potion",
       "great healing potion",
       "scroll of truth",
@@ -5807,14 +6153,13 @@
       "fire resistance potion",
       "cold resistance potion",
       "cold resistance potion",
-      "letter",
+      "egg",
       "fire resistance potion",
       "fire resistance potion",
       "beer",
       "scroll of truth",
       "banana bunch",
       "scroll of truth",
-      "crystal",
       "diamond axe",
       "sword",
       "hammer",
@@ -5825,7 +6170,6 @@
       "wabbajack",
       "accuracy potion",
       "cardboard box",
-      "tinderbox",
       "great healing potion",
       "fire resistance potion",
       "cheese wheel",
@@ -5850,12 +6194,42 @@
       "apple",
       "water",
       "apple",
-      "water"
+      "water",
+      "salt",
+      "raw pheasant",
+      "mutton",
+      "cooked hare",
+      "raw mutton",
+      "raw venison",
+      "tinderbox",
+      "raw salmon",
+      "salt",
+      "tomato",
+      "accuracy potion",
+      "egg",
+      "cheese wheel",
+      "raw mutton",
+      "crystal",
+      "flour",
+      "fire resistance potion",
+      "raw sausage",
+      "salt",
+      "salt",
+      "raw pork",
+      "water",
+      "banana bunch",
+      "beer",
+      "scroll of truth",
+      "beer",
+      "cheese wheel",
+      "cheese wheel",
+      "repair hammer",
+      "raw salmon"
     ],
     "StatusEffects": [],
     "PassiveModeEnabled": false,
-    "Gems": 5589,
-    "SpendableGems": 2984,
+    "Gems": 0,
+    "SpendableGems": 4779,
     "CozyPoints": 0,
     "CommandCooldowns": [],
     "HasVip": false,
@@ -5886,20 +6260,21 @@
       "Incredible Resolve",
       "Tough",
       "Healing Hands",
-      "Better Wand"
+      "Better Wand",
+      "Vital Knowledge"
     ],
     "WaitingToSelectUpgrade": true,
-    "HitStreak": 0,
+    "HitStreak": 1,
     "PermanentUpgrades": [],
     "Prestige": 0,
     "Mastery": 0,
-    "ByteCoins": 479,
+    "ByteCoins": 498,
     "GatheringResources": false,
     "CurrentQuest": {
-      "Type": 1,
-      "Progress": 10,
-      "Goal": 75,
-      "FiveStarDifficulty": 3
+      "Type": 6,
+      "Progress": 0,
+      "Goal": 15,
+      "FiveStarDifficulty": 5
     }
   },
   {
@@ -5943,16 +6318,18 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "wolfythelurker",
-    "Level": 13,
-    "CurrentHealth": 52,
+    "Level": 16,
+    "CurrentHealth": 48,
     "Classes": [
       {
         "Type": 0,
-        "Level": 4
+        "Level": 7
       },
       {
         "Type": 1,
@@ -5968,8 +6345,8 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 95,
-    "CurrentExpNeeded": 441,
+    "CurrentExp": 39,
+    "CurrentExpNeeded": 645,
     "KnownMoves": [
       "punch",
       "cast bolt",
@@ -5979,10 +6356,12 @@
       "backstab",
       "cast confusion",
       "slash",
-      "battlecry"
+      "battlecry",
+      "cast freezing ray",
+      "heroic speech"
     ],
     "Voice": "",
-    "Deaths": 3,
+    "Deaths": 4,
     "Inventory": [
       "sword",
       "hammer",
@@ -6002,7 +6381,7 @@
       "beer",
       "legendary healing potion",
       "pure nail",
-      "letter",
+      "egg",
       "coal",
       "beer",
       "repair hammer",
@@ -6010,7 +6389,7 @@
       "fire resistance potion",
       "wand",
       "obsidian dagger",
-      "letter",
+      "egg",
       "tinderbox",
       "cold resistance potion",
       "cold resistance potion",
@@ -6022,25 +6401,20 @@
       "diamond axe",
       "cold resistance potion",
       "scroll of truth",
-      "beer"
+      "beer",
+      "flour",
+      "tinderbox",
+      "raw salmon",
+      "banana bunch",
+      "water",
+      "tinderbox",
+      "wabbajack"
     ],
-    "StatusEffects": [
-      {
-        "Effect": 0,
-        "WhenEffectStarted": "2025-02-22T22:54:02.804Z",
-        "EffectTimeInSeconds": 300
-      }
-    ],
-    "CommandCooldowns": [
-      {
-        "Command": "cast confusion",
-        "WhenDidCommand": "2025-02-22T22:53:55.278Z",
-        "CommandCooldownInSeconds": 855
-      }
-    ],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 1277,
-    "SpendableGems": 15857,
+    "Gems": 0,
+    "SpendableGems": 16391,
     "CozyPoints": 0,
     "HasVip": false,
     "EquippedBacklog": [
@@ -6059,19 +6433,20 @@
       "Speedy",
       "Last Stand",
       "Arcane Intelligence",
-      "Poisonous"
+      "Poisonous",
+      "Just Better"
     ],
     "PermanentUpgrades": [],
-    "HitStreak": 1,
+    "HitStreak": 0,
     "Prestige": 0,
     "Mastery": 0,
     "GatheringResources": false,
     "ByteCoins": 3,
     "CurrentQuest": {
-      "Type": 7,
-      "Progress": 1,
-      "Goal": 2,
-      "FiveStarDifficulty": 2
+      "Type": 3,
+      "Progress": 22,
+      "Goal": 1200,
+      "FiveStarDifficulty": 3
     }
   },
   {
@@ -6187,7 +6562,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "magnetarxblood",
@@ -6233,7 +6610,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "gnomeping",
@@ -6280,7 +6659,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "misterd50",
@@ -6323,7 +6704,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "socialfd",
@@ -6366,12 +6749,14 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "tgg_rock",
     "Level": 0,
-    "CurrentHealth": 30,
+    "CurrentHealth": 32,
     "Classes": [
       {
         "Type": 0,
@@ -6390,8 +6775,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 0,
+    "LevelUpAvailable": true,
+    "CurrentExp": 6,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -6411,7 +6796,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "lakeaffectgaming",
@@ -6454,7 +6841,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "lostmedic232",
@@ -6499,7 +6888,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "raspcard",
@@ -6542,7 +6933,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "yukiiisuhi",
@@ -6585,12 +6978,14 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "iceking02202",
     "Level": 0,
-    "CurrentHealth": 30,
+    "CurrentHealth": 32,
     "Classes": [
       {
         "Type": 0,
@@ -6609,8 +7004,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 1,
+    "LevelUpAvailable": true,
+    "CurrentExp": 9,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -6622,7 +7017,8 @@
       "accuracy potion",
       "cheese wheel",
       "cardboard box",
-      "diamond axe"
+      "diamond axe",
+      "pool noodle"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
@@ -6641,7 +7037,7 @@
   {
     "Username": "justbearsgames",
     "Level": 10,
-    "CurrentHealth": 34,
+    "CurrentHealth": 14,
     "Classes": [
       {
         "Type": 0,
@@ -6661,7 +7057,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 687,
+    "CurrentExp": 884,
     "CurrentExpNeeded": 135,
     "KnownMoves": [
       "punch",
@@ -6678,7 +7074,7 @@
       "accuracy potion",
       "tinderbox",
       "wand",
-      "letter",
+      "egg",
       "diamond axe",
       "sword",
       "hammer",
@@ -6691,13 +7087,17 @@
       "pool noodle",
       "beer",
       "obsidian dagger",
-      "accuracy potion"
+      "accuracy potion",
+      "beer",
+      "pool noodle",
+      "beer",
+      "duck hunt gun"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 852,
-    "SpendableGems": 3243,
+    "Gems": 0,
+    "SpendableGems": 3456,
     "CozyPoints": 0,
     "HasVip": false,
     "EquippedBacklog": [],
@@ -6713,18 +7113,20 @@
       "Rapid Strike"
     ],
     "PermanentUpgrades": [],
-    "HitStreak": 1,
+    "HitStreak": 2,
     "EquippedObject": {
       "ObjectName": "diamond axe",
       "RemainingDurability": 11
     },
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0,
     "CurrentQuest": {
-      "Type": 6,
-      "Progress": 5,
-      "Goal": 6,
-      "FiveStarDifficulty": 2
-    },
-    "GatheringResources": false
+      "Type": 2,
+      "Progress": 4,
+      "Goal": 60,
+      "FiveStarDifficulty": 3
+    }
   },
   {
     "Username": "houdini702",
@@ -6778,7 +7180,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "graythatgames",
@@ -6825,7 +7229,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "ineia76",
@@ -6872,7 +7278,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "ashiirosee",
@@ -6922,7 +7330,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "tortacular",
@@ -6969,7 +7379,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "ericalvin",
@@ -7012,7 +7424,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "devilseven",
@@ -7058,16 +7472,18 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "echo9821",
-    "Level": 0,
-    "CurrentHealth": 25,
+    "Level": 6,
+    "CurrentHealth": 41,
     "Classes": [
       {
         "Type": 0,
-        "Level": 0
+        "Level": 6
       },
       {
         "Type": 1,
@@ -7083,29 +7499,59 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 0,
-    "CurrentExpNeeded": 5,
+    "CurrentExp": 34,
+    "CurrentExpNeeded": 108,
     "KnownMoves": [
-      "punch"
+      "punch",
+      "cast fireball",
+      "cast bolt"
     ],
     "Voice": "",
-    "Deaths": 0,
+    "Deaths": 2,
     "Inventory": [
       "banana bunch",
-      "letter"
+      "egg",
+      "wand",
+      "water",
+      "cocoa",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "tomato",
+      "raw sausage",
+      "raw venison",
+      "raw hare",
+      "cocoa"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
     "Gems": 0,
-    "SpendableGems": 0,
+    "SpendableGems": 160,
     "CozyPoints": 0,
     "HasVip": false,
     "MovePoints": 0,
     "UpgradeOptions": [],
-    "Upgrades": [],
+    "Upgrades": [
+      "Critical Eye",
+      "Arcane Intelligence",
+      "Hardy",
+      "Burning Hands",
+      "Fast Learner"
+    ],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0,
+    "ByteCoins": 56,
+    "CurrentQuest": {
+      "Type": 3,
+      "Progress": 0,
+      "Goal": 1600,
+      "FiveStarDifficulty": 3
+    },
+    "HitStreak": 0
   },
   {
     "Username": "dabull1013",
@@ -7130,7 +7576,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 106,
+    "CurrentExp": 128,
     "CurrentExpNeeded": 9,
     "KnownMoves": [
       "punch"
@@ -7204,12 +7650,14 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "berzerk404",
-    "Level": 0,
-    "CurrentHealth": 110,
+    "Level": 5,
+    "CurrentHealth": 55,
     "Classes": [
       {
         "Type": 0,
@@ -7221,18 +7669,20 @@
       },
       {
         "Type": 2,
-        "Level": 0
+        "Level": 5
       },
       {
         "Type": 3,
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 0,
-    "CurrentExpNeeded": 5,
+    "LevelUpAvailable": true,
+    "CurrentExp": 197,
+    "CurrentExpNeeded": 56,
     "KnownMoves": [
-      "punch"
+      "punch",
+      "backstab",
+      "throw"
     ],
     "Voice": "",
     "Deaths": 1,
@@ -7248,13 +7698,14 @@
       "scroll of challenge",
       "wabbajack",
       "legendary healing potion",
-      "cake"
+      "cake",
+      "fire resistance potion"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
     "Gems": 0,
-    "SpendableGems": 1198,
+    "SpendableGems": 1222,
     "CozyPoints": 0,
     "HasVip": false,
     "MovePoints": 0,
@@ -7266,18 +7717,29 @@
     ],
     "EquippedObject": {
       "ObjectName": "pure nail",
-      "RemainingDurability": 2
+      "RemainingDurability": 1
     },
     "CurrentQuest": {
       "Type": 0,
-      "Progress": 13,
+      "Progress": 14,
       "Goal": 45,
       "FiveStarDifficulty": 2
     },
-    "UpgradeOptions": [],
-    "Upgrades": [],
+    "UpgradeOptions": [
+      "Front Liner",
+      "Turtle",
+      "Noodle Arms"
+    ],
+    "Upgrades": [
+      "Extra Strength",
+      "Fast Learner",
+      "New Shield"
+    ],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0,
+    "HitStreak": 0
   },
   {
     "Username": "domincathepeasant",
@@ -7321,7 +7783,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "c_777",
@@ -7365,7 +7829,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "7arksgamemanager",
@@ -7389,8 +7855,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 0,
+    "LevelUpAvailable": true,
+    "CurrentExp": 10,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -7455,7 +7921,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "skerbil000",
@@ -7499,7 +7967,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "botxama",
@@ -7543,7 +8013,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "lilolchalice",
@@ -7589,7 +8061,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "gofurbroke69",
@@ -7633,7 +8107,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "shewhogeeks",
@@ -7677,7 +8153,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "takjak13_",
@@ -7721,7 +8199,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "kgu111",
@@ -7746,7 +8226,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 157,
+    "CurrentExp": 200,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -7825,7 +8305,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "partialdominance",
@@ -7870,7 +8352,7 @@
       "coal",
       "present",
       "healing potion",
-      "letter",
+      "egg",
       "tinderbox",
       "sword",
       "hammer"
@@ -7892,7 +8374,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "iplaylockdownprotocol",
@@ -7939,7 +8423,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "laurak483",
@@ -7985,7 +8471,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "sodiumswede",
@@ -8034,7 +8522,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "dudeyo9",
@@ -8080,7 +8570,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "raverbeandk",
@@ -8126,7 +8618,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "calmeddistortion",
@@ -8172,7 +8666,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "herrowazn",
@@ -8197,7 +8693,7 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 0,
+    "CurrentExp": 3,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -8216,15 +8712,17 @@
     "HasVip": false,
     "MovePoints": 0,
     "CurrentQuest": {
-      "Type": 6,
+      "Type": 3,
       "Progress": 0,
-      "Goal": 5,
+      "Goal": 900,
       "FiveStarDifficulty": 2
     },
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "the_fox_overlord",
@@ -8270,7 +8768,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "deathbeliz",
@@ -8314,7 +8814,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mynamesteeza",
@@ -8364,7 +8866,9 @@
     ],
     "PermanentUpgrades": [],
     "HitStreak": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "impactedpiko",
@@ -8411,7 +8915,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mikey3669",
@@ -8455,7 +8961,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "rachelgambles",
@@ -8499,12 +9007,14 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "crazdude755",
     "Level": 5,
-    "CurrentHealth": 79,
+    "CurrentHealth": 83,
     "Classes": [
       {
         "Type": 0,
@@ -8523,8 +9033,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 41,
+    "LevelUpAvailable": true,
+    "CurrentExp": 47,
     "CurrentExpNeeded": 45,
     "KnownMoves": [
       "punch",
@@ -8607,12 +9117,14 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "wareblake",
-    "Level": 15,
-    "CurrentHealth": 95,
+    "Level": 18,
+    "CurrentHealth": 104,
     "Classes": [
       {
         "Type": 0,
@@ -8624,16 +9136,16 @@
       },
       {
         "Type": 2,
-        "Level": 15
+        "Level": 18
       },
       {
         "Type": 3,
         "Level": 0
       }
     ],
-    "LevelUpAvailable": true,
-    "CurrentExp": 1197,
-    "CurrentExpNeeded": 573,
+    "LevelUpAvailable": false,
+    "CurrentExp": 631,
+    "CurrentExpNeeded": 802,
     "KnownMoves": [
       "punch",
       "throw",
@@ -8665,7 +9177,6 @@
       "fire resistance potion",
       "cold resistance potion",
       "scroll of truth",
-      "great healing potion",
       "fire resistance potion",
       "duck hunt gun",
       "scroll of truth",
@@ -8673,7 +9184,6 @@
       "accuracy potion",
       "beer",
       "repair hammer",
-      "healing potion",
       "cardboard box",
       "tinderbox",
       "accuracy potion",
@@ -8690,16 +9200,32 @@
       "accuracy potion",
       "raw mutton",
       "raw beef",
-      "cheese wheel",
-      "banana bunch",
       "scroll of truth",
-      "cake"
+      "water",
+      "raw salmon",
+      "accuracy potion",
+      "cake",
+      "fire resistance potion",
+      "beer",
+      "accuracy potion",
+      "cake",
+      "fire resistance potion",
+      "cheese wheel",
+      "raw salmon",
+      "raw sausage",
+      "cheese",
+      "raw sausage",
+      "raw pork",
+      "water",
+      "apple",
+      "cocoa",
+      "water"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 4577,
-    "SpendableGems": 4418,
+    "Gems": 17,
+    "SpendableGems": 4140,
     "CozyPoints": 0,
     "HasVip": false,
     "MovePoints": 0,
@@ -8714,20 +9240,23 @@
       "Hoarder",
       "Fast Learner",
       "Lifeblood",
-      "Poisonous"
+      "Poisonous",
+      "Unkillable",
+      "Burning Hands",
+      "Hardy"
     ],
-    "HitStreak": 0,
+    "HitStreak": 6,
     "WaitingToSelectUpgrade": true,
-    "ByteCoins": 201,
+    "ByteCoins": 513,
     "PermanentUpgrades": [],
     "Prestige": 1,
     "Mastery": 0,
     "GatheringResources": false,
     "CurrentQuest": {
-      "Type": 1,
-      "Progress": 46,
-      "Goal": 80,
-      "FiveStarDifficulty": 3
+      "Type": 3,
+      "Progress": 302,
+      "Goal": 7000,
+      "FiveStarDifficulty": 5
     }
   },
   {
@@ -8772,7 +9301,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "chamberlago",
@@ -8862,7 +9393,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "taro_wolf",
@@ -8906,7 +9439,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "moonlit_faye",
@@ -8950,7 +9485,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "playitforwardgaming",
@@ -8996,7 +9533,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "andrew_the_first",
@@ -9037,15 +9576,9 @@
       "power helmet"
     ],
     "StatusEffects": [],
-    "CommandCooldowns": [
-      {
-        "Command": "shroud",
-        "WhenDidCommand": "2025-02-15T23:51:15.533Z",
-        "CommandCooldownInSeconds": 1800
-      }
-    ],
+    "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 453,
+    "Gems": 0,
     "SpendableGems": 631,
     "CozyPoints": 0,
     "HasVip": false,
@@ -9159,7 +9692,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "demper",
@@ -9203,7 +9738,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "foolish619",
@@ -9247,7 +9784,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "silver_streak",
@@ -9272,7 +9811,7 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 0,
+    "CurrentExp": 2,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -9291,7 +9830,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "itsssjustchewy",
@@ -9341,7 +9882,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "queen_vexus",
@@ -9385,7 +9928,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "aliendisrespect1",
@@ -9429,7 +9974,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "patryk13094",
@@ -9454,7 +10001,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 50,
+    "CurrentExp": 107,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -9465,7 +10012,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 126,
+    "Gems": 0,
     "SpendableGems": 126,
     "CozyPoints": 0,
     "HasVip": false,
@@ -9500,7 +10047,7 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 110,
+    "CurrentExp": 131,
     "CurrentExpNeeded": 225,
     "KnownMoves": [
       "punch",
@@ -9522,7 +10069,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 64,
+    "Gems": 0,
     "SpendableGems": 363,
     "CozyPoints": 0,
     "HasVip": false,
@@ -9597,7 +10144,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "killersnakelord",
@@ -9644,7 +10193,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "halo5sharting",
@@ -9688,7 +10239,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "dynasticearlobe",
@@ -9732,7 +10285,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mwahmwanmwah",
@@ -9757,7 +10312,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 234,
+    "CurrentExp": 239,
     "CurrentExpNeeded": 5,
     "KnownMoves": [
       "punch"
@@ -9822,7 +10377,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "woofsilver",
@@ -9866,7 +10423,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "biowolf42",
@@ -9910,7 +10469,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mrsfayekennedy",
@@ -9954,7 +10515,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "chayjd",
@@ -9998,7 +10561,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "awesomewolf382",
@@ -10042,7 +10607,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "opinionat",
@@ -10086,7 +10653,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "justnelac",
@@ -10130,7 +10699,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "fnold",
@@ -10174,7 +10745,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "cameratim",
@@ -10218,7 +10791,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "untouchablen8iv",
@@ -10262,7 +10837,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "mommasugar",
@@ -10306,7 +10883,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "yoan_campion",
@@ -10350,7 +10929,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "biigseditz",
@@ -10394,7 +10975,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "cronus",
@@ -10438,7 +11021,9 @@
     "UpgradeOptions": [],
     "Upgrades": [],
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "doodybeard",
@@ -10485,12 +11070,14 @@
     "HitStreak": 0,
     "ByteCoins": 0,
     "PermanentUpgrades": [],
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "ki14wi08",
-    "Level": 8,
-    "CurrentHealth": 96,
+    "Level": 17,
+    "CurrentHealth": 168,
     "Classes": [
       {
         "Type": 0,
@@ -10498,7 +11085,7 @@
       },
       {
         "Type": 1,
-        "Level": 8
+        "Level": 12
       },
       {
         "Type": 2,
@@ -10506,12 +11093,12 @@
       },
       {
         "Type": 3,
-        "Level": 0
+        "Level": 5
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 178,
-    "CurrentExpNeeded": 182,
+    "CurrentExp": 657,
+    "CurrentExpNeeded": 721,
     "Upgrades": [
       "SUPER SHIELD",
       "Noodle Arms",
@@ -10521,12 +11108,22 @@
       "New Shield",
       "Precise Blows",
       "Front Liner",
-      "Burning Hands"
+      "Burning Hands",
+      "Team Shield",
+      "Just Better",
+      "Inflict Curse",
+      "Team Player"
     ],
     "PermanentUpgrades": [],
     "KnownMoves": [
       "punch",
-      "slash"
+      "slash",
+      "smash",
+      "smite",
+      "heal",
+      "stab",
+      "rage",
+      "charge"
     ],
     "UpgradeOptions": [],
     "Voice": "",
@@ -10559,8 +11156,6 @@
       "cocoa",
       "banana bunch",
       "egg",
-      "raw pheasant",
-      "raw venison",
       "egg",
       "water",
       "scroll of challenge",
@@ -10569,48 +11164,208 @@
       "banana bunch",
       "egg",
       "cheese wheel",
-      "beer",
       "tinderbox",
       "tinderbox",
-      "raw mutton",
-      "raw sausage",
-      "raw mutton",
-      "cooked hare",
-      "raw beef",
-      "raw pork",
-      "raw pork",
       "banana bunch",
       "cake",
       "egg",
-      "fire resistance potion"
+      "fire resistance potion",
+      "cocoa",
+      "raw venison",
+      "raw hare",
+      "egg",
+      "water",
+      "pepperoni",
+      "raw venison",
+      "egg",
+      "banana bunch",
+      "salt",
+      "honey",
+      "raw sausage",
+      "salt",
+      "raw salmon",
+      "water",
+      "raw sausage",
+      "egg",
+      "sugar",
+      "raw salmon",
+      "flour",
+      "repair hammer",
+      "repair hammer",
+      "flour",
+      "water",
+      "raw sausage",
+      "raw salmon",
+      "raw salmon",
+      "raw salmon",
+      "apple",
+      "salt",
+      "raw sausage",
+      "salt",
+      "salt",
+      "egg",
+      "raw salmon",
+      "raw salmon",
+      "water",
+      "bread",
+      "sugar",
+      "water",
+      "flour",
+      "raw salmon",
+      "salt",
+      "flour",
+      "honey",
+      "tomato",
+      "raw salmon",
+      "raw sausage",
+      "egg",
+      "water",
+      "honey",
+      "raw salmon",
+      "cheese",
+      "raw salmon",
+      "water",
+      "flour",
+      "raw salmon",
+      "raw salmon",
+      "salt",
+      "milk",
+      "raw salmon",
+      "sugar",
+      "flour",
+      "raw salmon",
+      "milk",
+      "salt",
+      "water",
+      "salt",
+      "flour",
+      "salt",
+      "milk",
+      "salt",
+      "raw salmon",
+      "salt",
+      "raw salmon",
+      "healing potion",
+      "raw salmon",
+      "raw salmon",
+      "butter",
+      "water",
+      "water",
+      "salt",
+      "salt",
+      "butter",
+      "raw salmon",
+      "butter",
+      "salt",
+      "beef",
+      "beef",
+      "beef",
+      "beef",
+      "beef",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "pork",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "mutton",
+      "cake",
+      "tomato",
+      "cheese",
+      "cooked pheasant",
+      "cooked pheasant",
+      "raw salmon",
+      "pure nail",
+      "pure nail",
+      "pure nail",
+      "cheese",
+      "water",
+      "tinderbox",
+      "raw salmon",
+      "salt",
+      "sugar",
+      "egg",
+      "tinderbox",
+      "salt",
+      "water",
+      "milk",
+      "butter",
+      "milk",
+      "accuracy potion",
+      "salt",
+      "apple",
+      "raw salmon",
+      "raw salmon",
+      "healing potion",
+      "milk",
+      "salt",
+      "healing potion",
+      "water",
+      "water",
+      "tomato",
+      "honey",
+      "salt",
+      "apple",
+      "water",
+      "bread",
+      "raw salmon",
+      "salt",
+      "apple",
+      "butter",
+      "salt",
+      "accuracy potion",
+      "raw salmon",
+      "raw salmon",
+      "crystal",
+      "raw salmon",
+      "salt"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 4825,
-    "SpendableGems": 3705,
+    "Gems": 199,
+    "SpendableGems": 7734,
     "CozyPoints": 0,
     "HasVip": false,
-    "HitStreak": 0,
-    "ByteCoins": 61,
+    "HitStreak": 1,
+    "ByteCoins": 259,
     "EquippedBacklog": [
       {
         "ObjectName": "cardboard box",
         "RemainingDurability": 5
       }
     ],
-    "EquippedObject": {
-      "ObjectName": "pure nail",
-      "RemainingDurability": 1
-    },
     "Prestige": 1,
     "Mastery": 0,
     "GatheringResources": false,
     "CurrentQuest": {
       "Type": 3,
-      "Progress": 119,
+      "Progress": 1456,
       "Goal": 10000,
       "FiveStarDifficulty": 5
+    },
+    "EquippedObject": {
+      "ObjectName": "pure nail",
+      "RemainingDurability": 6
     }
   },
   {
@@ -10672,7 +11427,9 @@
       "Goal": 3,
       "FiveStarDifficulty": 3
     },
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "plagedpainter",
@@ -10717,7 +11474,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "pastillelive",
@@ -10766,7 +11525,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "higgs386",
@@ -10811,7 +11572,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "bowserbigbeanburrito",
@@ -10856,7 +11619,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "galaxygalpal",
@@ -10901,7 +11666,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 50,
+    "Gems": 0,
     "SpendableGems": 50,
     "CozyPoints": 0,
     "HasVip": false,
@@ -10920,7 +11685,7 @@
   {
     "Username": "suonova",
     "Level": 1,
-    "CurrentHealth": 50,
+    "CurrentHealth": 52,
     "Classes": [
       {
         "Type": 0,
@@ -10939,8 +11704,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 8,
+    "LevelUpAvailable": true,
+    "CurrentExp": 20,
     "CurrentExpNeeded": 9,
     "Upgrades": [
       "Inflict Curse"
@@ -11005,13 +11770,15 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 23,
+    "Gems": 0,
     "SpendableGems": 23,
     "CozyPoints": 0,
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "ember_afterdark",
@@ -11056,7 +11823,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "innsifire",
@@ -11101,7 +11870,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "roxandra",
@@ -11150,7 +11921,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "nobodiespoppet",
@@ -11189,13 +11962,15 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 10,
+    "Gems": 0,
     "SpendableGems": 10,
     "CozyPoints": 0,
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "robodessert",
@@ -11240,7 +12015,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "chiefiest",
@@ -11285,7 +12062,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "laxdine",
@@ -11309,8 +12088,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 3,
+    "LevelUpAvailable": true,
+    "CurrentExp": 21,
     "CurrentExpNeeded": 5,
     "Upgrades": [],
     "PermanentUpgrades": [],
@@ -11330,7 +12109,9 @@
     "HasVip": false,
     "HitStreak": 0,
     "ByteCoins": 0,
-    "GatheringResources": false
+    "GatheringResources": false,
+    "Prestige": 0,
+    "Mastery": 0
   },
   {
     "Username": "2slowbreadmaster",
@@ -11369,7 +12150,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 4,
+    "Gems": 0,
     "SpendableGems": 4,
     "CozyPoints": 0,
     "HasVip": false,
@@ -11420,7 +12201,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 11,
+    "Gems": 0,
     "SpendableGems": 11,
     "CozyPoints": 0,
     "HasVip": false,
@@ -11453,7 +12234,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 20,
+    "CurrentExp": 22,
     "CurrentExpNeeded": 5,
     "Upgrades": [],
     "PermanentUpgrades": [],
@@ -11667,7 +12448,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 509,
+    "Gems": 0,
     "SpendableGems": 509,
     "CozyPoints": 0,
     "HasVip": false,
@@ -11733,7 +12514,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 384,
+    "Gems": 0,
     "SpendableGems": 37,
     "CozyPoints": 0,
     "HasVip": false,
@@ -11892,29 +12673,29 @@
   },
   {
     "Username": "thoughtsgobrrr",
-    "Level": 10,
-    "CurrentHealth": 15,
+    "Level": 15,
+    "CurrentHealth": 43,
     "Classes": [
       {
         "Type": 0,
-        "Level": 4
+        "Level": 5
       },
       {
         "Type": 1,
-        "Level": 1
+        "Level": 2
       },
       {
         "Type": 2,
-        "Level": 3
+        "Level": 5
       },
       {
         "Type": 3,
-        "Level": 2
+        "Level": 3
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 239,
-    "CurrentExpNeeded": 273,
+    "CurrentExp": 18,
+    "CurrentExpNeeded": 573,
     "Upgrades": [
       "Tough",
       "Arcane Intelligence",
@@ -11922,7 +12703,11 @@
       "Poisonous",
       "Fast Learner",
       "Rich Adventurer",
-      "Inflict Curse"
+      "Inflict Curse",
+      "Dodge Recovery",
+      "Burning Hands",
+      "Vital Knowledge",
+      "Hoarder"
     ],
     "PermanentUpgrades": [],
     "KnownMoves": [
@@ -11933,38 +12718,64 @@
       "smash",
       "throw",
       "backstab",
-      "heal"
+      "heal",
+      "cast freezing ray"
     ],
     "UpgradeOptions": [],
-    "Voice": "",
-    "Deaths": 4,
+    "Voice": "en-US-GuyNeural",
+    "Deaths": 10,
     "Inventory": [
       "wand",
-      "beer",
-      "tomato",
       "fire resistance potion",
       "tinderbox",
       "sword",
       "hammer",
       "dagger",
-      "banana bunch",
       "healing amulet",
       "duck hunt gun",
       "power helmet",
       "pool noodle",
+      "wabbajack",
+      "cake",
+      "raw salmon",
+      "bread",
+      "apple",
+      "raw beef",
+      "raw beef",
+      "apple",
+      "cardboard box",
+      "raw mutton",
       "beef",
-      "beef",
-      "wabbajack"
+      "egg",
+      "egg",
+      "butter",
+      "egg",
+      "cardboard box",
+      "salt",
+      "raw beef",
+      "raw pheasant",
+      "raw mutton",
+      "cheese wheel",
+      "cold resistance potion",
+      "salt",
+      "raw pork",
+      "cheese wheel",
+      "banana bunch",
+      "raw venison",
+      "raw sausage",
+      "raw salmon",
+      "banana bunch",
+      "accuracy potion"
     ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 1085,
-    "SpendableGems": 1085,
+    "Gems": 0,
+    "SpendableGems": 2782,
     "CozyPoints": 0,
     "HasVip": false,
-    "HitStreak": 0,
-    "ByteCoins": 0,
+    "HitStreak": 2,
+    "ByteCoins": 208,
     "Prestige": 0,
     "Mastery": 0,
     "GatheringResources": false,
@@ -11984,7 +12795,7 @@
     },
     "CurrentQuest": {
       "Type": 0,
-      "Progress": 5,
+      "Progress": 57,
       "Goal": 75,
       "FiveStarDifficulty": 2
     }
@@ -12170,7 +12981,9 @@
     ],
     "Voice": "",
     "Deaths": 0,
-    "Inventory": [],
+    "Inventory": [
+      "wand"
+    ],
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
@@ -12280,7 +13093,7 @@
     "StatusEffects": [],
     "CommandCooldowns": [],
     "PassiveModeEnabled": false,
-    "Gems": 72,
+    "Gems": 0,
     "SpendableGems": 72,
     "CozyPoints": 0,
     "HasVip": false,
@@ -12312,8 +13125,8 @@
         "Level": 0
       }
     ],
-    "LevelUpAvailable": false,
-    "CurrentExp": 1,
+    "LevelUpAvailable": true,
+    "CurrentExp": 7,
     "CurrentExpNeeded": 4,
     "Upgrades": [],
     "PermanentUpgrades": [],
@@ -12481,7 +13294,7 @@
   {
     "Username": "battletracksgame",
     "Level": 0,
-    "CurrentHealth": 14,
+    "CurrentHealth": 50,
     "Classes": [
       {
         "Type": 0,
@@ -12510,7 +13323,7 @@
     ],
     "UpgradeOptions": [],
     "Voice": "",
-    "Deaths": 0,
+    "Deaths": 1,
     "Inventory": [],
     "StatusEffects": [],
     "CommandCooldowns": [],
@@ -12524,5 +13337,954 @@
     "Prestige": 0,
     "Mastery": 0,
     "GatheringResources": false
+  },
+  {
+    "Username": "timmy",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 239,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [
+      "salt",
+      "raw salmon",
+      "water",
+      "bread",
+      "raw salmon",
+      "water",
+      "butter",
+      "bread",
+      "raw salmon",
+      "water",
+      "raw salmon",
+      "raw salmon",
+      "water",
+      "water",
+      "water",
+      "butter",
+      "banana bunch"
+    ],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 14,
+    "SpendableGems": 3324,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "uwdijksm",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 5,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "hayden1u",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 3,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 2,
+    "CurrentQuest": {
+      "Type": 1,
+      "Progress": 1,
+      "Goal": 40,
+      "FiveStarDifficulty": 1
+    },
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "lowstreamerfinder",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 14,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 50,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "cozymwah",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 389,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "lenzarng",
+    "Level": 2,
+    "CurrentHealth": 52,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 2
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 54,
+    "CurrentExpNeeded": 16,
+    "Upgrades": [
+      "Burning Hands",
+      "Extra Strength"
+    ],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch",
+      "cast fireball"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [
+      "wand",
+      "water",
+      "raw salmon",
+      "banana bunch"
+    ],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 247,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 15,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "imaline__________________",
+    "Level": 3,
+    "CurrentHealth": 14,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 3
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 32,
+    "CurrentExpNeeded": 27,
+    "Upgrades": [
+      "Fast Learner",
+      "Hoarder",
+      "Healing Hands"
+    ],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch",
+      "smite"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [
+      "healing amulet",
+      "raw pork",
+      "raw hare",
+      "raw pheasant",
+      "cooked salmon",
+      "cooked salmon",
+      "egg",
+      "raw pheasant",
+      "raw sausage",
+      "repair hammer"
+    ],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 250,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 1,
+    "ByteCoins": 23,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "wadesworld66",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": true,
+    "CurrentExp": 4,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "jelte_020",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 1,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "lava_10ice",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 1,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "mendako",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 1,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "audiblepressure",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "metaphoricalwhopper",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "thedallaszone",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "zahve",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "mercexmerce",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [
+      "cardboard box"
+    ],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0,
+    "EquippedBacklog": [],
+    "EquippedObject": {
+      "ObjectName": "cardboard box",
+      "RemainingDurability": 14
+    }
+  },
+  {
+    "Username": "hanniahheart",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "angrymeatball",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 2,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
+  },
+  {
+    "Username": "xmix26",
+    "Level": 0,
+    "CurrentHealth": 50,
+    "Classes": [
+      {
+        "Type": 0,
+        "Level": 0
+      },
+      {
+        "Type": 1,
+        "Level": 0
+      },
+      {
+        "Type": 2,
+        "Level": 0
+      },
+      {
+        "Type": 3,
+        "Level": 0
+      }
+    ],
+    "LevelUpAvailable": false,
+    "CurrentExp": 3,
+    "CurrentExpNeeded": 4,
+    "Upgrades": [],
+    "PermanentUpgrades": [],
+    "KnownMoves": [
+      "punch"
+    ],
+    "UpgradeOptions": [],
+    "Voice": "",
+    "Deaths": 0,
+    "Inventory": [],
+    "StatusEffects": [],
+    "CommandCooldowns": [],
+    "PassiveModeEnabled": false,
+    "Gems": 0,
+    "SpendableGems": 0,
+    "GatheringResources": false,
+    "CozyPoints": 0,
+    "HasVip": false,
+    "HitStreak": 0,
+    "ByteCoins": 0,
+    "Prestige": 0,
+    "Mastery": 0
   }
 ]

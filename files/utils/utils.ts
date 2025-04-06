@@ -3,6 +3,10 @@ import { UpgradeDefinitions } from "../upgradeDefinitions";
 import {GetParameterFromCommand} from "./messageUtils";
 import {AllInventoryObjects, ObjectRetrievalType} from "../inventoryDefinitions";
 
+export interface Dictionary<T> {
+    [key: string]: T;
+}
+
 export function GetRandomNumber(min: number, max: number): number {
     // The maximum is inclusive and the minimum is inclusive
     return Math.random() * (max - min) + min;
@@ -186,8 +190,43 @@ export function IsCommand(message: string, command: string): boolean {
     return message.toLowerCase() === `!${command}` || message.toLowerCase().includes(`!${command} `);
 }
 
-export function GetInventoryObjectsBySource(source: ObjectRetrievalType) {
-    let allObjs = [...AllInventoryObjects];
+export function FormatListNicely(list: Array<string>): string {
+    let text = ``;
+    for (let i = 0; i < list.length; i++) {
+        text += list[i];
+        if(i < list.length - 2) {
+            text += ", ";
+        }
+        else if(i < list.length - 1) {
+            text += " and ";
+        }
+    }
 
-    return allObjs.filter(x => x.Retrieval.includes(source));
+    return text;
+}
+
+export function CountOccurrences(arr: string[], searchText: string): number {
+    return arr.filter(item => item === searchText).length;
+}
+
+export function FormatTextIntoLines(text: string, letterCount: number = 15): string {
+    let words = text.split(' ');
+    let obsText = ``;
+
+    let letters = 0;
+    for (let i = 0; i < words.length; i++) {
+        obsText += words[i];
+        letters += words[i].length;
+        if(i < words.length - 1) {
+            if(letters >= letterCount) {
+                obsText += "\n";
+                letters = 0;
+            }
+            else {
+                obsText += " ";
+            }
+        }
+    }
+
+    return obsText;
 }

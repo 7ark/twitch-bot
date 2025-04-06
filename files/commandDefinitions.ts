@@ -1,7 +1,7 @@
 import {Client} from "tmi.js";
 import {Affliction, ClassType, MoveType, Player, StatusEffect} from "./valueDefinitions";
 import {
-    AddSpacesBeforeCapitals,
+    AddSpacesBeforeCapitals, CountOccurrences,
     GetItemsAsPages,
     GetNumberWithOrdinal,
     GetPageNumberFromCommand,
@@ -82,6 +82,15 @@ import {
 } from "./utils/cookingSimUtils";
 import {GetCurrentGroceryStoreItems, GetCurrentSalesmanItems} from "./utils/shopUtils";
 import {GatherType, StartGathering} from "./utils/gatherUtils";
+import {GetRecipesItemUsedIn} from "./utils/inventoryUtils";
+import {
+    AD_AngelQueue,
+    AD_CurrentAngel,
+    AD_CurrentDevil, AD_DevilQueue,
+    AD_PendingAngel, AD_PendingDevil,
+    AddPendingPerson, GiveADQuest, LoadAD, RemoveAD
+} from "./utils/angelDevilUtils";
+import {ClearMeeting} from "./utils/meetingUtils";
 
 export interface CommandDefinition {
     Commands: Array<string>;
@@ -110,13 +119,16 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     case "options":
                     case "option":
                         await client.say(process.env.CHANNEL!, `You can use !help [subject] to learn about specific subjects in depth. Here is the current list of options: 
-                        monster, minigame, interact, quest, coins, bank, stats, exp, shop, craft, food, heal, items, forage, hunt`);
+                        monster, minigame, level, interact, quest, coins, bank, stats, exp, shop, craft, food, heal, items, forage, hunt, heal, item, voice`);
                         break;
                     case "monster":
                     case "monsters":
                     case "fight":
                     case "fighting":
                         await client.say(process.env.CHANNEL!, `You are an adventurer! Use !stats to see your character sheet. Use !moves to see what combat abilities you have. If you fall to 0HP, you will be timed out for 5 minutes.`);
+                        break;
+                    case "moves":
+                        await client.say(process.env.CHANNEL!, `Use !moves to see what combat abilities you have. You learn new moves when you choose a new class for the first time, or as an upgrade option.`);
                         break;
                     case "minigame":
                     case "minigames":
@@ -125,6 +137,11 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                             .keys(MinigameType)
                             .filter((v) => Number.isNaN(Number(v)))
                         await client.say(process.env.CHANNEL!, `You can play minigames to earn gems. Use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to play!`);
+                        break;
+                    case "level":
+                    case "levelup":
+                    case "leveling":
+                        await client.say(process.env.CHANNEL!, `When you level up you can use !levelup to see what you currently need to do to to move to the next level. Leveling up gives you new classes and upgrades that allow you to fight monsters better, or potentially gain abilities to mess with Cory`);
                         break;
                     case "interact":
                     case "interactive":
@@ -170,6 +187,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                         await client.say(process.env.CHANNEL!, `You can use !info [subject] to get information about a specific item, move, or upgrade.`);
                         break;
                     case "cook":
+                    case "cooking":
                         await client.say(process.env.CHANNEL!, `You can cook various ingredients you have to make a cooked version. Not everything can be cooked. You can use !help craft to learn about putting ingredients together. You can use !roast [food] on a cookable item to try and cook it. Normally an item that says "raw" in the name is cookable.`);
                         break;
                     case "forage":
@@ -221,6 +239,9 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     break;
                 case "cook":
                     await client.say(process.env.CHANNEL!, `Today Cory is running a fine dining restaurant. You can use !ineedfood to get in line. Once you're seated, everything you say will be said out loud through text to speech, and you'll be able to place your order with !order 'your order'. When you've finished your meal you can use !checkout [money] to give Cory a tip.`);
+                    break;
+                case "angeldevil":
+                    await client.say(process.env.CHANNEL!, `Today Cory is trying to complete quests given to him by both an ANGEL and a DEVIL! You can use !iamgood or !iamevil to be in the pool to be randomly selected as an angel or devil, to then give Cory a related quest. Everything you say will be said out loud through TTS.`);
                     break;
             }
         }
@@ -500,6 +521,34 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         },
     },
     {
+        Commands: ["search"],
+        Description: "Search through your stuff for a specific item, and how much you have!",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (player.Inventory.length === 0) {
+                await WhisperUser(client, player.Username, `@${player.Username}, you have no items in your inventory`);
+            } else {
+                let parameter = GetAllParameterTextAfter(command, 1);
+
+                let invObj = GetObjectFromInputText(parameter);
+                if(invObj !== undefined) {
+                    let count = CountOccurrences(player.Inventory, invObj.ObjectName);
+
+                    if(count == 1) {
+                        await WhisperUser(client, player.Username, `@${player.Username}, you have a single ${invObj.ObjectName} in your inventory.`);
+                    }
+                    else {
+                        await WhisperUser(client, player.Username, `@${player.Username}, you have ${count} ${invObj.PluralName} in your inventory.`);
+                    }
+                }
+                else {
+                    await WhisperUser(client, player.Username, `@${player.Username}, could not find an object by the name of ${parameter}`);
+                }
+            }
+        }
+    },
+    {
         Commands: ["inventory", "equipment", "inventorys", "inv"],
         Description: "See your stuff!",
         AdminCommand: false,
@@ -510,7 +559,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             } else {
                 let page = GetPageNumberFromCommand(command);
 
-                let inventoryList = [];
+                let inventoryList: Array<string> = [];
 
                 let uniqueItems: Array<{ item: InventoryObject, count: number }> = [];
 
@@ -537,6 +586,8 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     inventoryList.push(txt);
                 }
 
+                inventoryList.sort();
+
                 let pageTxt = GetItemsAsPages("inventory", inventoryList, page, 15);
 
                 let final = `Inventory: ${pageTxt}`;
@@ -560,7 +611,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             if (inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
                 await WhisperUser(client, player.Username, `@${player.Username}, you don't have that!`);
             } else {
-                let wasUsed = await inventoryObject.UseAction(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
+                let wasUsed = await inventoryObject.UseAction["use"](client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
                 if (inventoryObject.Consumable && wasUsed) {
                     TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
                 }
@@ -694,7 +745,12 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     }
                 }
             } else {
-                await WhisperUser(client, player.Username, inventoryObject.Info);
+                let itemInfo = inventoryObject.Info;
+                let usedIn = GetRecipesItemUsedIn(inventoryObject);
+                if(usedIn != ``) {
+                    itemInfo += ` This item is used in the recipes for: ${usedIn}`;
+                }
+                await WhisperUser(client, player.Username, itemInfo);
             }
         }
     },
@@ -789,7 +845,14 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 let isPermanent = UpgradeDefinitions.find(x => x.Name == player.UpgradeOptions[0]).IsPermanent;
                 await client.say(process.env.CHANNEL!, GetUpgradeOptions(player, isPermanent));
             } else if (player.LevelUpAvailable) {
-                await WhisperUser(client, player.Username, `@${player.Username}, you have a level up available! You can use !mage, !warrior, or !rogue to choose a class to level up in`);
+                let classOptions = Object.keys(ClassType)
+                    .filter(key => isNaN(Number(key)))
+                    .map(x => `!${x.toLowerCase()}`);
+
+                let formattedOptions = classOptions.length > 1
+                    ? classOptions.slice(0, -1).join(', ') + ', or ' + classOptions[classOptions.length - 1]
+                    : classOptions[0];
+                await WhisperUser(client, player.Username, `@${player.Username}, you have a level up available! You can use ${formattedOptions} to choose a class to level up in`);
             } else {
                 await WhisperUser(client, player.Username, `@${player.Username}, you need more exp to level up. You get exp by chatting, fighting monsters, or other interactions in chat.`);
             }
@@ -887,9 +950,9 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             if (obj !== undefined) {
                 if (obj.Retrieval.includes(ObjectRetrievalType.Craftable) && obj.CraftingRecipe !== undefined) {
                     let notEnoughItems = false;
-                    for (let i = 0; i < obj.CraftingRecipe.length; i++) {
-                        let ingredient = obj.CraftingRecipe[i].Resource;
-                        let amount = obj.CraftingRecipe[i].Amount;
+                    for (let i = 0; i < obj.CraftingRecipe.Recipe.length; i++) {
+                        let ingredient = obj.CraftingRecipe.Recipe[i].Resource;
+                        let amount = obj.CraftingRecipe.Recipe[i].Amount;
                         if (inventoryItems.filter(x => x == ingredient).length < amount) {
                             notEnoughItems = true;
                             break;
@@ -899,25 +962,26 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     if (notEnoughItems) {
                         let txt = `@${player.Username}, you don't have enough items to craft a ${obj.ContextualName}. It requires the following: `;
 
-                        for (let i = 0; i < obj.CraftingRecipe.length; i++) {
-                            let ingredient = obj.CraftingRecipe[i].Resource;
+                        for (let i = 0; i < obj.CraftingRecipe.Recipe.length; i++) {
+                            let ingredient = obj.CraftingRecipe.Recipe[i].Resource;
                             let ingredientObj = AllInventoryObjects.find(x => x.ObjectName == ingredient);
-                            let amount = obj.CraftingRecipe[i].Amount;
+                            let amount = obj.CraftingRecipe.Recipe[i].Amount;
                             let playerAmount = player.Inventory.filter(x => x == ingredient).length;
                             txt += `[${playerAmount}/${amount} ${(amount > 1 ? ingredientObj.PluralName : ingredientObj.ObjectName)}]`;
 
-                            if (i < obj.CraftingRecipe.length - 1) {
+                            if (i < obj.CraftingRecipe.Recipe.length - 1) {
                                 txt += " ";
                             }
                         }
 
                         await WhisperUser(client, player.Username, txt);
                     } else {
-                        for (let i = 0; i < obj.CraftingRecipe.length; i++) {
-                            let ingredient = obj.CraftingRecipe[i].Resource;
-                            let amount = obj.CraftingRecipe[i].Amount;
+                        for (let i = 0; i < obj.CraftingRecipe.Recipe.length; i++) {
+                            let ingredient = obj.CraftingRecipe.Recipe[i].Resource;
+                            let amount = obj.CraftingRecipe.Recipe[i].Amount;
 
                             for (let j = 0; j < amount; j++) {
+                                console.log("removing 1")
                                 let index = player.Inventory.indexOf(ingredient);
                                 player.Inventory.splice(index, 1);
                             }
@@ -925,7 +989,22 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
                         SavePlayer(player);
 
-                        await GivePlayerObject(client, player.Username, obj.ObjectName);
+                        let amountMade = obj.CraftingRecipe.ResultAmount == undefined ? 1 : GetRandomIntI(obj.CraftingRecipe.ResultAmount.min, obj.CraftingRecipe.ResultAmount.max);
+
+                        let txt = `@${player.Username}, you have crafted `;
+
+                        if(amountMade == 1) {
+                            txt += `${obj.ContextualName}.`;
+                        }
+                        else {
+                            txt += `${amountMade} ${obj.PluralName}.`
+                        }
+
+                        await WhisperUser(client, player.Username, txt);
+
+                        for (let i = 0; i < amountMade; i++) {
+                            await GivePlayerObject(client, player.Username, obj.ObjectName, false);
+                        }
                     }
                 } else {
                     await WhisperUser(client, player.Username, `@${player.Username}, you cannot craft ${obj.ContextualName}`);
@@ -948,15 +1027,29 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 if (obj.Retrieval.includes(ObjectRetrievalType.Craftable) && obj.CraftingRecipe !== undefined) {
                     let txt = `A ${obj.ContextualName} requires the following: `;
 
-                    for (let i = 0; i < obj.CraftingRecipe.length; i++) {
-                        let ingredient = obj.CraftingRecipe[i].Resource;
+                    for (let i = 0; i < obj.CraftingRecipe.Recipe.length; i++) {
+                        let ingredient = obj.CraftingRecipe.Recipe[i].Resource;
                         let ingredientObj = AllInventoryObjects.find(x => x.ObjectName == ingredient);
-                        let amount = obj.CraftingRecipe[i].Amount;
+                        let amount = obj.CraftingRecipe.Recipe[i].Amount;
                         let playerAmount = player.Inventory.filter(x => x == ingredient).length;
                         txt += `[${playerAmount}/${amount} ${(amount > 1 ? ingredientObj.PluralName : ingredientObj.ObjectName)}]`;
 
-                        if (i < obj.CraftingRecipe.length - 1) {
+                        if (i < obj.CraftingRecipe.Recipe.length - 1) {
                             txt += " ";
+                        }
+                    }
+
+                    txt += `. This recipe makes `;
+
+                    if(obj.CraftingRecipe.ResultAmount == undefined) {
+                        txt += `1 ${obj.ObjectName}.`;
+                    }
+                    else {
+                        if(obj.CraftingRecipe.ResultAmount.min == obj.CraftingRecipe.ResultAmount.max) {
+                            txt += `${obj.CraftingRecipe.ResultAmount.min} ${obj.PluralName}.`
+                        }
+                        else {
+                            txt += `${obj.CraftingRecipe.ResultAmount.min} - ${obj.CraftingRecipe.ResultAmount.max} ${obj.PluralName}.`
                         }
                     }
 
@@ -1002,11 +1095,11 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             if(obj !== undefined) {
                 if(obj.CookTimeInSeconds !== undefined && obj.CookTimeInSeconds > 0 && obj.CookedVersion !== undefined) {
                     await WhisperUser(client, player.Username, `@${player.Username}, you begin cooking your ${obj.ObjectName}`);
+                    TakeObjectFromPlayer(player.Username, obj.ObjectName);
 
                     await new Promise(resolve => setTimeout(resolve, 1000 * obj?.CookTimeInSeconds));
 
                     await WhisperUser(client, player.Username, `@${player.Username}, you have finished cooking your ${obj.ObjectName} and now have ${obj.CookedVersion}`);
-                    TakeObjectFromPlayer(player.Username, obj.ObjectName);
                     await GivePlayerObject(client, player.Username, obj.CookedVersion, false);
                 }
                 else {
@@ -1277,6 +1370,125 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
     //     }
     // },
 
+    //Used by multiple things
+    {
+        Commands: ["confirm"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if(CurrentStreamSettings.challengeType == "cook") {
+                if (COOK_PendingCustomer != "" && player.Username == COOK_PendingCustomer) {
+                    await AddPendingCustomer(client);
+                }
+            }
+            else if(CurrentStreamSettings.challengeType == "angeldevil") {
+                if(player.Username == AD_PendingAngel || player.Username == AD_PendingDevil) {
+                    await AddPendingPerson(player.Username == AD_PendingAngel, client);
+                }
+            }
+        }
+    },
+
+    //ANGEL DEVIL STUFF
+    {
+        Commands: ["iamgood"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (CurrentStreamSettings.challengeType != "angeldevil") {
+                return;
+            }
+            if(AD_CurrentDevil == player.Username || AD_PendingDevil == player.Username) {
+                await client.say(process.env.CHANNEL!, `@${player.Username}, you cannot queue to be an angel if you're already setup to be a devil!`);
+                return;
+            }
+
+            if (!AD_AngelQueue.includes(player.Username) && AD_CurrentAngel != player.Username) {
+                AD_AngelQueue.push(player.Username);
+
+                if(AD_AngelQueue.length == 1 && AD_PendingAngel == "" && AD_CurrentAngel == "") {
+                    AD_PendingAngel = player.Username;
+                    AD_AngelQueue = AD_AngelQueue.filter(x => x != player.Username);
+                    await AddPendingPerson(true, client);
+                }
+                else {
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, you're in the list to be our next ANGEL! Please wait for when you're chosen.`);
+                }
+            }
+        }
+    },
+    {
+        Commands: ["iamevil"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (CurrentStreamSettings.challengeType != "angeldevil") {
+                return;
+            }
+            if(AD_CurrentAngel == player.Username || AD_PendingAngel == player.Username) {
+                await client.say(process.env.CHANNEL!, `@${player.Username}, you cannot queue to be a devil if you're already setup to be an angel!`);
+                return;
+            }
+
+            if (!AD_DevilQueue.includes(player.Username) && AD_CurrentDevil != player.Username) {
+                AD_DevilQueue.push(player.Username);
+
+                if(AD_DevilQueue.length == 1 && AD_PendingDevil == "" && AD_CurrentDevil == "") {
+                    AD_PendingDevil = player.Username;
+                    AD_DevilQueue = AD_DevilQueue.filter(x => x != player.Username);
+                    await AddPendingPerson(false, client);
+                }
+                else {
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, you're in the list to be our next DEVIL! Please wait for when you're chosen.`);
+                }
+            }
+        }
+    },
+    {
+        Commands: ["task"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if (player.Username == AD_CurrentDevil || player.Username == AD_CurrentAngel) {
+                await GiveADQuest(player.Username == AD_CurrentAngel, client, command.toLowerCase().replace("!task ", ""))
+            }
+        }
+    },
+    {
+        Commands: ["finishangel"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await RemoveAD(true, client);
+        }
+    },
+    {
+        Commands: ["finishdevil"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await RemoveAD(false, client);
+        }
+    },
+    {
+        Commands: ["finishquest"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if(player.Username == AD_CurrentDevil || player.Username == AD_CurrentAngel) {
+                await RemoveAD(player.Username == AD_CurrentAngel, client);
+            }
+        }
+    },
+    {
+        Commands: ["loadangeldevil"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await LoadAD();
+        }
+    },
+
     //COOKING SIMUALTOR STUFF
     {
         Commands: ["ineedfood"],
@@ -1296,16 +1508,6 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 } else {
                     await client.say(process.env.CHANNEL!, `@${player.Username}, you're in line for the restaurant. Please wait to be seated.`);
                 }
-            }
-        }
-    },
-    {
-        Commands: ["confirm"],
-        AdminCommand: false,
-
-        Action: async (client: Client, player: Player, command: string) => {
-            if (COOK_PendingCustomer != "" && player.Username == COOK_PendingCustomer) {
-                await AddPendingCustomer(client);
             }
         }
     },
@@ -1648,7 +1850,12 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: true,
 
         Action: async (client: Client, player: Player, command: string) => {
+            await client.say(process.env.CHANNEL!, `Copy the following messages to prepare to raid!`);
+            await client.say(process.env.CHANNEL!, `Non subs: CurseLit 7ARK IS RAIDING CurseLit`);
+            await client.say(process.env.CHANNEL!, `Subs:  the7arChaos 7ARK IS RAIDING the7arChaos`);
+
             PlaySound("credits", AudioType.StreamInfrastructure);
+            console.log(GetStringifiedSessionData())
             Broadcast(JSON.stringify({type: 'showcredits', data: GetStringifiedSessionData()}));
             CreditsGoing = true;
         }
@@ -1680,8 +1887,16 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             await client.say(process.env.CHANNEL!, `Copy the following messages to prepare to raid!`);
-            await client.say(process.env.CHANNEL!, `Non subs: the7arWave 7ARK IS RAIDING the7arWave`);
+            await client.say(process.env.CHANNEL!, `Non subs: CurseLit 7ARK IS RAIDING CurseLit`);
             await client.say(process.env.CHANNEL!, `Subs:  the7arChaos 7ARK IS RAIDING the7arChaos`);
+        }
+    },
+    {
+        Commands: ["clearmeeting"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await ClearMeeting();
         }
     },
     // {

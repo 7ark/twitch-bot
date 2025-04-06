@@ -41,7 +41,7 @@ export async function SelectCustomer(client: Client) {
     if(COOK_PendingCustomer != "") {
         await client.say(process.env.CHANNEL!, `@${COOK_PendingCustomer}, your reservation has been cancelled because you didn't reserve it in time! Use !ineedfood to get another reservation.`);
         COOK_PendingCustomer = "";
-        // return;
+        return;
     }
 
     if(COOK_CurrentCustomers.length >= MAX_CUSTOMERS) {

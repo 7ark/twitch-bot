@@ -46,12 +46,22 @@ function GetMinigameName(minigameType: MinigameTypeHtml): string {
 const textAnimation: HTMLPreElement = document.createElement('pre');
 animationContainer?.appendChild(textAnimation);
 
+let showHuntForage = false;
+
 function HandlePassiveDisplay() {
     let text = `Play minigames! You can use:\n`;
-    const minigameKeys = Object
-        .keys(MinigameTypeHtml)
-        .filter((v) => isNaN(Number(v)))
-    text += minigameKeys.map(x => ` !${x.toLowerCase()}`)
+
+    if(showHuntForage) {
+        text += "!hunt OR !forage";
+    }
+    else {
+        const minigameKeys = Object
+            .keys(MinigameTypeHtml)
+            .filter((v) => isNaN(Number(v)))
+        text += minigameKeys.map(x => ` !${x.toLowerCase()}`)
+    }
+
+    showHuntForage = !showHuntForage;
 
     textAnimation.textContent = text;
 

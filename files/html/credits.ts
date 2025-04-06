@@ -9,6 +9,9 @@ interface PlayerSessionData {
     NameColor?: string;
     IsSubscribed: boolean;
     TimesDied: number;
+    AttackedEnemySinceDeath: boolean;
+    LastMessageTime: Date;
+    SeenChristmasMessage: boolean;
 }
 
 // let activeUsers: Map<string, string[]> = new Map<string, string[]>();
@@ -40,7 +43,9 @@ cWS.onmessage = (event: MessageEvent) => {
 // }
 
 function showCredits(data: { type: string; data: string }) {
+    console.log(data.data);
     let arrayData = JSON.parse(data.data);
+    console.log(arrayData);
     let activeUsers: Map<string, PlayerSessionData> = Array.isArray(arrayData) ? new Map<string, PlayerSessionData>(arrayData) : new Map<string, PlayerSessionData>()
 
     const creditsContainer = document.getElementById('creditsContainer');
@@ -51,9 +56,11 @@ function showCredits(data: { type: string; data: string }) {
             NameAsDisplayed: "Nobody",
             Messages: ["Wow, nobody showed up. INCREDIBLE!"],
             TimesAttackedEnemy: 0,
+            IsSubscribed: false,
             TimesDied: 0,
-            NameColor: undefined,
-            IsSubscribed: false
+            AttackedEnemySinceDeath: false,
+            LastMessageTime: new Date(),
+            SeenChristmasMessage: false
         });
     }
 
@@ -72,9 +79,10 @@ function showCredits(data: { type: string; data: string }) {
 
     // Dynamically add names to the container
     activeUsers.forEach((sessionData, name) => {
-        if(name.toLowerCase() === "the7ark") {
+        if(name.toLowerCase() === "the7ark" || name.toLowerCase() == "7arksgamemanager") {
             return;
         }
+
 
         if(sessionData.TimesDied > 0 && !shownMemorial) {
             const nameElement = document.createElement('div');

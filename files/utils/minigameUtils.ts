@@ -1,7 +1,14 @@
 import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
 import {GetRandomIntI, GetRandomItem, IsCommand, RemoveFromArray} from "./utils";
-import {GiveExp, GivePlayerRandomObjectInTier, LoadAllPlayers, LoadPlayer, SavePlayer} from "./playerGameUtils";
+import {
+    GetObjectFromInputText,
+    GiveExp, GivePlayerObject,
+    GivePlayerRandomObjectInTier,
+    LoadAllPlayers,
+    LoadPlayer,
+    SavePlayer
+} from "./playerGameUtils";
 import {AddToMinigameQueue, IsMinigameQueueEmpty} from "../actionqueue";
 import {AllInventoryObjects, ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
 import {HandleQuestProgress} from "./questUtils";
@@ -224,39 +231,6 @@ export async function HandleMinigames(client: Client, username: string, command:
             "a fluffy",
             "a questionable",
             "a sentient",
-
-            // "a cursed",
-            // "a haunted",
-            // "a ghoulish",
-            // "an eerie",
-            // "a ghostly",
-            // "a moldy",
-            // "a ghastly",
-            // "a shrunken",
-            // "a slimy",
-            // "a wicked",
-            // "a murky",
-            // "a rotten",
-            // "a sinister",
-            // "a jagged",
-            // "a phantom-like",
-            // "a decayed",
-            // "a dull",
-            // "an ominous",
-            // "a shriveled",
-            // "a sticky",
-            // "a rancid",
-            // "a foul",
-            // "a shadowy",
-            // "a grotesque",
-            // "a shimmering",
-            // "a corroded",
-            // "a spectral",
-            // "a grimy",
-            // "a blood-soaked",
-            // "a hairy",
-            // "a bewitched",
-            // "a sentient",
         ];
 
         let randomAdj = GetRandomItem(adjectives)!;
@@ -270,68 +244,6 @@ export async function HandleMinigames(client: Client, username: string, command:
             case MinigameType.Fish:
                 //DECIDE
                 options = [
-                    // //Halloween
-                    // {
-                    //     name: `caught ${randomAdj} zombie head`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} witch hat`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} jack-o-lantern`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} jar of eyeballs`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} skull`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} fish skeleton`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} doll head`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} black candle, still lit`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} skeletal hand gripping the hook`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} petrified bat wing`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} rotten apple core`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `caught ${randomAdj} amulet that screams`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-
                     //Garbage
                     {
                         name: `caught ${randomAdj} boot`,
@@ -451,63 +363,6 @@ export async function HandleMinigames(client: Client, username: string, command:
             case MinigameType.Cook:
                 //DECIDE
                 options = [
-                    //Halloween
-                    // {
-                    //     name: `baked ${randomAdjSome} pumpkin seeds`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `broiled ${randomAdj} witchs stew`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `stuff ${randomAdj} spider egg sack`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `skewered ${randomAdj} demon claw on a stick`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `pickled ${randomAdjSome} tentacles`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `tossed ${randomAdj} salad of eyeballs`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `baked ${randomAdjSome} toenail shavings`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `brewed ${randomAdj} pumpkin spice potion`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `blended ${randomAdj} bone broth`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `sauteed ${randomAdj} zombie toe`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `squeezed ${randomAdj} bat blood juice`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-
                     //Garbage
                     {
                         name: `burnt some eggs`,
@@ -637,63 +492,6 @@ export async function HandleMinigames(client: Client, username: string, command:
             case MinigameType.Mine:
                 //DECIDE
                 options = [
-                    // //Halloween
-                    // {
-                    //     name: `mined ${randomAdj} cursed crystal`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} tomb`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} tombstone`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} cursed crystal`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `unearthed ${randomAdj} skull`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `unearthed ${randomAdj} zombie hand`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} nest of spiders`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} cursed ring`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `found ${randomAdj} jar of pickled eyeballs`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `unearthed ${randomAdj} black tomb with a skull on it`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-                    // {
-                    //     name: `mined ${randomAdj} petrified vampire dust`,
-                    //     gems: GetRandomIntI(5, 50),
-                    //     rarity: 10
-                    // },
-
                     //Garbage
                     {
                         name: `found ${randomAdj} helmet`,
@@ -845,12 +643,63 @@ export async function HandleMinigames(client: Client, username: string, command:
         reward += `${rewardValue.name}.`;
 
         //Add gold
-        reward += `\nThey gain ${rewardValue.gems} gems`;
+        reward += `\nThey gain ${rewardValue.gems} gems!`;
 
         Broadcast(JSON.stringify({ type: 'minigame', displayName: username, minigameType: minigameType, reward: reward }));
 
+        //Rare chance to find extra
+        if(GetRandomIntI(1, 20) == 1) {
+            let options: Array<string> = [];
+            switch (minigameType) {
+                case MinigameType.Fish:
+                    options = [
+                        "raw salmon",
+                    ];
+                    reward += GetRandomItem([
+                        ` As you fish, you also spot {1} jump out of the water, you're able to quickly catch it.`,
+                        ` Being such a fishing pro, you also are able to catch {1} and take it with you.`
+                    ]);
+                    break;
+                case MinigameType.Cook:
+                    options = [
+                        "egg",
+                        "milk",
+                        "flour",
+                        "sugar",
+                        "honey",
+                        "butter",
+                        "cheese",
+                        "bread",
+                        "apple"
+                    ];
+                    reward += GetRandomItem([
+                        ` While cooking at the guild, you get in the good graces of the guild and are allowed to take home {1}.`,
+                        ` Without anyone noticing, you're also able to take {1}.`
+                    ]);
+                    break;
+                case MinigameType.Mine:
+                    options = [
+                        "salt",
+                        "water"
+                    ];
+                    reward += GetRandomItem([
+                        ` While wandering the mines, you stumbled upon a bit of {0} you were able to collect as well.`,
+                        ` As you're mining, you find a bit of hidden {0} you're able to take.`
+                    ]);
+                    break;
+            }
+
+            if(options.length > 0) {
+                let chosenOption = GetRandomItem(options)!;
+                let obj = AllInventoryObjects.find(x => x.ObjectName == chosenOption);
+                reward = reward.replace(`{0}`, chosenOption).replace("{1}", obj!.ContextualName);
+
+                GivePlayerObject(client, username, chosenOption, false);
+            }
+        }
+
         setTimeout(async () => {
-            await client.say(process.env.CHANNEL!, `@${reward}!`);
+            await client.say(process.env.CHANNEL!, username == "Timmy" ? `${reward}` : `@${reward}`);
 
             await GiveExp(client, username, 1);
 

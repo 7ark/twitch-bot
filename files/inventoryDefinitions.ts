@@ -13,7 +13,7 @@ import {
 } from "./utils/playerGameUtils";
 import {Client} from "tmi.js";
 import {Broadcast} from "./bot";
-import {GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils/utils";
+import {Dictionary, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils/utils";
 import {AddToActionQueue} from "./actionqueue";
 import {
     GetAllPlayerSessions,
@@ -52,7 +52,9 @@ export interface InventoryObject {
     Tier?: ObjectTier;
     IconRep?: IconType;
     ThrownDamage?: { min: number, max: number },
-    UseAction: (client: Client, player: Player, afterText: string) => Promise<boolean>;
+    UseAlias?: Array<string>;
+    UseAction: Dictionary<(client: Client, player: Player, afterText: string) => Promise<boolean>>;
+    // AlternativeUseAction?: Map<string, (client: Client, player: Player, afterText: string) => Promise<boolean>>;
     Consumable: boolean;
     ClassRestrictions?: Array<ClassType>;
     Equippable?: boolean;
@@ -61,7 +63,7 @@ export interface InventoryObject {
     GatherTimeMultiplier?: number,
     CookTimeInSeconds?: number,
     CookedVersion?: string,
-    Durability?: { min: number, max: number};
+    Durability?: { min: number, max: number };
     ObjectAttackAction?: (client: Client, player: Player) => Promise<{
         damage: number,
         damageType: DamageType
@@ -72,12 +74,34 @@ export interface InventoryObject {
         vulnerabilities?: Array<DamageType>,
         armorAdjustment?: number
     }>;
-    CraftingRecipe?: Array<{
-        Resource: string,
-        Amount: number
-    }>;
+    CraftingRecipe?: {
+        ResultAmount?: { min: number, max: number },
+        Recipe: Array<{
+            Resource: string,
+            Amount: number
+        }>
+    };
     Rarity: number;
 }
+
+// let test: Array<InventoryObject> = [
+//     {
+//         ObjectName: "dagger",
+//         ContextualName: "a dagger",
+//         PluralName: "daggers",
+//         Info: "A basic rogue weapon. This is just flavor and doesn't do anything.",
+//         Retrieval: [],
+//         ThrownDamage: { min: 3, max: 12 },
+//         UseAction: { "use": { "test": async (client, player, afterText) => {
+//                 await client.say(process.env.CHANNEL!, `@${player.Username} you twirl your dagger in your hand.`);
+//
+//                 return true;
+//             }},
+//         Consumable: false,
+//         Rarity: 10
+//     }
+// ];
+
 
 export const AllInventoryObjects: Array<InventoryObject> = [
     {
@@ -87,11 +111,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Info: "A basic rogue weapon. This is just flavor and doesn't do anything.",
         Retrieval: [],
         ThrownDamage: { min: 3, max: 12 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} you twirl your dagger in your hand.`);
 
             return true;
-        },
+        }},
         Consumable: false,
         Rarity: 10
     },
@@ -102,11 +126,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Info: "A basic warrior weapon. This is just flavor and doesn't do anything.",
         Retrieval: [],
         ThrownDamage: { min: 3, max: 8 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} you swing through the air a few times, practicing your skills.`);
 
             return true;
-        },
+        }},
         Consumable: false,
         Rarity: 10
     },
@@ -117,11 +141,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Info: "A basic warrior weapon. This is just flavor and doesn't do anything.",
         Retrieval: [],
         ThrownDamage: { min: 5, max: 8 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} you smash a nearby rock. Nice.`);
 
             return true;
-        },
+        }},
         Consumable: false,
         Rarity: 10
     },
@@ -132,11 +156,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Info: "A healing amulet used by clerics to heal people. This is just flavor and doesn't do anything.",
         Retrieval: [],
         ThrownDamage: { min: 2, max: 3 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} you bask in the glow of the magical energy of the amulet`);
 
             return true;
-        },
+        }},
         Consumable: false,
         Rarity: 10
     },
@@ -147,11 +171,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Info: "A basic mage weapon",
         Retrieval: [],
         ThrownDamage: { min: 1, max: 2 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} you make some sparkles appear.`);
 
             return true;
-        },
+        }},
         Consumable: false,
         Rarity: 10
     },
@@ -169,13 +193,14 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.TravelingSalesman
         ],
         ThrownDamage: { min: -40, max: -20 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             let heal = GetRandomIntI(10, 30);
 
             await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -193,13 +218,14 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.TravelingSalesman
         ],
         ThrownDamage: { min: -80, max: -300 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             let heal = GetRandomIntI(40, 70);
 
             await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 8
     },
@@ -217,13 +243,14 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.TravelingSalesman
         ],
         ThrownDamage: { min: -150, max: -500 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             let heal = GetRandomIntI(100, 150);
 
             await ChangePlayerHealth(client, player.Username, heal, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 4
     },
@@ -231,7 +258,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cheese wheel",
         ContextualName: "a wheel of cheese",
         PluralName: "cheese wheels",
-        Info: "A cheese wheel! Eat it, smell it, yum yum yum. Ex. !use cheese wheel",
+        Info: "A cheese wheel! Eat it, smell it, yum yum yum. (Ex. !use cheese wheel)",
         CostRange: {min: 50, max: 100 },
         Tier: ObjectTier.Low,
         IconRep: IconType.CheeseWheel,
@@ -241,13 +268,14 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.GroceryStore
         ],
         ThrownDamage: { min: -5, max: -2 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             let spoiled = GetRandomIntI(1, 10) === 1;
             await client.say(process.env.CHANNEL!, `@${player.Username} yum! Delicious cheese, you take a bite... ${spoiled ? `UH OH! It's spoiled.` : `It's delicious!`}`);
             await ChangePlayerHealth(client, player.Username, spoiled ? GetRandomIntI(-2, -8) : GetRandomIntI(2, 5), DamageType.Poison)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -256,7 +284,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Alias: ["banana", "bananas"],
         ContextualName: "a bunch of bananas",
         PluralName: "bananas",
-        Info: "Bananas! Made famous by monkeys. Ex. !use banana bunch",
+        Info: "Bananas! Made famous by monkeys. (Ex. !use banana bunch.)",
         CostRange: {min: 50, max: 100 },
         Tier: ObjectTier.Low,
         IconRep: IconType.Bananas,
@@ -266,13 +294,14 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.GroceryStore
         ],
         ThrownDamage: { min: -9, max: -5 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             let spoiled = GetRandomIntI(1, 10) === 1;
             await client.say(process.env.CHANNEL!, `@${player.Username}, bananas! You eat a banana from the bunch... ${spoiled ? `UH OH! It's spoiled.` : `It's delicious!`}`);
             await ChangePlayerHealth(client, player.Username, spoiled ? GetRandomIntI(-5, -15) : GetRandomIntI(2, 5), DamageType.Poison)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -281,7 +310,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Alias: ["cake", "portal cake"],
         ContextualName: "a cake",
         PluralName: "cakes",
-        Info: "A delicious cake! Right? Or is it a lie... Ex. !use cake",
+        Info: "A delicious cake! Right? Or is it a lie... (Ex. !use cake)",
         CostRange: {min: 50, max: 100 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.PortalCake,
@@ -290,7 +319,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.TravelingSalesman
         ],
         ThrownDamage: { min: 20, max: 80 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             let good = GetRandomIntI(1, 2) == 1; //50/50 chance
 
             let maxHealth = CalculateMaxHealth(player);
@@ -306,7 +336,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             }
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 7
     },
@@ -324,7 +354,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.GroceryStore
         ],
         ThrownDamage: { min: -9, max: -5 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             //todo - make beer more interesting
             let tooDrunk = GetRandomIntI(1, 10) === 1;
             await client.say(process.env.CHANNEL!, `@${player.Username}, you chug down a pint of beer and become drunk for 5 minutes. Ah, how wonderful. ${tooDrunk ? `You're a real messy drunk though, huh? You end up passing out, and hitting your head.` : `Refreshing and delicious.`}`);
@@ -333,7 +364,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Drunk, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 13
     },
@@ -342,7 +373,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Alias: ["tinderboxes"],
         ContextualName: "a tinderbox",
         PluralName: "tinderboxes",
-        Info: "Let's you catch things on fire when used! Ex. !use tinderbox",
+        Info: "Let's you catch things on fire when used! Especially other users in chat. (Ex. !use tinderbox)",
         CostRange: {min: 30, max: 60 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.Box,
@@ -351,7 +382,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.TravelingSalesman
         ],
         ThrownDamage: { min: 2, max: 8 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             if(player.PassiveModeEnabled) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you can't attack others while in passive mode. Use !togglepassive to disable it.`);
                 return false;
@@ -366,39 +397,39 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                 otherUser = LoadRandomPlayerSession([player.Username], true)!;
             }
 
-            let doCampfire = !onPurpose && GetRandomIntI(1, 4) != 1;
-
-            if(doCampfire) {
-                let text = `@${player.Username} you've started a lovely little campfire. You, `;
-
-                let extraPeople: Array<string> = [];
-                for (let i = 0; i < 3; i++) {
-                    let extraPlayer = LoadRandomPlayerSession([player.Username, ...extraPeople]);
-
-                    extraPeople.push(extraPlayer.NameAsDisplayed);
-
-                    text += `@${extraPlayer.NameAsDisplayed}`;
-                    if(i < 2) {
-                        text += `, `;
-                    }
-                    else {
-                        text += ' and ';
-                    }
-                }
-
-                let cozyPointsToGive = GetRandomIntI(1, 3);
-
-                text += ` all get ${cozyPointsToGive} cozy point${cozyPointsToGive == 1 ? '' : 's'}!`
-
-                GiveCozyPoints(player.Username, cozyPointsToGive);
-                for (let i = 0; i < extraPeople.length; i++) {
-                    GiveCozyPoints(extraPeople[i], cozyPointsToGive);
-                }
-
-                await client.say(process.env.CHANNEL!, text);
-
-                return true;
-            }
+            // let doCampfire = !onPurpose && GetRandomIntI(1, 4) != 1;
+            //
+            // if(doCampfire) {
+            //     let text = `@${player.Username} you've started a lovely little campfire. You, `;
+            //
+            //     let extraPeople: Array<string> = [];
+            //     for (let i = 0; i < 3; i++) {
+            //         let extraPlayer = LoadRandomPlayerSession([player.Username, ...extraPeople]);
+            //
+            //         extraPeople.push(extraPlayer.NameAsDisplayed);
+            //
+            //         text += `@${extraPlayer.NameAsDisplayed}`;
+            //         if(i < 2) {
+            //             text += `, `;
+            //         }
+            //         else {
+            //             text += ' and ';
+            //         }
+            //     }
+            //
+            //     let cozyPointsToGive = GetRandomIntI(1, 3);
+            //
+            //     text += ` all get ${cozyPointsToGive} cozy point${cozyPointsToGive == 1 ? '' : 's'}!`
+            //
+            //     GiveCozyPoints(player.Username, cozyPointsToGive);
+            //     for (let i = 0; i < extraPeople.length; i++) {
+            //         GiveCozyPoints(extraPeople[i], cozyPointsToGive);
+            //     }
+            //
+            //     await client.say(process.env.CHANNEL!, text);
+            //
+            //     return true;
+            // }
 
             let playerGameData = LoadPlayer(otherUser.NameAsDisplayed);
             if(playerGameData.PassiveModeEnabled || playerGameData.Level == 0) {
@@ -421,7 +452,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await ChangePlayerHealth(client, otherUser.NameAsDisplayed, -damage, DamageType.Fire);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -435,9 +466,9 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        Info: "Allows you to proclaim a truth to the chat, then chat will vote on if they agree. Ex. !use scroll of truth Cory is the best",
+        Info: "Allows you to proclaim a truth to the chat, then chat will vote on if they agree. (Ex. !use scroll of truth Cory is the best)",
         CostRange: {min: 40, max: 80 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             if(afterText.trim().length > 3) {
                 AddToActionQueue(() => {
                     let s = "";
@@ -485,7 +516,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             }
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -498,10 +529,10 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        Info: "Allows you to issue a challenge to Cory that he will do within the next 1 minute. He can veto a challenge, so keep it reasonable. Ex. !use scroll of challenge take off your glasses",
+        Info: "Allows you to issue a challenge to Cory that he will do within the next 1 minute. He can veto a challenge, so keep it reasonable. (Ex. !use scroll of challenge take off your glasses)",
         CostRange: {min: 50, max: 100 },
         Tier: ObjectTier.Mid,
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             if(afterText.trim().length > 3) {
                 AddToActionQueue(() => {
                     let s = "";
@@ -551,7 +582,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             }
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 3
     },
@@ -560,7 +591,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Alias: ["nuke"],
         ContextualName: "a magic nuke",
         PluralName: "magic nukes",
-        Info: "Let's you nuke the current monster, though also hurts yourself and other people. Ex. !use nuke",
+        Info: "Let's you nuke the current monster, though also hurts yourself and other people. (Ex. !use nuke)",
         CostRange: {min: 500, max: 1000 },
         Tier: ObjectTier.High,
         IconRep: IconType.Bomb,
@@ -568,7 +599,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             if(player.PassiveModeEnabled) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you can't attack others while in passive mode. Use !togglepassive to disable it.`);
                 return false;
@@ -646,74 +677,74 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
                 return false;
             }
-        },
+        }},
         Consumable: true,
         Rarity: 2
     },
-    {
-        ObjectName: "letter",
-        ContextualName: "a letter",
-        PluralName: "letters",
-        Info: "Allows you to send an item you have to someone else! Ex. !use letter the7ark crystal",
-        Retrieval: [],
-        CostRange: {min: 100, max: 300 },
-        Tier: ObjectTier.Mid,
-        IconRep: IconType.Letter,
-        UseAction: async (client, player, afterText) => {
-
-            let pieces = afterText.trim().split(' ');
-
-            let otherPlayer = TryLoadPlayer(pieces[0].replace("@", ""));
-
-            if(otherPlayer?.Username == player.Username) {
-                await client.say(process.env.CHANNEL!, `@${player.Username}, you throw it up in the air and catch it again`);
-                return false;
-            }
-
-            if(otherPlayer != null) {
-                let item = GetObjectFromInputText(afterText.trim().replace(pieces[0] + " ", ""))!;
-
-                if(item !== undefined) {
-                    if(item.ObjectName == "letter") {
-                        if(player.Inventory.filter(x => x == item.ObjectName).length <= 1) {
-                            await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have an extra letter to send`);
-                            return false;
-                        }
-                    }
-
-                    if(player.Inventory.includes(item.ObjectName)) {
-                        await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${item.ContextualName}!`);
-                        GivePlayerObject(client, otherPlayer.Username, item.ObjectName);
-                        let index = player.Inventory.indexOf(item.ObjectName);
-                        player.Inventory.splice(index, 1);
-                        SavePlayer(player);
-                    }
-                    else {
-                        await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that item`);
-                        return false;
-                    }
-                }
-                else {
-                    await client.say(process.env.CHANNEL!, `@${player.Username}, I couldn't find that item`);
-                    return false;
-                }
-            }
-            else {
-                await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player`);
-                return false;
-            }
-
-
-            return true;
-        },
-        Consumable: true,
-        Rarity: 0 //Deprecating the letter
-    },
+    // {
+    //     ObjectName: "letter",
+    //     ContextualName: "a letter",
+    //     PluralName: "letters",
+    //     Info: "Allows you to send an item you have to someone else! Ex. !use letter the7ark crystal",
+    //     Retrieval: [],
+    //     CostRange: {min: 100, max: 300 },
+    //     Tier: ObjectTier.Mid,
+    //     IconRep: IconType.Letter,
+    //     UseAction: { "use": async (client, player, afterText) => {
+    //
+    //         let pieces = afterText.trim().split(' ');
+    //
+    //         let otherPlayer = TryLoadPlayer(pieces[0].replace("@", ""));
+    //
+    //         if(otherPlayer?.Username == player.Username) {
+    //             await client.say(process.env.CHANNEL!, `@${player.Username}, you throw it up in the air and catch it again`);
+    //             return false;
+    //         }
+    //
+    //         if(otherPlayer != null) {
+    //             let item = GetObjectFromInputText(afterText.trim().replace(pieces[0] + " ", ""))!;
+    //
+    //             if(item !== undefined) {
+    //                 if(item.ObjectName == "letter") {
+    //                     if(player.Inventory.filter(x => x == item.ObjectName).length <= 1) {
+    //                         await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have an extra letter to send`);
+    //                         return false;
+    //                     }
+    //                 }
+    //
+    //                 if(player.Inventory.includes(item.ObjectName)) {
+    //                     await client.say(process.env.CHANNEL!, `@${player.Username} is giving @${otherPlayer.Username} ${item.ContextualName}!`);
+    //                     GivePlayerObject(client, otherPlayer.Username, item.ObjectName);
+    //                     let index = player.Inventory.indexOf(item.ObjectName);
+    //                     player.Inventory.splice(index, 1);
+    //                     SavePlayer(player);
+    //                 }
+    //                 else {
+    //                     await client.say(process.env.CHANNEL!, `@${player.Username}, you don't have that item`);
+    //                     return false;
+    //                 }
+    //             }
+    //             else {
+    //                 await client.say(process.env.CHANNEL!, `@${player.Username}, I couldn't find that item`);
+    //                 return false;
+    //             }
+    //         }
+    //         else {
+    //             await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player`);
+    //             return false;
+    //         }
+    //
+    //
+    //         return true;
+    //     },
+    //     Consumable: true,
+    //     Rarity: 0 //Deprecating the letter
+    // },
     {
         ObjectName: "crystal",
         ContextualName: "a crystal",
         PluralName: "crystals",
-        Info: "Gives you enough EXP for an instant level up! Ex. !use crystal",
+        Info: "Gives you enough EXP for an instant level up! (Ex. !use crystal)",
         CostRange: {min: 700, max: 1000 },
         Tier: ObjectTier.High,
         IconRep: IconType.Crystal,
@@ -721,7 +752,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             if(player.LevelUpAvailable){
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you already have a level up available! You must level up before using the crystal`);
                 return false;
@@ -732,7 +763,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await GiveExp(client, player.Username, expNeeded, false);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 2
     },
@@ -741,7 +772,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ContextualName: "an accuracy potion",
         PluralName: "accuracy potions",
         Alias: ["accuracy"],
-        Info: "Doubles your accuracy! Ex. !use accuracy potion",
+        Info: "Doubles your accuracy! (Ex. !use accuracy potion)",
         CostRange: {min: 100, max: 150 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.BottleBlue,
@@ -749,12 +780,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} has increased accuracy for 5 minutes`);
             AddStatusEffectToPlayer(player.Username, StatusEffect.DoubleAccuracy, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -763,7 +795,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ContextualName: "a fire resistance potion",
         PluralName: "fire resistance potions",
         Alias: ["fire resistance", "fire resist", "fire resist potion"],
-        Info: "Gives you fire resistance for 5 minutes! Ex. !use fire resistance potion",
+        Info: "Gives you fire resistance for 5 minutes! (Ex. !use fire resistance potion)",
         CostRange: {min: 100, max: 150 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.Bottle,
@@ -771,12 +803,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} has fire resistance for 5 minutes`);
             AddStatusEffectToPlayer(player.Username, StatusEffect.FireResistance, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -785,7 +818,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ContextualName: "a cold resistance potion",
         PluralName: "cold resistance potions",
         Alias: ["cold resistance", "cold resist", "cold resist potion"],
-        Info: "Gives you cold resistance for 5 minutes! Ex. !use cold resistance potion",
+        Info: "Gives you cold resistance for 5 minutes! (Ex. !use cold resistance potion)",
         CostRange: {min: 100, max: 150 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.BottleBlue,
@@ -793,12 +826,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} has cold resistance for 5 minutes`);
             AddStatusEffectToPlayer(player.Username, StatusEffect.ColdResistance, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 10
     },
@@ -808,7 +842,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "apple",
         ContextualName: "an apple",
         PluralName: "apples",
-        Info: "A fresh apple. When used, it will heal you for 1HP",
+        Info: "A fresh apple. When used, it will heal you for 1HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Foragable
@@ -819,12 +853,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ],
         GatherTimeMultiplier: 0.3,
         CostRange: {min: 5, max: 10 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a delicious apple.`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -832,17 +867,18 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "bread",
         ContextualName: "a loaf of bread",
         PluralName: "loaves of bread",
-        Info: "A loaf of bread. When used, it will heal you for 1HP",
+        Info: "A loaf of bread. When used, it will heal you for 1HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore
         ],
         CostRange: {min: 30, max: 60 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat through an entire loaf of bread.`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -850,17 +886,18 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cheese",
         ContextualName: "a chunk of cheese",
         PluralName: "cheese chunks",
-        Info: "A chunk of cheese. When used, it will heal you for 1HP",
+        Info: "A chunk of cheese. When used, it will heal you for 1HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore
         ],
         CostRange: {min: 30, max: 50 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you munch on a chunk of cheese`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -868,18 +905,18 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "butter",
         ContextualName: "a stick of butter",
         PluralName: "butter sticks",
-        Info: "A stick of butter. When used, it will make you slippery",
+        Info: "A stick of butter. When used, it will make you slippery.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore
         ],
         CostRange: {min: 30, max: 60 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, rub the butter all over yourself. So slippery!`);
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.IncreaseACBy3, 60);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -887,7 +924,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "egg",
         ContextualName: "an egg",
         PluralName: "eggs",
-        Info: "An egg. Good for cooking. Can be thrown. When used, you throw it at someone else",
+        Info: "An egg. Good for cooking. Can be thrown. When used, you throw it at someone else.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Foragable,
@@ -900,7 +937,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         GatherTimeMultiplier: 1,
         CostRange: {min: 5, max: 10 },
         ThrownDamage: { min: 2, max: 5 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             let onPurpose = false;
             let otherUser: PlayerSessionData = LoadPlayerSession(afterText.replace("@", ""));
             if(otherUser !== undefined) {
@@ -923,7 +960,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await client.say(process.env.CHANNEL!, text);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -931,7 +968,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "honey",
         ContextualName: "a jar of honey",
         PluralName: "honey jars",
-        Info: "A jar of honey. When used, it will heal you for 1HP",
+        Info: "A jar of honey. When used, it will heal you for 1HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Foragable
@@ -942,12 +979,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ],
         GatherTimeMultiplier: 1.3,
         CostRange: {min: 20, max: 50 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a WHOLE jar of honey`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -955,17 +993,18 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "milk",
         ContextualName: "a bottle of milk",
         PluralName: "bottle of milk",
-        Info: "A bottle of milk. When used, it will heal you for 1HP",
+        Info: "A bottle of milk. When used, it will heal you for 1HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore
         ],
         CostRange: {min: 30, max: 50 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you chug a bottle of milk`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -973,18 +1012,18 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "sugar",
         ContextualName: "a bag of sugar",
         PluralName: "bags of sugar",
-        Info: "A bag of sugar. When used, it will energize you",
+        Info: "A bag of sugar. When used, it will energize you.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore
         ],
         CostRange: {min: 30, max: 50 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you drain a bag of sugar into your mouth`);
 
             AddStatusEffectToPlayer(player.Username, StatusEffect.RandomAccuracy, 60);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -997,11 +1036,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.GroceryStore
         ],
         CostRange: {min: 5, max: 20 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, wow, that's a nice bag of flour you have. You cough a bit as you taste it.`);
 
             return false;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1020,11 +1059,12 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ],
         GatherTimeMultiplier: 0.7,
         CostRange: {min: 5, max: 10 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["drink"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, so refreshing!`);
 
             return false;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1043,11 +1083,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ],
         GatherTimeMultiplier: 1.3,
         CostRange: {min: 5, max: 10 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, so salty!`);
 
             return false;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1066,11 +1106,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ],
         GatherTimeMultiplier: 1.5,
         CostRange: {min: 5, max: 10 },
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, mmmmm chocolate!`);
 
             return false;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1078,7 +1118,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "tomato",
         ContextualName: "a tomato",
         PluralName: "tomatoes",
-        Info: "A lovely red tomato. When used, it will heal you for 1HP",
+        Info: "A lovely red tomato. When used, it will heal you for 1HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Foragable
@@ -1089,12 +1129,66 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ],
         GatherTimeMultiplier: 0.8,
         CostRange: {min: 2, max: 5 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you bite into a raw tomato, I guess.`);
             await ChangePlayerHealth(client, player.Username, 1, DamageType.None)
 
             return true;
-        },
+        }},
+        Consumable: true,
+        Rarity: 0
+    },
+
+    //FISH
+    {
+        ObjectName: "raw salmon",
+        ContextualName: "a raw salmon",
+        PluralName: "raw salmon",
+        Info: "A raw salmon. Must be cooked to be consumed safely.",
+        Retrieval: [
+            ObjectRetrievalType.GroceryStore,
+            ObjectRetrievalType.Huntable
+        ],
+        GatherText: [
+            `you head down to the river and take out a spear. You quickly stab at a group of fish, and pull back a salmon.`,
+            `you cast a net into the river, in no time at all you've caught a salmon.`
+        ],
+        GatherTimeMultiplier: 0.7,
+        CookTimeInSeconds: 45,
+        CookedVersion: `cooked salmon`,
+        CostRange: {min: 50, max: 100 },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
+
+            await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
+
+            AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
+
+            return true;
+        }},
+        Consumable: true,
+        Rarity: 0
+    },
+    {
+        ObjectName: "cooked salmon",
+        ContextualName: "a cooked salmon",
+        PluralName: "cooked salmon",
+        Info: "A cooked salmon. When used, it will heal you for 15HP.",
+        Retrieval: [
+            ObjectRetrievalType.GroceryStore,
+            ObjectRetrievalType.Cookable
+        ],
+        CostRange: {min: 100, max: 150 },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you slice into the salmon and begin eating. It's quite good, though would be better prepared into a proper meal.`);
+
+            await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
+
+            return true;
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1118,7 +1212,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 60 * 2,
         CookedVersion: `venison`,
         CostRange: {min: 100, max: 150 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1126,7 +1221,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1134,19 +1229,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "venison",
         ContextualName: "a cut of venison",
         PluralName: "cuts of venison",
-        Info: "A cut of venison. When used, it will heal you for 20HP",
+        Info: "A cut of venison. When used, it will heal you for 20HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 200, max: 300 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the venison and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 20, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1167,7 +1263,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 60,
         CookedVersion: `pork`,
         CostRange: {min: 50, max: 100 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1175,7 +1272,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1183,19 +1280,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pork",
         ContextualName: "a cut of pork",
         PluralName: "cuts of pork",
-        Info: "A cut of pork. When used, it will heal you for 15HP",
+        Info: "A cut of pork. When used, it will heal you for 15HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 100, max: 150 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the pork and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1216,7 +1314,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 45,
         CookedVersion: `sausage`,
         CostRange: {min: 50, max: 100 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1224,7 +1323,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1232,19 +1331,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "sausage",
         ContextualName: "a cut of sausage",
         PluralName: "cuts of sausage",
-        Info: "A cut of sausage. When used, it will heal you for 15HP",
+        Info: "A cut of sausage. When used, it will heal you for 15HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 100, max: 150 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the sausage and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1265,7 +1365,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 30,
         CookedVersion: `cooked hare`,
         CostRange: {min: 30, max: 60 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1273,7 +1374,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1281,19 +1382,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cooked hare",
         ContextualName: "a cut of cooked hare",
         PluralName: "cuts of cooked hare",
-        Info: "A cut of cooked hare. When used, it will heal you for 10HP",
+        Info: "A cut of cooked hare. When used, it will heal you for 10HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 60, max: 120 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the cooked hare and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 10, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1314,7 +1416,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 45,
         CookedVersion: `cooked pheasant`,
         CostRange: {min: 40, max: 70 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1322,7 +1425,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1330,19 +1433,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cooked pheasant",
         ContextualName: "a cut of cooked pheasant",
         PluralName: "cuts of cooked pheasant",
-        Info: "A cut of cooked pheasant. When used, it will heal you for 10HP",
+        Info: "A cut of cooked pheasant. When used, it will heal you for 10HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 80, max: 140 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the cooked pheasant and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 10, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1363,7 +1467,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 60 * 1.5,
         CookedVersion: `mutton`,
         CostRange: {min: 75, max: 125 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1371,7 +1476,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1379,19 +1484,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "mutton",
         ContextualName: "a cut of mutton",
         PluralName: "cuts of mutton",
-        Info: "A cut of mutton. When used, it will heal you for 15HP",
+        Info: "A cut of mutton. When used, it will heal you for 15HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 150, max: 250 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the mutton and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1412,7 +1518,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         CookTimeInSeconds: 60 * 2,
         CookedVersion: `beef`,
         CostRange: {min: 150, max: 300 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you tear into the raw meat like a wild animal. That's not safe to eat!`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(10, 15), DamageType.Poison, `Ate raw meat`);
@@ -1420,7 +1527,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1428,19 +1535,20 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "beef",
         ContextualName: "a cut of beef",
         PluralName: "cuts of beef",
-        Info: "A cut of beef. When used, it will heal you for 25HP",
+        Info: "A cut of beef. When used, it will heal you for 25HP.",
         Retrieval: [
             ObjectRetrievalType.GroceryStore,
             ObjectRetrievalType.Cookable
         ],
         CostRange: {min: 300, max: 600 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you cut into the beef and start eating. It's quite good, though would be better prepared into a proper meal.`);
 
             await ChangePlayerHealth(client, player.Username, 25, DamageType.None);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1461,30 +1569,34 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "grilled cheese",
         ContextualName: "a grilled cheese",
         PluralName: "grilled cheese",
-        Info: "Yummy! Grilled cheese is good for the soul. When used, it will heal you for 15HP",
+        Info: "Yummy! Grilled cheese is good for the soul. When used, it will heal you for 15HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
+        CraftingRecipe:
             {
-                Resource: "bread",
-                Amount: 2
+                Recipe: [
+                    {
+                        Resource: "bread",
+                        Amount: 2
+                    },
+                    {
+                        Resource: "cheese",
+                        Amount: 2
+                    },
+                    {
+                        Resource: "butter",
+                        Amount: 1
+                    },
+                ]
             },
-            {
-                Resource: "cheese",
-                Amount: 2
-            },
-            {
-                Resource: "butter",
-                Amount: 1
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a delicious grilled cheese!`);
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1492,28 +1604,32 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pepperoni",
         ContextualName: "a pepperoni",
         PluralName: "pepperonis",
-        Info: "A nice little pepperoni. When used, it will heal you for 5HP",
+        Info: "A nice little pepperoni. When used, it will heal you for 5HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable,
             ObjectRetrievalType.GroceryStore
         ],
-        CraftingRecipe: [
-            {
-                Resource: "sausage",
-                Amount: 1
-            },
-            {
-                Resource: "salt",
-                Amount: 1
-            },
-        ],
+        CraftingRecipe: {
+            ResultAmount: { min: 5, max: 10 },
+            Recipe: [
+                {
+                    Resource: "sausage",
+                    Amount: 1
+                },
+                {
+                    Resource: "salt",
+                    Amount: 1
+                },
+            ]
+        },
         CostRange: {min: 2, max: 5 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a nice little pepperoni!`);
             await ChangePlayerHealth(client, player.Username, 5, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1525,21 +1641,23 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "flour",
-                Amount: 2
-            },
-            {
-                Resource: "water",
-                Amount: 2
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "flour",
+                    Amount: 2
+                },
+                {
+                    Resource: "water",
+                    Amount: 2
+                },
+            ]
+        },
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, wow, I love dough! So cool!!!`);
 
             return false;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1547,34 +1665,37 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "apple pie",
         ContextualName: "an apple pie",
         PluralName: "apple pies",
-        Info: "Yummy! Apple pie is good for the soul. When used, it will heal you for 25HP",
+        Info: "Yummy! Apple pie is good for the soul. When used, it will heal you for 25HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "dough",
-                Amount: 2
-            },
-            {
-                Resource: "apple",
-                Amount: 2
-            },
-            {
-                Resource: "sugar",
-                Amount: 1
-            },
-            {
-                Resource: "egg",
-                Amount: 1
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "dough",
+                    Amount: 2
+                },
+                {
+                    Resource: "apple",
+                    Amount: 2
+                },
+                {
+                    Resource: "sugar",
+                    Amount: 1
+                },
+                {
+                    Resource: "egg",
+                    Amount: 1
+                },
+            ]
+        },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a delicious apple pie!`);
             await ChangePlayerHealth(client, player.Username, 25, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1582,34 +1703,37 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cookie",
         ContextualName: "a cookie",
         PluralName: "cookies",
-        Info: "Yummy! Who doesn't love cookies?. When used, it will heal you for 15HP",
+        Info: "Yummy! Who doesn't love cookies?. When used, it will heal you for 15HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "dough",
-                Amount: 1
-            },
-            {
-                Resource: "egg",
-                Amount: 1
-            },
-            {
-                Resource: "salt",
-                Amount: 1
-            },
-            {
-                Resource: "sugar",
-                Amount: 1
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "dough",
+                    Amount: 1
+                },
+                {
+                    Resource: "egg",
+                    Amount: 1
+                },
+                {
+                    Resource: "salt",
+                    Amount: 1
+                },
+                {
+                    Resource: "sugar",
+                    Amount: 1
+                },
+            ]
+        },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a delicious cookie!`);
             await ChangePlayerHealth(client, player.Username, 15, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1617,38 +1741,41 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "chocolate chip cookie",
         ContextualName: "a chocolate chip cookie",
         PluralName: "chocolate chip cookies",
-        Info: "Yummy! Chocolate chip cookies are better anyway. When used, it will heal you for 20HP",
+        Info: "Yummy! Chocolate chip cookies are better anyway. When used, it will heal you for 20HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "dough",
-                Amount: 1
-            },
-            {
-                Resource: "egg",
-                Amount: 1
-            },
-            {
-                Resource: "salt",
-                Amount: 1
-            },
-            {
-                Resource: "sugar",
-                Amount: 1
-            },
-            {
-                Resource: "cocoa",
-                Amount: 1
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "dough",
+                    Amount: 1
+                },
+                {
+                    Resource: "egg",
+                    Amount: 1
+                },
+                {
+                    Resource: "salt",
+                    Amount: 1
+                },
+                {
+                    Resource: "sugar",
+                    Amount: 1
+                },
+                {
+                    Resource: "cocoa",
+                    Amount: 1
+                },
+            ]
+        },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you eat a delicious chocolate chip cookie!`);
             await ChangePlayerHealth(client, player.Username, 20, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1656,26 +1783,29 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "chocolate milk",
         ContextualName: "a glass of chocolate milk",
         PluralName: "glasses of chocolate milk",
-        Info: "Yummy! I love chocolate milk. When used, it will heal you for 10HP",
+        Info: "Yummy! I love chocolate milk. When used, it will heal you for 10HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "milk",
-                Amount: 2
-            },
-            {
-                Resource: "cocoa",
-                Amount: 1
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "milk",
+                    Amount: 2
+                },
+                {
+                    Resource: "cocoa",
+                    Amount: 1
+                },
+            ]
+        },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you drink down a cool glass of chocolate milk!`);
             await ChangePlayerHealth(client, player.Username, 10, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1683,26 +1813,29 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "chocolate",
         ContextualName: "a chocolate bar",
         PluralName: "chocolate bars",
-        Info: "A tasty looking chocolate bar. When used, it will heal you for 5HP",
+        Info: "A tasty looking chocolate bar. When used, it will heal you for 5HP.",
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "milk",
-                Amount: 1
-            },
-            {
-                Resource: "cocoa",
-                Amount: 2
-            },
-        ],
-        UseAction: async (client, player, afterText) => {
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "milk",
+                    Amount: 1
+                },
+                {
+                    Resource: "cocoa",
+                    Amount: 2
+                },
+            ]
+        },
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you munch down a chocolate bar!`);
             await ChangePlayerHealth(client, player.Username, 5, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1714,23 +1847,26 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "dough",
-                Amount: 4
-            },
-            {
-                Resource: "tomato",
-                Amount: 2
-            },
-            {
-                Resource: "cheese",
-                Amount: 2
-            },
-        ],
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "dough",
+                    Amount: 4
+                },
+                {
+                    Resource: "tomato",
+                    Amount: 2
+                },
+                {
+                    Resource: "cheese",
+                    Amount: 2
+                },
+            ]
+        },
         CookedVersion: `cheese pizza`,
         CookTimeInSeconds: 60 * 3,
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you're too excited by the pizza to wait! You start eating it, but it's all raw and you get sick.`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(20, 35), DamageType.Poison, `Ate raw pizza`);
@@ -1739,7 +1875,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1747,16 +1883,17 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cheese pizza",
         ContextualName: "a cheese pizza",
         PluralName: "cheese pizzas",
-        Info: "A big cheese pizza! Perfectly cooked, and ready to eat. When used, it will heal you for 40HP",
+        Info: "A big cheese pizza! Perfectly cooked, and ready to eat. When used, it will heal you for 40HP.",
         Retrieval: [
             ObjectRetrievalType.Cookable
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you consume an ENTIRE CHEESE PIZZA!`);
             await ChangePlayerHealth(client, player.Username, 40, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1768,27 +1905,30 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Retrieval: [
             ObjectRetrievalType.Craftable
         ],
-        CraftingRecipe: [
-            {
-                Resource: "dough",
-                Amount: 4
-            },
-            {
-                Resource: "tomato",
-                Amount: 2
-            },
-            {
-                Resource: "cheese",
-                Amount: 2
-            },
-            {
-                Resource: "pepperoni",
-                Amount: 5
-            },
-        ],
+        CraftingRecipe: {
+            Recipe: [
+                {
+                    Resource: "dough",
+                    Amount: 4
+                },
+                {
+                    Resource: "tomato",
+                    Amount: 2
+                },
+                {
+                    Resource: "cheese",
+                    Amount: 2
+                },
+                {
+                    Resource: "pepperoni",
+                    Amount: 5
+                },
+            ]
+        },
         CookTimeInSeconds: 60 * 3.5,
         CookedVersion: 'pepperoni pizza',
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you're too excited by the pizza to wait! You start eating it, but it's all raw and you get sick.`);
 
             await ChangePlayerHealth(client, player.Username, -GetRandomIntI(20, 35), DamageType.Poison, `Ate raw pizza`);
@@ -1796,7 +1936,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1804,16 +1944,17 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pepperoni pizza",
         ContextualName: "a pepperoni pizza",
         PluralName: "pepperoni pizzas",
-        Info: "A big pepperoni pizza! Perfectly cooked, and ready to eat. When used, it will heal you for 70HP",
+        Info: "A big pepperoni pizza! Perfectly cooked, and ready to eat. When used, it will heal you for 70HP.",
         Retrieval: [
             ObjectRetrievalType.Cookable
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username}, you consume an ENTIRE PEPPERONI PIZZA!`);
             await ChangePlayerHealth(client, player.Username, 70, DamageType.None)
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -1825,13 +1966,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ContextualName: "a present",
         PluralName: "presents",
         Alias: [],
-        Info: "A present! Gave you been naughty or nice? Open it to find out! Ex. !use present",
+        Info: "A present! Gave you been naughty or nice? Open it to find out! (Ex. !use present)",
         Tier: ObjectTier.Mid,
         IconRep: IconType.Present,
         Retrieval: [
             ObjectRetrievalType.RandomReward
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             let nice = GetRandomIntI(1, 5) >= 3;
             let txt = `@${player.Username}, Santa has deemed you... `;
             if(nice) {
@@ -1996,7 +2137,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             await client.say(process.env.CHANNEL!, txt);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -2009,12 +2150,12 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Retrieval: [],
         Tier: ObjectTier.Low,
         IconRep: IconType.BottleBlue,
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             await client.say(process.env.CHANNEL!, `@${player.Username} did you just eat coal?? Serves you right for being naughty. Well, you've been poisoned for 5 minutes.`);
             AddStatusEffectToPlayer(player.Username, StatusEffect.Poisoned, 60 * 5);
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0
     },
@@ -2023,14 +2164,15 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         Alias: [],
         ContextualName: "a piece of candy",
         PluralName: "candies",
-        Info: "Happy Halloween! Some lovely candy, let's hope its the good stuff. Ex. !use candy",
+        Info: "Happy Halloween! Some lovely candy, let's hope its the good stuff. (Ex. !use candy)",
         Tier: ObjectTier.Low,
         IconRep: IconType.Candy,
         Retrieval: [
             ObjectRetrievalType.RandomReward
         ],
         ThrownDamage: { min: -9, max: -5 },
-        UseAction: async (client, player, afterText) => {
+        UseAlias: ["eat"],
+        UseAction: { "use": async (client, player, afterText) => {
             let candyType = [
                 {
                     candy: `a mini chocolate bar`,
@@ -2113,7 +2255,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
 
 
             return true;
-        },
+        }},
         Consumable: true,
         Rarity: 0 //0 rarity, no candy when its not halloween
     },
@@ -2124,7 +2266,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pure nail",
         ContextualName: "a pure nail",
         PluralName: "pure nails",
-        Info: "The pure nail from Hollow Knight. An incredible weapon that does 20 - 50 more damage with rogue or warrior attacks. Has a durability, and will break after several uses. Equip it using !equip pure nail",
+        Info: "The pure nail from Hollow Knight. An incredible weapon that does 20 - 50 more damage with rogue or warrior attacks. Has a durability, and will break after several uses. Equip it using (!equip pure nail)",
         CostRange: {min: 200, max: 500 },
         Tier: ObjectTier.High,
         IconRep: IconType.PureNail,
@@ -2132,11 +2274,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, `@${player.Username} you admire the beauty of the pure nail.`);
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you admire the beauty of the pure nail. You can also equip it with (!equip pure nail)`);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Rogue, ClassType.Warrior ],
@@ -2153,7 +2295,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "diamond axe",
         ContextualName: "a diamond axe",
         PluralName: "diamond axes",
-        Info: "The diamond axe from Minecraft, it does 5 - 15 more damage for warrior attacks. Has a durability, and will break after several uses. Equip it using !equip diamond axe",
+        Info: "The diamond axe from Minecraft, it does 5 - 15 more damage for warrior attacks. Has a durability, and will break after several uses. Equip it using (!equip diamond axe)",
         CostRange: {min: 200, max: 500 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.DiamondAxe,
@@ -2161,11 +2303,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, `@${player.Username} you chop down a nearby tree in a single swing. A distant creeper says "Aw man"`);
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you chop down a nearby tree in a single swing. A distant creeper says "Aw man". You can also equip it with (!equip diamond axe)`);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Warrior ],
@@ -2182,7 +2324,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "wabbajack",
         ContextualName: "a wabbajack",
         PluralName: "wabbajacks",
-        Info: "The Wabbajack from Skyrim, does 10 - 20 more damage for mage attacks. Has a durability, and will break after several uses. Equip it using !equip wabbajack",
+        Info: "The Wabbajack from Skyrim, does 10 - 20 more damage for mage attacks. Has a durability, and will break after several uses. Equip it using (!equip wabbajack)",
         CostRange: {min: 200, max: 500 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.Wabbajack,
@@ -2190,11 +2332,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, `@${player.Username} you've started the Mind of Madness questline. Uh oh.`);
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you've started the Mind of Madness questline. Uh oh. You can also equip it with (!equip wabbajack)`);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Mage ],
@@ -2211,7 +2353,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "obsidian dagger",
         ContextualName: "an obsidian dagger",
         PluralName: "obsidian daggers",
-        Info: "An obsidian dagger from Runescape, it does 10 - 20 more damage for rogue attacks. Has a durability, and will break after several uses. Equip it using !equip obsidian dagger",
+        Info: "An obsidian dagger from Runescape, it does 10 - 20 more damage for rogue attacks. Has a durability, and will break after several uses. Equip it using (!equip obsidian dagger)",
         CostRange: {min: 200, max: 500 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.ObsidianDagger,
@@ -2219,11 +2361,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, `@${player.Username} you look into the obsidian. Oooo, shiny.`);
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you look into the obsidian. Oooo, shiny. You can also equip it with (!equip obsidian dagger)`);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Rogue ],
@@ -2240,7 +2382,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "repair hammer",
         ContextualName: "a repair hammer",
         PluralName: "repair hammers",
-        Info: "Allows you to increase the durability of an object you have equipped! Ex. !use repair hammer",
+        Info: "Allows you to increase the durability of an object you have equipped! Ex. (!use repair hammer)",
         CostRange: {min: 100, max: 200 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.Hammer,
@@ -2248,7 +2390,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
+        UseAction: { "use": async (client, player, afterText) => {
             if(player.EquippedObject !== undefined) {
                 let durabilityIncrease = GetRandomIntI(3, 6);
 
@@ -2257,10 +2399,10 @@ export const AllInventoryObjects: Array<InventoryObject> = [
                 return true;
             }
             else {
-                await client.say(process.env.CHANNEL!, `@${player.Username} you must have an object equipped to repair it! Only some objects have durability, use !info [item] to check`);
+                await client.say(process.env.CHANNEL!, `@${player.Username} you must have an object equipped to repair it! Only some objects have durability, use !info [item] to check.`);
                 return false;
             }
-        },
+        }},
         Consumable: true,
         Rarity: 5
     },
@@ -2268,7 +2410,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "pool noodle",
         ContextualName: "a pool noodle",
         PluralName: "pool noodles",
-        Info: "A pool noodle, from a pool. Great for some fun in the sun. Does 3 - 8 more damage on all attacks. Has a durability, and will break after several uses. Equip it using !equip pool noodle",
+        Info: "A pool noodle, from a pool. Great for some fun in the sun. Does 3 - 8 more damage on all attacks. Has a durability, and will break after several uses. Equip it using (!equip pool noodle)",
         CostRange: {min: 100, max: 350 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.PoolNoodle,
@@ -2276,11 +2418,11 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, `@${player.Username} you swing it around. If only there was a pool nearby.`);
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username} you swing it around. If only there was a pool nearby. You can also equip it with (!equip pool noodle)`);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Warrior, ClassType.Rogue, ClassType.Mage, ClassType.Cleric ],
@@ -2297,7 +2439,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "power helmet",
         ContextualName: "a power helmet",
         PluralName: "power helmets",
-        Info: "A power armor helmet! It'll help protect your face a bit more, but leaves you prone to overheating. Gives you resistance to cold and bludgeoning, but makes your vulnerable to fire. Equip it using !equip power helmet",
+        Info: "A power armor helmet! It'll help protect your face a bit more, but leaves you prone to overheating. Gives you resistance to cold and bludgeoning, but makes your vulnerable to fire. Equip it using (!equip power helmet)",
         CostRange: {min: 100, max: 350 },
         Tier: ObjectTier.Mid,
         IconRep: IconType.PowerHelmet,
@@ -2305,15 +2447,19 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, GetRandomItem([
+        UseAction: { "use": async (client, player, afterText) => {
+            let text = GetRandomItem([
                 `@${player.Username} you take the helmet and wipe the insides a bit. It's all sweaty!`,
                 `@${player.Username} you look through the eyes... it's all tinted green, for some reason.`,
                 `@${player.Username} this makes your head look too big for your body.`,
-            ])!);
+            ])!;
+
+            text += ` You can also equip it with (!equip power helmet)`;
+
+            await client.say(process.env.CHANNEL!, text);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Warrior, ClassType.Rogue, ClassType.Mage ],
@@ -2330,7 +2476,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "cardboard box",
         ContextualName: "a cardboard box",
         PluralName: "cardboard boxes",
-        Info: "A cardboard box! Wow! It's... a box. Your mind feels safer. Increases your armor by 2 and gives you resistance to psychic damage. Equip it using !equip cardboard box",
+        Info: "A cardboard box! Wow! It's... a box. Your mind feels safer. Increases your armor by 2 and gives you resistance to psychic damage. Equip it using (!equip cardboard box)",
         CostRange: {min: 50, max: 150 },
         Tier: ObjectTier.Low,
         IconRep: IconType.CardboardBox,
@@ -2338,8 +2484,8 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            if(GetRandomIntI(1, 3) == 1) {
+        UseAction: { "use": async (client, player, afterText) => {
+            if(GetRandomIntI(1, 3) != 1) {
                 let otherUser = LoadRandomPlayerSession([player.Username], true)!;
 
                 //Damage calc
@@ -2352,13 +2498,13 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             }
             else {
                 await client.say(process.env.CHANNEL!, GetRandomItem([
-                    `@${player.Username} you hide in your box, safe, alone, protected.`,
-                    `@${player.Username} you build a box fort. Wow, look how beautiful it is.`,
+                    `@${player.Username} you hide in your box, safe, alone, protected. You can also equip it with (!equip cardboard box)`,
+                    `@${player.Username} you build a box fort. Wow, look how beautiful it is. You can also equip it with (!equip cardboard box)`,
                 ])!);
 
                 return false;
             }
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Warrior, ClassType.Rogue, ClassType.Mage ],
@@ -2375,7 +2521,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         ObjectName: "duck hunt gun",
         ContextualName: "a duck hunt gun",
         PluralName: "duck hunt guns",
-        Info: "A gun from the game Duck Hunt. It's exceptional at shooting ducks, but works okay on other things. Does 10 - 25 more damage for rogue attacks. Equip it using !equip duck hunt gun",
+        Info: "A gun from the game Duck Hunt. It's exceptional at shooting ducks, but works okay on other things. Does 10 - 25 more damage for rogue attacks. Equip it using (!equip duck hunt gun)",
         CostRange: {min: 300, max: 600 },
         Tier: ObjectTier.High,
         IconRep: IconType.DuckHuntGun,
@@ -2383,15 +2529,18 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             ObjectRetrievalType.RandomReward,
             ObjectRetrievalType.TravelingSalesman
         ],
-        UseAction: async (client, player, afterText) => {
-            await client.say(process.env.CHANNEL!, GetRandomItem([
+        UseAction: { "use": async (client, player, afterText) => {
+            let text = GetRandomItem([
                 `@${player.Username} you aim for the nearest duck, but none are in sight`,
                 `@${player.Username} BANG! You got one.`,
                 `@${player.Username} BANG BANG BANG... oops. GAME OVER!`
-            ])!);
+            ])!;
+
+            text += ` You can also equip it with (!equip duck hunt gun)`;
+            await client.say(process.env.CHANNEL!, text);
 
             return false;
-        },
+        }},
         Consumable: false,
         Equippable: true,
         ClassRestrictions: [ ClassType.Rogue ],
@@ -2403,6 +2552,28 @@ export const AllInventoryObjects: Array<InventoryObject> = [
         },
         Durability: {min: 10, max: 15},
         Rarity: 7
+    },
+
+    //Special shit
+    {
+        ObjectName: "death rock",
+        ContextualName: "a death rock",
+        PluralName: "death rocks",
+        Info: "A sacrificial death rock, said to be conjured by Gazicmalzen himself.",
+        Retrieval: [],
+        UseAction: { "use": async (client, player, afterText) => {
+            await client.say(process.env.CHANNEL!, `@${player.Username}, you smash your head into the death rock.`);
+            await ChangePlayerHealth(client, player.Username, -99999999, DamageType.Bludgeoning);
+
+            //Remove a death, so you cant use this to cheat the leaderboard.
+            let resetPlayer = LoadPlayer(player.Username);
+            resetPlayer.Deaths--;
+            SavePlayer(resetPlayer);
+
+            return false;
+        }},
+        Consumable: false,
+        Rarity: 0
     },
 ]
 

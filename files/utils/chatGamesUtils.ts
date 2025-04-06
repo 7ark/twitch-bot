@@ -1,5 +1,5 @@
 import {AllInventoryObjects, InventoryObject, ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
-import {GetRandomInt, GetRandomIntI, GetRandomItem, Shuffle} from "./utils";
+import {GetNumberWithOrdinal, GetRandomInt, GetRandomIntI, GetRandomItem, Shuffle} from "./utils";
 import {Broadcast} from "../bot";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
 import {Client} from "tmi.js";
@@ -25,11 +25,11 @@ import {
     SetSceneItemEnabled
 } from "./obsutils";
 
-export function CreateAndBuildGambleAlert(client: Client, username: string, tier: ObjectTier) {
+export function CreateAndBuildGambleAlert(client: Client, username: string, tiers: Array<ObjectTier>) {
     const SLOT_LENGTH = 8;
     AddToActionQueue(() => {
         enum WinType { None, Normal, Jackpot}
-        let relevantInventoryObjects = AllInventoryObjects.filter(x => x.Tier <= tier);
+        let relevantInventoryObjects = AllInventoryObjects.filter(x => tiers.includes(x.Tier!));
 
         let finalWinState: WinType = GetRandomItem([WinType.None, WinType.None, WinType.Normal, WinType.Normal, WinType.Normal, WinType.Jackpot])!;
 
@@ -39,7 +39,7 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
             let options = [];
             for (let i = 0; i < relevantInventoryObjects.length; i++) {
                 for (let j = 0; j < relevantInventoryObjects[i].Rarity; j++) {
-                    if(tier == relevantInventoryObjects[i].Tier) {
+                    if(tiers.includes(relevantInventoryObjects[i].Tier)) {
                         for (let k = 0; k < 10; k++) {
                             options.push(relevantInventoryObjects[i]);
                         }
@@ -180,9 +180,11 @@ export function CreateAndBuildGambleAlert(client: Client, username: string, tier
                         PlaySound("booing", AudioType.GameAlerts);
                     }, 2000);
                     break;
-
             }
 
+            setTimeout(async () => {
+                await client.say(process.env.CHANNEL!, text);
+            }, 3500);
             PlayTextToSpeech(text, AudioType.GameAlerts);
 
 
@@ -494,13 +496,20 @@ export function StartChatChallenge(client: Client, username: string) {
             challenge:  () => {
                 //Alphabet challenge
                 let alphabet = 'abcdefghijklmnopqrstuvwxyz';
+                let afterAmount = GetRandomIntI(1, 5);
 
                 //-1 so we never pick Z as that gets confusing to what follows;
-                let randomLetterIndex = GetRandomInt(0, alphabet.length - 1);
+                let randomLetterIndex = GetRandomInt(0, alphabet.length - afterAmount);
                 let randomLetter = alphabet[randomLetterIndex];
-                let randomLetterAnswer = alphabet[randomLetterIndex + 1];
+                let randomLetterAnswer = alphabet[randomLetterIndex + afterAmount];
 
-                text += `Chat, what letter in the alphabet comes after: "${randomLetter}". First person to get the answer wins. You have 30 seconds.`;
+                if(afterAmount == 1) {
+                    text += `Chat, what letter in the alphabet comes after: "${randomLetter}"?`;
+                }
+                else {
+                    text += `Chat, what's the ${GetNumberWithOrdinal(afterAmount)} letter after "${randomLetter}"?`
+                }
+                text += ` First person to get the answer wins. You have 30 seconds.`;
 
                 AddToActionQueue(() => {
                     let s = "";

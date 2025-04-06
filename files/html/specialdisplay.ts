@@ -84,8 +84,15 @@ function getIcon(icon: IconTypeHtml) {
     return "";
 }
 
+// showDisplay({
+//     type: "",
+//     title: "mic00f_the_protogen's Challenge",
+//     message: "example long message for a really long thing example long message for a really long thing example long message for a really long thing",
+//     icon: IconTypeHtml.Bananas
+// })
+
 function showDisplay(data: { type: string, title: string, message: string, icon: IconTypeHtml }) {
-    let display = document.getElementById('Display');
+    let display = document.getElementById('all');
 
     display.style.opacity = '1';
 
@@ -101,13 +108,13 @@ function showDisplay(data: { type: string, title: string, message: string, icon:
 }
 
 function hideDisplay() {
-    let display = document.getElementById('Display');
+    let display = document.getElementById('all');
 
     display.style.opacity = '0';
 }
 
 function gambleDisplay(data: { type: string, title: string, slot1: Array<IconTypeHtml>, slot2: Array<IconTypeHtml>, slot3: Array<IconTypeHtml> }) {
-    let display = document.getElementById('Display');
+    let display = document.getElementById('all');
 
     display.style.opacity = '1';
 

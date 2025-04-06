@@ -207,7 +207,7 @@ export function GetAfflictionDescription(affliction: Affliction) {
         case Affliction.Burning:
             return "Every tick deals 1 damage per stack of burning.";
         case Affliction.Curse:
-            return "Attack damage is increased by 5% per stack of curse";
+            return "Attack damage is increased by 2% per stack of curse";
         case Affliction.Poison:
             return "Every tick deals 1 damage per stack of poison.";
     }

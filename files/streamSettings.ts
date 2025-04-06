@@ -59,14 +59,14 @@ const SOLO_STORY_SETTINGS: StreamSettings = {
 //Playing with others
 const COLLAB_SETTINGS: StreamSettings = {
     volume: new Map<AudioType, number>([
-        [AudioType.UserTTS, 0],
-        [AudioType.UserGameActions, 0.4],
-        [AudioType.GameAlerts, 0.05],
+        [AudioType.UserTTS, 0.1],
+        [AudioType.UserGameActions, 0.3],
+        [AudioType.GameAlerts, 0.02],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 0.5],
         [AudioType.Ads, 0],
     ]),
-    doesRandomChatChallenges: false,
+    doesRandomChatChallenges: true,
     cooldownMultiplier: 2
 }
 
@@ -78,6 +78,20 @@ const COLLAB_STORY_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0],
         [AudioType.StreamInfrastructure, 1],
         [AudioType.ImportantStreamEffects, 0.2],
+        [AudioType.Ads, 0],
+    ]),
+    doesRandomChatChallenges: false,
+    cooldownMultiplier: 3
+}
+
+//Stuff like Among Us
+const COLLAB_SOCIAL_SETTINGS: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 0.5],
+        [AudioType.UserGameActions, 0.3],
+        [AudioType.GameAlerts, 0.05],
+        [AudioType.StreamInfrastructure, 1],
+        [AudioType.ImportantStreamEffects, 0.5],
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
@@ -111,6 +125,33 @@ const COOK_CHALLENGE: StreamSettings = {
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3,
     challengeType: "cook"
+}
+
+const ANGELDEVIL_CHALLENGE: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 1],
+        [AudioType.UserGameActions, 0.3],
+        [AudioType.GameAlerts, 0],
+        [AudioType.StreamInfrastructure, 1],
+        [AudioType.ImportantStreamEffects, 1],
+        [AudioType.Ads, 0],
+    ]),
+    doesRandomChatChallenges: true,
+    cooldownMultiplier: 2,
+    challengeType: "angeldevil"
+}
+
+const PURE_SILENCE: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 0],
+        [AudioType.UserGameActions, 0],
+        [AudioType.GameAlerts, 0],
+        [AudioType.StreamInfrastructure, 0],
+        [AudioType.ImportantStreamEffects, 0],
+        [AudioType.Ads, 0],
+    ]),
+    doesRandomChatChallenges: false,
+    cooldownMultiplier: 1
 }
 
 //I SET MY SETTINGS HERE

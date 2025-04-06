@@ -4,39 +4,69 @@
     <meta charset="UTF-8">
     <title>Twitch Overlay</title>
     <style>
+        #all {
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+
         #Display {
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.5s ease-in-out;
-            opacity: 0;
         }
-        h1 {
-            color: white;
-            font-size: 150px;
-            /*font-family: JetBrains Mono ExtraBold;*/
-            font-family: Impact;
-            font-weight: bolder;
-            alignment: center;
-            position: absolute;
-            top: 300px;
+
+        #icon {
+            margin-bottom: 0; /* Ensure no space below the icon */
+        }
+        html, body {
+            height: 100%;
             margin: 0;
-            bottom: 0%;
-            -webkit-text-stroke-width: 3px;
-            -webkit-text-stroke-color: black;
-            white-space: nowrap;
+            padding: 0;
+            position: relative;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-width: 100px; /* Adjust to your needs */
+            border-style: solid;
+            box-sizing: border-box;
+            border-image: url("../extras/bg.png") 28 fill stretch; /* Adjust slice size accordingly */
+        }
+        /*body {*/
+        /*    !*border: 100px solid transparent; !* Adjust slice thickness as needed *!*!*/
+        /*    box-sizing: border-box;*/
+        /*    border-image: url("../extras/bg.png") 28 fill stretch;*/
+        /*}*/
+
+        h1 {
+            color: #1c1c1c;
+            font-size: 100px;
+            font-family: "JetBrains Mono";
+            font-weight: bolder;
+            text-align: center;
+            white-space: normal; /* Allow wrapping */
+            word-wrap: break-word; /* Break long words as needed */
+            overflow-wrap: break-word;
+            width: 90%; /* or desired width */
+            max-width: 80%; /* Adjust as needed */
+            margin: 0 auto; /* Center horizontally */
+            position: relative; /* Changed to relative positioning */
+            margin-top: -75px; /* Move up to overlap with image */
+        }
+
         p {
-            color: white;
-            font-size: 40px;
+            color: #1c1c1c;
+            font-size: 60px;
             font-weight: bolder;
             font-family: "JetBrains Mono";
             position: absolute;
-            top: -100px;  /* Align to the top of #Display */
+            top: 300px;  /* Align to the top of #Display */
             left: 0%;  /* Start from the left edge */
             right: 0%; /* Stretch to the right edge, ensuring text is contained */
             margin-top: 25%;
@@ -73,7 +103,8 @@
         }
     </style>
 </head>
-<body>
+<body id="all">
+<div class="background"></div>
 
 <div id="Display">
     <img id="icon" src="../extras/dialog_t.png" width="500" />

@@ -112,7 +112,7 @@ export function SavePlayerSession(displayName: string, session: PlayerSessionDat
     fs.writeFileSync('playersessions.json', JSON.stringify({
         data: Array.from(allPlayerSessionData),
         timestamp: timestamp.toISOString()
-    }));
+    }, null, 2));
 }
 
 export function UpdateSessionTimestamp() {
@@ -121,7 +121,7 @@ export function UpdateSessionTimestamp() {
     fs.writeFileSync('playersessions.json', JSON.stringify({
         data: Array.from(allPlayerSessionData),
         timestamp: timestamp
-    }));
+    }, null, 2));
 }
 
 export function GetStringifiedSessionData(): string {
