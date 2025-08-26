@@ -1,22 +1,30 @@
 import {Client} from "tmi.js";
 import {Broadcast} from "../bot";
-import {GetRandomIntI, GetRandomItem, IsCommand, RemoveFromArray} from "./utils";
+import {GetRandomIntI, GetRandomItem, IsCommand} from "./utils";
 import {
-    GetObjectFromInputText,
-    GiveExp, GivePlayerObject,
+    GetPlayerCoordinates,
+    GiveExp,
+    GivePlayerObject,
     GivePlayerRandomObjectInTier,
     LoadAllPlayers,
     LoadPlayer,
     SavePlayer
 } from "./playerGameUtils";
 import {AddToMinigameQueue, IsMinigameQueueEmpty} from "../actionqueue";
-import {AllInventoryObjects, ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
+import {ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
 import {HandleQuestProgress} from "./questUtils";
 import {GiveUserVIP, RemoveUserVIP} from "./twitchUtils";
 import {PlaySound, PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
-import {Player, QuestType} from "../valueDefinitions";
+import {LocationResourceType, Player, QuestType} from "../valueDefinitions";
+import {GetInventoryObjectsBySource, GetRandomInventoryObjectByRarity} from "./inventoryUtils";
+import {
+    DeductMinigameNode,
+    FilterObjectsByLocation,
+    GetLocationFromCoordinate, GetLocationsAroundCoordinate,
+    GetSessionFromCoordinates, GetWildernessLocationsAroundCoordinate
+} from "./locationUtils";
 
 //Come up with our effects
 // - Feel unique from one another; noticeably different outputs from game to game
@@ -91,9 +99,9 @@ export async function ResetLeaderboard(client: Client) {
     let secondPlace = playersInOrder[1];
     let firstPlace = playersInOrder[0];
 
-    let thirdPlaceText = `In third place we have @${thirdPlace.Username}! They receive a low tier item!`;
-    let secondPlaceText = `Next, in second place we have @${secondPlace.Username}! They receive a mid tier item!`;
-    let firstPlaceText = `Finally, in first place we have @${firstPlace.Username}! They receive VIP and a high tier item!`;
+    let thirdPlaceText = `In third place we have @${thirdPlace.Username} with ${thirdPlace.Gems} gems! They receive a low tier item!`;
+    let secondPlaceText = `Next, in second place we have @${secondPlace.Username} with ${secondPlace.Gems} gems! They receive a mid tier item!`;
+    let firstPlaceText = `Finally, in first place we have @${firstPlace.Username} with ${firstPlace.Gems} gems! They receive VIP and a high tier item!`;
 
     PlayTextToSpeech(`Introducing the winners of the Chat Leaderboards!`, AudioType.StreamInfrastructure, "en-US-BrianNeural", async () => {
         PlaySound("drumroll", AudioType.StreamInfrastructure);
@@ -184,19 +192,53 @@ function ShowPassiveText() {
 }
 
 export async function HandleMinigames(client: Client, username: string, command: string) {
+    let minigameType: MinigameType;
+
+    const stringKeys = Object
+        .keys(MinigameType)
+        .filter((v) => isNaN(Number(v)))
+
+    stringKeys.forEach((key, index) => {
+        if(IsCommand(command, key.toLowerCase()) || command.includes(`the7ar${key}`)) {
+            minigameType = index;
+        }
+    });
+
+    await StartMinigame(client, username, minigameType);
+}
+
+export async function StartMinigame(client: Client, username: string, minigameType: MinigameType, displayText: boolean = true) {
+    let loadedPlayer = LoadPlayer(username);
+    let playerCoords = GetPlayerCoordinates(loadedPlayer);
+    let minigameNodes = GetSessionFromCoordinates(playerCoords.X, playerCoords.Y)!;
+
+    let outOfNodes = false;
+    switch (minigameType) {
+        case MinigameType.Fish:
+            outOfNodes = minigameNodes.FishNodesLeft <= 0;
+            break;
+        case MinigameType.Cook:
+            outOfNodes = minigameNodes.CookNodesLeft <= 0;
+            break;
+        case MinigameType.Mine:
+            outOfNodes = minigameNodes.MineNodesLeft <= 0;
+            break;
+    }
+
+    if(outOfNodes) {
+        let outText = `@${username}, this location is all out of spots to ${MinigameType[minigameType].toLowerCase()}! You'll have to try another minigame type, or move to a new location. Use !help travel for more information.`;
+        if(loadedPlayer.AutoMinigameStartTime != undefined) {
+            outText = ` Your !auto has been cancelled.`;
+        }
+        loadedPlayer.AutoMinigameStartTime = undefined;
+        SavePlayer(loadedPlayer);
+        await client.say(process.env.CHANNEL!, outText);
+        return;
+    }
+
+    DeductMinigameNode(playerCoords.X, playerCoords.Y, minigameType);
+
     AddToMinigameQueue(() => {
-        let minigameType: MinigameType;
-
-        const stringKeys = Object
-            .keys(MinigameType)
-            .filter((v) => isNaN(Number(v)))
-
-        stringKeys.forEach((key, index) => {
-            if(IsCommand(command, key.toLowerCase()) || command.includes(`the7ar${key}`)) {
-                minigameType = index;
-            }
-        });
-
         let adjectives = [
             "a stinky",
             "a gross",
@@ -247,115 +289,145 @@ export async function HandleMinigames(client: Client, username: string, command:
                     //Garbage
                     {
                         name: `caught ${randomAdj} boot`,
-                        gems: GetRandomIntI(1, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 8),
+                        rarity: 12
                     },
                     {
                         name: `caught ${randomAdj} bottle`,
-                        gems: GetRandomIntI(1, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 8),
+                        rarity: 12
                     },
                     {
                         name: `caught ${randomAdj} plastic bag`,
-                        gems: GetRandomIntI(1, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 8),
+                        rarity: 12
                     },
                     {
                         name: `caught ${randomAdj} sock`,
-                        gems: GetRandomIntI(1, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 8),
+                        rarity: 12
                     },
                     {
                         name: `caught ${randomAdj} tin can`,
-                        gems: GetRandomIntI(1, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 8),
+                        rarity: 12
                     },
 
                     //Common
                     {
                         name: `caught ${randomAdj} bass`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
                     {
                         name: `caught ${randomAdj} cod`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
                     {
                         name: `caught ${randomAdj} salmon`,
-                        gems: GetRandomIntI(2, 15),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} goldfish`,
-                        gems: GetRandomIntI(2, 10),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
                     {
                         name: `caught ${randomAdj} pike`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
                     {
                         name: `caught ${randomAdj} flounder`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
                     {
                         name: `caught ${randomAdj} tuna`,
-                        gems: GetRandomIntI(2, 15),
-                        rarity: 10
-                    },
-                    {
-                        name: `caught ${randomAdj} snapping turtle`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
                     {
                         name: `caught ${randomAdj} carp`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 20),
                         rarity: 10
                     },
 
                     //Uncommon
                     {
-                        name: `caught ${randomAdj} crab`,
-                        gems: GetRandomIntI(10, 30),
+                        name: `caught ${randomAdj} snapping turtle`,
+                        gems: GetRandomIntI(10, 40),
                         rarity: 8
                     },
                     {
-                        name: `caught ${randomAdj} lobster`,
-                        gems: GetRandomIntI(10, 30),
+                        name: `caught ${randomAdj} goldfish`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `caught ${randomAdj} crab`,
+                        gems: GetRandomIntI(10, 40),
+                        rarity: 8
+                    },
+                    {
+                        name: `caught ${randomAdj} pufferfish`,
+                        gems: GetRandomIntI(10, 50),
                         rarity: 8
                     },
                     {
                         name: `caught ${randomAdj} catfish`,
-                        gems: GetRandomIntI(10, 30),
+                        gems: GetRandomIntI(10, 40),
                         rarity: 8
                     },
 
                     //Rare
                     {
                         name: `caught ${randomAdj} rubber duck`,
-                        gems: GetRandomIntI(20, 50),
+                        gems: GetRandomIntI(20, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `caught ${randomAdj} red herring`,
+                        gems: GetRandomIntI(20, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `caught ${randomAdj} stingray`,
+                        gems: GetRandomIntI(20, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `caught ${randomAdj} anglerfish`,
+                        gems: GetRandomIntI(20, 60),
+                        rarity: 5
+                    },
+                    {
+                        name: `caught ${randomAdj} swordfish`,
+                        gems: GetRandomIntI(40, 80),
                         rarity: 5
                     },
 
                     //Legendary
                     {
                         name: `caught ${randomAdj} shark`,
-                        gems: GetRandomIntI(40, 75),
+                        gems: GetRandomIntI(50, 110),
                         rarity: 2
                     },
                     {
                         name: `caught ${randomAdj} jellyfish`,
-                        gems: GetRandomIntI(40, 75),
+                        gems: GetRandomIntI(30, 90),
                         rarity: 2
                     },
                     {
                         name: `caught ${randomAdj} electric eel`,
-                        gems: GetRandomIntI(40, 75),
+                        gems: GetRandomIntI(30, 90),
+                        rarity: 2
+                    },
+                    {
+                        name: `caught ${randomAdj} kraken tentacle`,
+                        gems: GetRandomIntI(30, 100),
+                        rarity: 2
+                    },
+                    {
+                        name: `caught ${randomAdj} pearl`,
+                        gems: GetRandomIntI(30, 90),
                         rarity: 2
                     },
                 ];
@@ -366,125 +438,155 @@ export async function HandleMinigames(client: Client, username: string, command:
                     //Garbage
                     {
                         name: `burnt some eggs`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
                     },
                     {
                         name: `caught the oven on fire`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
                     },
                     {
                         name: `got eggshells in their pancakes`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
                     },
                     {
                         name: `ruined their brownies`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
+                    },
+                    {
+                        name: `made soggy toast`,
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
+                    },
+                    {
+                        name: `burnt water... somehow`,
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
+                    },
+                    {
+                        name: `created charcoal cookies`,
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
+                    },
+                    {
+                        name: `made something indescribable`,
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
+                    },
+                    {
+                        name: `curled some milk`,
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
+                    },
+                    {
+                        name: `dropped a cake on the floor`,
+                        gems: GetRandomIntI(2, 4),
+                        rarity: 12
                     },
 
                     //Common
                     {
-                        name: `baked ${randomAdj} pie`,
-                        gems: GetRandomIntI(2, 15),
-                        rarity: 10
-                    },
-                    {
                         name: `roasted ${randomAdj} ham`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 10),
                         rarity: 10
                     },
                     {
                         name: `tossed ${randomAdj} salad`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 10),
                         rarity: 10
                     },
                     {
                         name: `flipped ${randomAdj} pancake`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 10),
                         rarity: 10
                     },
                     {
                         name: `cooked ${randomAdj} grilled cheese`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 10),
                         rarity: 10
                     },
                     {
                         name: `stirred ${randomAdj} soup`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 10),
                         rarity: 10
                     },
                     {
                         name: `baked ${randomAdj} chicken`,
-                        gems: GetRandomIntI(2, 15),
+                        gems: GetRandomIntI(5, 10),
                         rarity: 10
                     },
 
                     //Uncommon
                     {
+                        name: `baked ${randomAdj} pie`,
+                        gems: GetRandomIntI(10, 20),
+                        rarity: 8
+                    },
+                    {
                         name: `made ${randomAdj} taco`,
-                        gems: GetRandomIntI(10, 25),
-                        rarity: 8
-                    },
-                    {
-                        name: `made ${randomAdjSome} shrimp scampi`,
-                        gems: GetRandomIntI(10, 25),
-                        rarity: 8
-                    },
-                    {
-                        name: `made ${randomAdj} beef wellington`,
-                        gems: GetRandomIntI(10, 25),
+                        gems: GetRandomIntI(10, 20),
                         rarity: 8
                     },
                     {
                         name: `made ${randomAdjSome} spaghetti`,
-                        gems: GetRandomIntI(10, 25),
+                        gems: GetRandomIntI(10, 20),
                         rarity: 8
                     },
                     {
                         name: `made ${randomAdjSome} chicken alfredo`,
-                        gems: GetRandomIntI(10, 25),
+                        gems: GetRandomIntI(10, 20),
                         rarity: 8
                     },
 
                     //Rare
                     {
-                        name: `made ${randomAdj} ratatouille`,
-                        gems: GetRandomIntI(25, 60),
-                        rarity: 5
-                    },
-                    {
                         name: `roasted ${randomAdjSome} duck`,
-                        gems: GetRandomIntI(25, 60),
+                        gems: GetRandomIntI(40, 80),
                         rarity: 5
                     },
                     {
                         name: `made ${randomAdjSome} sushi`,
-                        gems: GetRandomIntI(25, 60),
+                        gems: GetRandomIntI(40, 70),
                         rarity: 5
                     },
                     {
-                        name: `made ${randomAdjSome} lobster`,
-                        gems: GetRandomIntI(25, 60),
+                        name: `made ${randomAdjSome} shrimp scampi`,
+                        gems: GetRandomIntI(40, 80),
                         rarity: 5
                     },
 
                     //Legendary
                     {
                         name: `made ${randomAdjSome} wagyu beef`,
-                        gems: GetRandomIntI(75, 100),
+                        gems: GetRandomIntI(80, 150),
                         rarity: 2
                     },
                     {
                         name: `made ${randomAdjSome} chocolate mousse`,
-                        gems: GetRandomIntI(75, 100),
+                        gems: GetRandomIntI(80, 140),
                         rarity: 2
                     },
                     {
                         name: `made ${randomAdjSome} steak`,
-                        gems: GetRandomIntI(75, 100),
+                        gems: GetRandomIntI(80, 120),
+                        rarity: 2
+                    },
+                    {
+                        name: `made ${randomAdj} ratatouille`,
+                        gems: GetRandomIntI(80, 130),
+                        rarity: 2
+                    },
+                    {
+                        name: `made ${randomAdj} beef wellington`,
+                        gems: GetRandomIntI(80, 120),
+                        rarity: 2
+                    },
+                    {
+                        name: `made ${randomAdjSome} lobster`,
+                        gems: GetRandomIntI(80, 120),
                         rarity: 2
                     },
                 ];
@@ -495,135 +597,140 @@ export async function HandleMinigames(client: Client, username: string, command:
                     //Garbage
                     {
                         name: `found ${randomAdj} helmet`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(3, 5),
+                        rarity: 12
                     },
                     {
                         name: `found ${randomAdj} pickaxe`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(3, 5),
+                        rarity: 12
                     },
                     {
                         name: `found ${randomAdj} torch`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(3, 5),
+                        rarity: 12
                     },
                     {
                         name: `found ${randomAdj} scrap of wood`,
-                        gems: GetRandomIntI(2, 5),
-                        rarity: 10
+                        gems: GetRandomIntI(3, 5),
+                        rarity: 12
+                    },
+                    {
+                        name: `uncovered ${randomAdj} skeleton`,
+                        gems: GetRandomIntI(3, 5),
+                        rarity: 12
                     },
 
                     //Common
                     {
-                        name: `mined ${randomAdj} garnet`,
-                        gems: GetRandomIntI(2, 20),
-                        rarity: 10
-                    },
-                    {
-                        name: `mined ${randomAdj} amethyst`,
-                        gems: GetRandomIntI(2, 20),
-                        rarity: 10
-                    },
-                    {
                         name: `mined ${randomAdj} citrine`,
-                        gems: GetRandomIntI(2, 20),
+                        gems: GetRandomIntI(10, 15),
                         rarity: 10
                     },
                     {
                         name: `mined ${randomAdj} peridot`,
-                        gems: GetRandomIntI(2, 20),
+                        gems: GetRandomIntI(10, 15),
                         rarity: 10
                     },
                     {
                         name: `mined ${randomAdjSome} iron ore`,
-                        gems: GetRandomIntI(2, 20),
+                        gems: GetRandomIntI(10, 15),
                         rarity: 10
                     },
                     {
                         name: `mined ${randomAdjSome} coal`,
-                        gems: GetRandomIntI(2, 20),
+                        gems: GetRandomIntI(10, 15),
                         rarity: 10
                     },
                     {
                         name: `mined ${randomAdjSome} copper ore`,
-                        gems: GetRandomIntI(2, 20),
+                        gems: GetRandomIntI(10, 15),
                         rarity: 10
                     },
                     {
                         name: `mined ${randomAdjSome} tin ore`,
-                        gems: GetRandomIntI(2, 20),
+                        gems: GetRandomIntI(10, 15),
                         rarity: 10
                     },
 
                     //Uncommon
                     {
-                        name: `mined ${randomAdj} topaz`,
-                        gems: GetRandomIntI(10, 40),
-                        rarity: 8
-                    },
-                    {
-                        name: `mined ${randomAdj} opal`,
-                        gems: GetRandomIntI(10, 40),
-                        rarity: 8
-                    },
-                    {
-                        name: `mined ${randomAdj} jade`,
-                        gems: GetRandomIntI(10, 40),
-                        rarity: 8
-                    },
-                    {
-                        name: `mined ${randomAdj} onyx`,
-                        gems: GetRandomIntI(10, 40),
-                        rarity: 8
-                    },
-                    {
                         name: `mined ${randomAdjSome} silver ore`,
-                        gems: GetRandomIntI(10, 40),
+                        gems: GetRandomIntI(15, 20),
                         rarity: 8
                     },
                     {
                         name: `mined ${randomAdjSome} lead ore`,
-                        gems: GetRandomIntI(10, 40),
+                        gems: GetRandomIntI(15, 20),
                         rarity: 8
                     },
                     {
                         name: `mined ${randomAdjSome} nickel ore`,
-                        gems: GetRandomIntI(10, 40),
+                        gems: GetRandomIntI(15, 20),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdj} garnet`,
+                        gems: GetRandomIntI(15, 25),
+                        rarity: 8
+                    },
+                    {
+                        name: `mined ${randomAdj} amethyst`,
+                        gems: GetRandomIntI(15, 25),
                         rarity: 8
                     },
 
                     //Rare
                     {
                         name: `mined ${randomAdj} sapphire`,
-                        gems: GetRandomIntI(30, 50),
+                        gems: GetRandomIntI(25, 45),
                         rarity: 5
                     },
                     {
-                        name: `mined ${randomAdj} ruby`,
-                        gems: GetRandomIntI(30, 50),
+                        name: `mined ${randomAdj} jade`,
+                        gems: GetRandomIntI(25, 45),
                         rarity: 5
                     },
                     {
-                        name: `mined ${randomAdjSome} gold ore`,
-                        gems: GetRandomIntI(30, 50),
+                        name: `mined ${randomAdj} topaz`,
+                        gems: GetRandomIntI(25, 45),
+                        rarity: 5
+                    },
+                    {
+                        name: `mined ${randomAdj} opal`,
+                        gems: GetRandomIntI(25, 45),
+                        rarity: 5
+                    },
+                    {
+                        name: `mined ${randomAdj} onyx`,
+                        gems: GetRandomIntI(25, 45),
                         rarity: 5
                     },
 
                     //Legendary
                     {
                         name: `mined ${randomAdj} diamond`,
-                        gems: GetRandomIntI(40, 75),
+                        gems: GetRandomIntI(70, 90),
                         rarity: 2
                     },
                     {
                         name: `mined ${randomAdjSome} platinum ore`,
-                        gems: GetRandomIntI(40, 75),
+                        gems: GetRandomIntI(60, 80),
                         rarity: 2
                     },
                     {
                         name: `mined ${randomAdj} emerald`,
-                        gems: GetRandomIntI(40, 75),
+                        gems: GetRandomIntI(60, 80),
+                        rarity: 2
+                    },
+                    {
+                        name: `mined ${randomAdjSome} gold ore`,
+                        gems: GetRandomIntI(80, 100),
+                        rarity: 2
+                    },
+                    {
+                        name: `mined ${randomAdj} ruby`,
+                        gems: GetRandomIntI(60, 80),
                         rarity: 2
                     },
                 ];
@@ -642,70 +749,96 @@ export async function HandleMinigames(client: Client, username: string, command:
 
         reward += `${rewardValue.name}.`;
 
+        let gemValue = rewardValue.gems;
+
+        //Scale since I changed timing
+        gemValue = Math.floor(gemValue * 2);
+
+        if(minigameNodes.ValueMultiplier != 1) {
+            gemValue = Math.floor(gemValue * minigameNodes.ValueMultiplier);
+        }
+
         //Add gold
-        reward += `\nThey gain ${rewardValue.gems} gems!`;
+        reward += `\nThey gain ${gemValue} gems!`;
+
+        if(minigameNodes.ValueMultiplier < 1) {
+            reward += ` LOWER gem payout today.`
+        }
+        else if(minigameNodes.ValueMultiplier > 1) {
+            reward += ` HIGHER gem payout today.`
+        }
 
         Broadcast(JSON.stringify({ type: 'minigame', displayName: username, minigameType: minigameType, reward: reward }));
 
         //Rare chance to find extra
         if(GetRandomIntI(1, 20) == 1) {
-            let options: Array<string> = [];
+            let minigameResources: Array<LocationResourceType> = [];
+            let extraText = ``;
             switch (minigameType) {
                 case MinigameType.Fish:
-                    options = [
-                        "raw salmon",
+                    minigameResources = [
+                        LocationResourceType.FreshWater,
+                        LocationResourceType.SaltWater,
+                        LocationResourceType.Wetland
                     ];
-                    reward += GetRandomItem([
-                        ` As you fish, you also spot {1} jump out of the water, you're able to quickly catch it.`,
-                        ` Being such a fishing pro, you also are able to catch {1} and take it with you.`
+                    extraText += GetRandomItem([
+                        ` As you fish, you also spot {1} nearby, and are able to collect it.`,
+                        ` Being such a fishing pro, you also reel in {1} on your fishing pole too!`
                     ]);
                     break;
                 case MinigameType.Cook:
-                    options = [
-                        "egg",
-                        "milk",
-                        "flour",
-                        "sugar",
-                        "honey",
-                        "butter",
-                        "cheese",
-                        "bread",
-                        "apple"
+                    minigameResources = [
+                        LocationResourceType.SoftWood,
+                        LocationResourceType.Grassland,
+                        LocationResourceType.SmallGame,
+                        LocationResourceType.LargeGame,
+                        LocationResourceType.FreshWater
                     ];
-                    reward += GetRandomItem([
+                    extraText += GetRandomItem([
                         ` While cooking at the guild, you get in the good graces of the guild and are allowed to take home {1}.`,
                         ` Without anyone noticing, you're also able to take {1}.`
                     ]);
                     break;
                 case MinigameType.Mine:
-                    options = [
-                        "salt",
-                        "water"
+                    minigameResources = [
+                        LocationResourceType.OreRock,
+                        LocationResourceType.MineralRock,
+                        LocationResourceType.Crystals
                     ];
-                    reward += GetRandomItem([
+                    extraText += GetRandomItem([
                         ` While wandering the mines, you stumbled upon a bit of {0} you were able to collect as well.`,
                         ` As you're mining, you find a bit of hidden {0} you're able to take.`
                     ]);
                     break;
             }
 
-            if(options.length > 0) {
-                let chosenOption = GetRandomItem(options)!;
-                let obj = AllInventoryObjects.find(x => x.ObjectName == chosenOption);
-                reward = reward.replace(`{0}`, chosenOption).replace("{1}", obj!.ContextualName);
+            let allMinigameItemOptions = GetInventoryObjectsBySource(ObjectRetrievalType.FindableInMinigames);
+            let nearbyLocation = GetRandomItem(GetWildernessLocationsAroundCoordinate(playerCoords))!;
+            let itemOptions = FilterObjectsByLocation(allMinigameItemOptions, nearbyLocation.Location).filter(x =>
+                //Get items with relevant minigame resources
+                x.ResourceCategories!.some(y => minigameResources.includes(y))
+            );;
 
-                GivePlayerObject(client, username, chosenOption, false);
+            if(itemOptions.length > 0) {
+                reward += extraText;
+
+                let chosenOption = GetRandomInventoryObjectByRarity(itemOptions)!;
+                reward = reward.replace(`{0}`, chosenOption.ObjectName).replace("{1}", chosenOption.ContextualName);
+
+                GivePlayerObject(client, username, chosenOption.ObjectName, false);
             }
         }
 
         setTimeout(async () => {
-            await client.say(process.env.CHANNEL!, username == "Timmy" ? `${reward}` : `@${reward}`);
+            if(displayText) {
+                await client.say(process.env.CHANNEL!, username == "Timmy" ? `${reward}` : `@${reward}`);
+            }
 
             await GiveExp(client, username, 1);
 
             let player = LoadPlayer(username);
-            player.Gems += rewardValue.gems;
-            player.SpendableGems += rewardValue.gems;
+            player.Gems += gemValue;
+            player.SpendableGems += gemValue;
             SavePlayer(player);
 
             switch (minigameType) {
@@ -719,12 +852,12 @@ export async function HandleMinigames(client: Client, username: string, command:
                     await HandleQuestProgress(client, username, QuestType.DoMine, 1);
                     break;
             }
-        }, 10000);
+        }, 20000);
 
         setTimeout(() => {
             if(IsMinigameQueueEmpty){
                 ShowLeaderboard();
             }
         }, 14000)
-    }, 13, username)
+    }, 25, username)
 }

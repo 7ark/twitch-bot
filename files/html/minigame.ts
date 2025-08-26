@@ -244,9 +244,15 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
             textAnimation.textContent = "..";
             setTimeout(() => {
                 textAnimation.textContent = "...";
-                console.log("show ...");
-            }, 1000)
-        }, 1000)
+                setTimeout(() => {
+                    textAnimation.textContent = "....";
+                    setTimeout(() => {
+                        textAnimation.textContent = ".....";
+                        console.log("show .....");
+                    }, 3000)
+                }, 3000)
+            }, 3000)
+        }, 3000)
     }, 3000)
 
     setTimeout(() => {
@@ -275,6 +281,6 @@ function HandlePlayerMinigame(data: { type: string; displayName: string; minigam
                 textAnimation.textContent = "";
             }, 5000)
         }, 1000);
-    }, 6000)
+    }, 17000)
 }
 

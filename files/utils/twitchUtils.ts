@@ -145,7 +145,7 @@ async function FetchEventSubSubscriptions(bot: boolean = false) {
             }
         });
 
-        console.log("Existing subscriptions:", response.data.length);
+        console.log("Existing subscriptions:", response.data.data.length);
         return response.data;
     } catch (error: any) {
         console.error("Error fetching EventSub subscriptions:", error.response ? error.response.data : error.message);
@@ -202,6 +202,7 @@ export async function SubscribeToEventSub() {
     console.log("Ngrok URL:", ngrokUrl);
 
     let existingSub = await FetchEventSubSubscriptions();
+    console.log(existingSub)
     if(existingSub !== null){
         for (let i = 0; i < existingSub.data.length; i++) {
             console.log('Found existing subscription. Deleting it to use new ngrok url.');

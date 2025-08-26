@@ -4,7 +4,7 @@ import * as WebSocket from 'ws';
 import express from "express";
 import path from 'path';
 import * as http from "http";
-import {ConnectToObs, DisconnectFromObs, ToggleObject} from "./utils/obsutils";
+import {ConnectToObs, DisconnectFromObs, SetSceneItemEnabled, ToggleObject} from "./utils/obsutils";
 import {OnMessage, PostNewRegularMessage} from "./utils/messageUtils";
 import {
     CheckNewFollowers,
@@ -18,18 +18,22 @@ import {
 import {ReceiveMessageFromHTML} from "./utils/htmlUtils";
 import {GetAllPlayerSessions, HandleLoadingSession, UpdateSessionTimestamp} from "./utils/playerSessionUtils";
 import {TryToStartRandomChatChallenge} from "./utils/chatGamesUtils";
-import {TickAllCozyPoints} from "./utils/playerGameUtils";
+import {LoadAllPlayers, SavePlayer, TickAllCozyPoints} from "./utils/playerGameUtils";
 import {InitialMonsterSetup, LoadMonsterData, SetupMonsterDamageTypes, TickAfflictions} from "./utils/monsterUtils";
-import {AudioType, CurrentStreamSettings} from "./streamSettings";
+import {CurrentStreamSettings} from "./streamSettings";
 import {FadeOutLights, SetLightVisible} from "./utils/lightsUtils";
 import {LoadProgressBar} from "./utils/progressBarUtils";
 import {SetupNextAdsTime} from "./utils/adUtils";
-import {PlayTextToSpeech} from "./utils/audioUtils";
 import {SelectCustomer} from "./utils/cookingSimUtils";
 import {InitializeGroceryStore, InitializeSalesman} from "./utils/shopUtils";
 import {WipePlayerGatherState} from "./utils/gatherUtils";
 import {SelectRole} from "./utils/angelDevilUtils";
 import {ClearMeeting} from "./utils/meetingUtils";
+import {SetupPlayerTravel, SetupWorldGrid} from "./utils/locationUtils";
+import {DisplayAsList, GetSecondsBetweenDates} from "./utils/utils";
+import {Player} from "./valueDefinitions";
+import {MinigameType, StartMinigame} from "./utils/minigameUtils";
+import {GetUserMinigameCount} from "./actionqueue";
 
 const ngrok = require('ngrok');
 
@@ -79,6 +83,9 @@ app.get('/minigame', (req, res) => {
 });
 app.get('/progressBar', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'files', 'html', 'progressBar.html'));
+});
+app.get('/poll', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'files', 'html', 'pollDisplay.html'));
 });
 
 // Setup WebSocket Server
@@ -141,12 +148,14 @@ async function InitializeBot() {
             try {
                 await ToggleObject("Dragon Fight")
                 await ToggleObject("Bottom Stickmen")
-                await ToggleObject("Follower Count")
+                // await ToggleObject("Follower Count")
                 await ToggleObject("Credits")
                 await ToggleObject("Special Display")
                 await ToggleObject("Minigames")
                 await ToggleObject("Progress Bar")
                 await ToggleObject("ProgressBar")
+                await SetSceneItemEnabled("Poll", false);
+                await SetSceneItemEnabled("PollBig", false);
                 // await ToggleObject("Chat")
 
                 //Broadcast delay
@@ -160,6 +169,8 @@ async function InitializeBot() {
 
                 }, 200);
 
+                await SetupWorldGrid();
+                await SetupPlayerTravel(client);
                 await ClearMeeting();
                 await SetLightVisible(true);
                 await FadeOutLights();
@@ -207,13 +218,13 @@ async function InitializeBot() {
     // client.on('redeem', redeemHandler);
 
     // let redeemMessageMapper : Map<string, string> = new Map<string, string>();
-    await CheckNewFollowers(client);
+    // await CheckNewFollowers(client);
+    //
+    // async function CheckNewFollowersInterval() {
+    //     await CheckNewFollowers(client);
+    // }
 
-    async function CheckNewFollowersInterval() {
-        await CheckNewFollowers(client);
-    }
-
-    setInterval(CheckNewFollowersInterval, 60000); //1 minute
+    // setInterval(CheckNewFollowersInterval, 60000); //1 minute
     setInterval(UpdateViewerCountInfo, 10000); //10 seconds
 
     setInterval(() => {
@@ -245,6 +256,52 @@ async function InitializeBot() {
     setInterval(() => {
         TickAfflictions(client);
     }, 1000 * 15); //15 seconds
+
+    //Auto minigames
+    setInterval(async () => {
+        let allPlayersWithAuto = LoadAllPlayers().filter(p => p.AutoMinigameStartTime != undefined);
+
+        if(allPlayersWithAuto.length == 0) {
+            return;
+        }
+
+        let expiredPlayers: Array<Player> = [];
+        for (let i = 0; i < allPlayersWithAuto.length; i++) {
+            let player = allPlayersWithAuto[i];
+
+            let secondsBetween = GetSecondsBetweenDates(new Date(player.AutoMinigameStartTime!), new Date());
+            if(secondsBetween >= 60 * 30) {
+                player.AutoMinigameStartTime = undefined;
+                SavePlayer(player);
+                expiredPlayers.push(player);
+            }
+            else {
+                let activeInstances = GetUserMinigameCount(player.Username);
+                if(activeInstances > 0) {
+                    return;
+                }
+
+                let games = player.AutoMinigamePattern!.split(' ');
+                for (let i = 0; i < games.length; i++) {
+                    switch (games[i]) {
+                        case `mine`:
+                            await StartMinigame(client, player.Username, MinigameType.Mine, false);
+                            break;
+                        case `cook`:
+                            await StartMinigame(client, player.Username, MinigameType.Cook, false);
+                            break;
+                        case `fish`:
+                            await StartMinigame(client, player.Username, MinigameType.Fish, false);
+                            break;
+                    }
+                }
+            }
+        }
+        if(expiredPlayers.length > 0) {
+            await client.say(process.env.CHANNEL!, `${DisplayAsList(expiredPlayers, p => `@${p.Username}`)}, your auto-minigame has run out. You can start another with !auto again.`);
+        }
+
+    }, 1000 * 30); //30 seconds
 
     setInterval(() => {
         SetupMonsterDamageTypes();

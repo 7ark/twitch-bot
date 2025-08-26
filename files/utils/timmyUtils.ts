@@ -931,9 +931,9 @@ export async function CheckIfShouldHaveNPCResponse(client: Client, message: stri
             console.log(`NPC got random chance to respond, selecting randomly`)
             let randomNpc = npcs[GetRandomInt(0, npcs.length)];
 
-            //30% chance to mine cook or fish
+            //20% chance to mine cook or fish
             if(message.includes("!mine") || message.includes("!fish") || message.includes("!cook")) {
-                if(GetRandomIntI(0, 3) != 0) {
+                if(GetRandomIntI(0, 5) != 0) {
                     return;
                 }
             }

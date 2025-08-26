@@ -1,5 +1,5 @@
 import {GiveExp, GivePlayerRandomObjectInTier, LoadPlayer, SavePlayer} from "./playerGameUtils";
-import {GetRandomEnum, GetRandomIntI, GetRandomItem} from "./utils";
+import {GetRandomIntI, GetRandomItem} from "./utils";
 import {Client} from "tmi.js";
 import {ObjectRetrievalType, ObjectTier} from "../inventoryDefinitions";
 import {Quest, QuestType} from "../valueDefinitions";
@@ -25,6 +25,10 @@ export function GetQuestText(type: QuestType, goalValue: number): string {
             return `Gamble ${goalValue} ${goalValue == 1 ? `time` : `times`}`
         case QuestType.LevelUp:
             return `Level up ${goalValue} times`;
+        case QuestType.DoHunting:
+            return `Go hunting ${goalValue} times using !hunt`;
+        case QuestType.DoForaging:
+            return `Go foraging ${goalValue} times using !forage`;
     }
 }
 
@@ -54,7 +58,9 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
                     break;
             }
 
-            return GetRandomIntI(difficulty, difficulty + 3) * GetRandomItem(multiplyArray);
+            let scalar = 0.5; //Half it since we doubled time to do minigames
+
+            return Math.floor(GetRandomIntI(difficulty, difficulty + 3) * GetRandomItem(multiplyArray) * scalar);
         case QuestType.DealDamage:
             switch (difficulty) {
                 case 1:
@@ -64,16 +70,16 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
                     multiplyArray = [ 200, 250, 300 ];
                     break;
                 case 3:
-                    multiplyArray = [ 300, 400];
+                    multiplyArray = [ 300, 350];
                     break;
                 case 4:
-                    multiplyArray = [ 400, 500 ];
+                    multiplyArray = [ 350, 400 ];
                     break;
                 case 5:
-                    multiplyArray = [ 500, 750, 1000 ];
+                    multiplyArray = [ 400, 450, 500 ];
                     break;
             }
-            return GetRandomIntI(difficulty, difficulty * 2) * GetRandomItem(multiplyArray);
+            return Math.floor(GetRandomIntI(difficulty, difficulty * 1.5) * GetRandomItem(multiplyArray));
         case QuestType.TellJoke:
             return GetRandomIntI(2, difficulty) * GetRandomItem(multiplyArray);
         case QuestType.GetItem:
@@ -82,6 +88,27 @@ function GetRandomGoalValue(type: QuestType, difficulty: number): number {
             return GetRandomIntI(difficulty, difficulty * 3) * GetRandomItem(multiplyArray);
         case QuestType.LevelUp:
             return difficulty;
+        case QuestType.DoHunting:
+        case QuestType.DoForaging:
+            switch (difficulty) {
+                case 1:
+                    multiplyArray = [ 2, 4 ];
+                    break;
+                case 2:
+                    multiplyArray = [ 4, 6, 8 ];
+                    break;
+                case 3:
+                    multiplyArray = [ 8, 10 ];
+                    break;
+                case 4:
+                    multiplyArray = [ 10, 12 ];
+                    break;
+                case 5:
+                    multiplyArray = [ 12, 15, 18 ];
+                    break;
+            }
+
+            return Math.floor(GetRandomIntI(difficulty, difficulty + 3) * GetRandomItem(multiplyArray));
     }
 }
 
@@ -93,7 +120,10 @@ function GetRandomQuestType(): QuestType {
         QuestType.DealDamage,
         QuestType.GetItem,
         QuestType.Gamble,
-        QuestType.LevelUp
+        QuestType.DoHunting,
+        QuestType.DoForaging,
+        // QuestType.TellJoke, - Deprecated, wasnt fun
+        // QuestType.LevelUp - Deprecated, wasnt fun
     ])!;
 }
 

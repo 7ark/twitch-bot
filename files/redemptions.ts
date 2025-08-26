@@ -4,25 +4,25 @@ import {
     GiveExp,
     GivePlayerRandomObject,
     LoadPlayer,
-    RandomlyGiveExp,
-    SavePlayer
+    RandomlyGiveExp
 } from "./utils/playerGameUtils";
 import {Broadcast} from "./bot";
-import {GetRandomIntI, GetRandomItem} from "./utils/utils";
-import {MoveDefinitions} from "./movesDefinitions";
+import {GetRandomIntI} from "./utils/utils";
 import {AddToActionQueue} from "./actionqueue";
 import {CurrentCaller, CurrentPollJoker} from "./globals";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
-import {BanUser, CreateTwitchPoll} from "./utils/twitchUtils";
+import {BanUser} from "./utils/twitchUtils";
 import {CreateAndBuildGambleAlert, StartChatChallenge} from "./utils/chatGamesUtils";
 import {ObjectRetrievalType, ObjectTier} from "./inventoryDefinitions";
 import {GivePlayerRandomQuest, HandleQuestProgress} from "./utils/questUtils";
-import {DamageType, LoadMonsterData} from "./utils/monsterUtils";
+import {DamageType} from "./utils/monsterUtils";
 import {AudioType} from "./streamSettings";
 import {MakeRainbowLights, SetDefaultLightColor} from "./utils/lightsUtils";
 import {TrickOrTreat} from "./utils/scareUtils";
 import {IconType, QuestType} from "./valueDefinitions";
-import {AddChapterMarker} from "./utils/obsutils";
+import {AddChapterMarker, SetSceneItemEnabled} from "./utils/obsutils";
+import {CreatePoll} from "./utils/pollUtils";
+import {AD_PendingAngel, AD_PendingDevil} from "./utils/angelDevilUtils";
 
 const REDEEM_GAIN_5_EXP = '2c1c1337-583b-4a51-a169-b79c3cdd3d08';
 const REDEEM_GAIN_20_EXP = '8ed9b9a2-89d3-48e5-9783-f12ae4fe2c61';
@@ -49,6 +49,8 @@ const REDEEM_SETLIGHTCOLOR_GREEN = `97d7a1e9-674d-46ed-9441-b010deadc7d2`;
 const REDEEM_SETLIGHTCOLOR_CUSTOM = `16cae48b-6bce-4fc8-a37f-f94473a1ce06`;
 const REDEEM_TRICKORTREAT = `e5fd3064-ef28-4048-afb4-7c91928c0574`;
 const REDEEM_CALLIN = `1861f169-44f4-43bf-8627-1456996090d2`;
+const REDEEM_BEECAM = `6d2081b0-a13b-48ef-aca8-a924dd6db9e2`;
+const REDEEM_RUNPOLL = `037a4c59-d8a4-4a2b-a76a-a806f2979352`;
 
 export async function ProcessRedemptions(client: Client, username: string, rewardId: string, redemptionId: string, userInput: string) {
     console.log(`Redemption! from ${username}, a reward id of ${rewardId}`)
@@ -110,11 +112,11 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 PlayTextToSpeech(textToSay, AudioType.GameAlerts, TryGetPlayerVoice(player), () => {
                     PlaySound("badumtiss", AudioType.GameAlerts);
                     CurrentPollJoker = username;
-                    CreateTwitchPoll({
+                    CreatePoll(client,{
                         title: "Was that joke funny?",
                         choices: [
-                            { title: "Yes" },
-                            { title: "No" }
+                            "Yes",
+                            "No"
                         ]
                     }, 30, false, (winner: string) => {
                         let wasFunny = winner === "Yes";
@@ -297,17 +299,69 @@ export async function ProcessRedemptions(client: Client, username: string, rewar
                 }
             }, 1000 * 60 * 3) //3 minute call
             break;
+        case REDEEM_BEECAM:
+            await PlayTextToSpeech("Activating bee cam", AudioType.ImportantStreamEffects);
+            await SetSceneItemEnabled("BeeCam", true);
+
+            setTimeout(async () => {
+                await SetSceneItemEnabled("BeeCam", false);
+                await PlayTextToSpeech("Bee cam deactivated", AudioType.ImportantStreamEffects);
+            }, 1000 * 60 * 10) //10 minute bee cam
+            break;
+        case REDEEM_RUNPOLL:
+            AddToActionQueue(async () => {
+                let pieces = userInput.split('|');
+                let title = pieces.length > 0 ? pieces[0] : "";
+                let choices = [];
+                for (let i = 1; i < pieces.length; i++) {
+                    if(pieces[i] != undefined && pieces[i].trim().length > 0) {
+                        choices.push(pieces[i]);
+                    }
+                }
+
+                if(choices.length <= 1) {
+                    await client.say(process.env.CHANNEL!, `@${username}, FOR SHAME! Your poll was not formatted correctly. It must be in the format "Poll Name|Choice 1|Choice 2|Choice 3|etc" with at least 2 choices.`);
+                }
+                else {
+                    await AddChapterMarker(`Chat Runs a Poll: ${title}`);
+                    choices.push("None of the Above");
+
+                    await PlayTextToSpeech(`Chat is running a poll to decide: ${title}`, AudioType.UserGameActions);
+
+                    await CreatePoll(client, {title: title, choices: choices}, 90, false, async (result) => {
+                        await PlayTextToSpeech(`Chat's poll of ${title} has concluded with an answer of ${result}`, AudioType.UserGameActions);
+                    });
+                }
+
+            }, 100);
+            break;
         default:
             await RandomlyGiveExp(client, username, 5, GetRandomIntI(2, 3))
             break;
     }
 }
 
+const goal = 4000;
+let bits = 0;
+let active = true;
+
 export async function ProcessBits(client: Client, username: string, message: string, bitAmount: number) {
     console.log(`Processing bits received from ${username} for ${bitAmount}`);
 
     if(bitAmount > 50) {
         await MakeRainbowLights(Math.ceil(bitAmount / 50));
+    }
+
+    bits += bitAmount;
+
+    if(bits >= goal) {
+        PlayTextToSpeech("Congrats Chat! You've unlocked Cory playing BEE SIMULATOR!", AudioType.ImportantStreamEffects);
+        await client.say(process.env.CHANNEL!, `Congrats Chat! You've unlocked Cory playing BEE SIMULATOR!`);
+        active = false;
+    }
+    else {
+        await client.say(process.env.CHANNEL!, `${bitAmount} added to the BEE SIMULATOR pool! Now at ${bits}/${goal}`);
+        console.log("BITS: " + bits);
     }
 
     // let convertRatio = 5;

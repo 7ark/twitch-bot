@@ -17,7 +17,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Command: 'punch',
         Description: `An attack that deals bludgeoning damage to monsters`,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 0,
 
         HitModifier: 0,
         Damage: { min: 1, max: 5 },
@@ -31,7 +30,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A warrior attack that deals bludgeoning damage to monsters`,
         ClassRequired: ClassType.Warrior,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 2,
         Damage: { min: 1, max: 2 },
@@ -44,7 +42,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A warrior attack that deals slashing damage to monsters`,
         ClassRequired: ClassType.Warrior,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 2,
         Damage: { min: 2, max: 3 },
@@ -58,7 +55,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 4,
         Damage: { min: 5, max: 8 },
@@ -72,7 +68,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 4,
         Damage: { min: 7, max: 12 },
@@ -86,7 +81,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
         StunChance: 10,
 
         HitModifier: 5,
@@ -101,7 +95,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 10,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 6,
         Damage: { min: 10, max: 20 },
@@ -115,7 +108,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 10,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 8,
         Damage: { min: 20, max: 40 },
@@ -130,7 +122,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A mage spell that deals fire OR cold damage to monsters`,
         ClassRequired: ClassType.Mage,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 2,
         Damage: { min: 3, max: 6 },
@@ -143,7 +134,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A mage spell that deals fire damage to monsters`,
         ClassRequired: ClassType.Mage,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 3,
         Damage: { min: 5, max: 10 },
@@ -157,7 +147,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 4,
         Damage: { min: 8, max: 12 },
@@ -171,7 +160,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 5,
         Damage: { min: 7, max: 12 },
@@ -185,7 +173,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 4,
         Damage: { min: 10, max: 15 },
@@ -199,7 +186,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 10,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 6,
         Damage: { min: 5, max: 25 },
@@ -213,7 +199,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 10,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 6,
         Damage: { min: 10, max: 25 },
@@ -228,7 +213,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A rogue attack that lets you throw an object from your inventory at {monster}. (Use !inventory to check what you have)`,
         ClassRequired: ClassType.Rogue,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 2,
         SuccessText: [`@{name} rolled {roll} and throws {object} at {monster} for {0} damage!`],
@@ -239,7 +223,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A rogue attack that deals piercing damage to monsters`,
         ClassRequired: ClassType.Rogue,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 2,
         Damage: { min: 4, max: 6 },
@@ -253,7 +236,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 5,
         Damage: { min: 8, max: 15 },
@@ -265,9 +247,8 @@ export const MoveDefinitions: Array<ClassMove> = [
         Command: 'blackmail',
         Description: `A rogue attack that deals psychic damage to monsters`,
         ClassRequired: ClassType.Rogue,
-        LevelRequirement: 4,
+        LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 7,
         Damage: { min: 3, max: 13 },
@@ -281,7 +262,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
         Poison: true,
 
         HitModifier: 4,
@@ -296,7 +276,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 10,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 6,
         Damage: { min: 8, max: 15 },
@@ -317,7 +296,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 10,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 7,
         Damage: { min: 10, max: 20 },
@@ -335,7 +313,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Description: `A cleric attack that deals fire damage to monsters`,
         ClassRequired: ClassType.Cleric,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 3,
         Damage: { min: 5, max: 10 },
@@ -345,13 +322,12 @@ export const MoveDefinitions: Array<ClassMove> = [
     },
     {
         Command: 'heal',
-        Description: `Heals a target for a small amount, cannot be used on self. Ex. !heal @the7ark`,
+        Description: `Heals a target for about 5% - 10% of their max HP, cannot be used on self. Always restores a minimum of 5HP. Ex. !heal @the7ark`,
         ClassRequired: ClassType.Cleric,
         Type: MoveType.Heal,
-        MovePointsToUnlock: 10,
 
-        HealAmount: { min: 2, max: 15 },
-        SuccessText: [`@{name} is healing {target}!`],
+        HealAmountPercentage: { min: 5, max: 10 },
+        SuccessText: [`@{name} is healing {target} for {0}!`],
         PersonalMoveCooldownInSeconds: 120
     },
     {
@@ -360,7 +336,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Cleric,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 3,
         Damage: { min: 10, max: 15 },
@@ -374,7 +349,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Cleric,
         LevelRequirement: 5,
         Type: MoveType.Attack,
-        MovePointsToUnlock: 10,
 
         HitModifier: 3,
         Damage: { min: 10, max: 15 },
@@ -384,14 +358,13 @@ export const MoveDefinitions: Array<ClassMove> = [
     },
     {
         Command: 'restore',
-        Description: `Heals a target for a large amount, cannot be used on self. Ex. !restore @the7ark`,
+        Description: `Heals a target for about 15% - 30% of their map HP, cannot be used on self. Always restores a minimum of 5HP. Ex. !restore @the7ark`,
         ClassRequired: ClassType.Cleric,
         LevelRequirement: 5,
         Type: MoveType.Heal,
-        MovePointsToUnlock: 10,
 
-        HealAmount: { min: 15, max: 50 },
-        SuccessText: [`@{name} is restoring {target}s health!`],
+        HealAmountPercentage: { min: 15, max: 30 },
+        SuccessText: [`@{name} is restoring {target} for {0} health!`],
         PersonalMoveCooldownInSeconds: 240
     },
     {
@@ -402,7 +375,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Type: MoveType.GiveBuff,
         BuffToGive: StatusEffect.IncreaseACBy3,
         BuffLengthInSeconds: 60 * 5,
-        MovePointsToUnlock: 10,
 
         SuccessText: [`@{name} is shielding {target}! Their armor is increased by 3 for {0} seconds.`],
         PersonalMoveCooldownInSeconds: 60 * 8
@@ -415,7 +387,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Type: MoveType.GiveBuff,
         BuffToGive: StatusEffect.IncreasedDamage,
         BuffLengthInSeconds: 60 * 5,
-        MovePointsToUnlock: 10,
 
         SuccessText: [`@{name} is giving {target} a spiritual weapon! Their attack damage has increased for {0} seconds.`],
         PersonalMoveCooldownInSeconds: 60 * 8
@@ -428,7 +399,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         Type: MoveType.GiveBuff,
         BuffToGive: StatusEffect.AllResistance,
         BuffLengthInSeconds: 60 * 5,
-        MovePointsToUnlock: 10,
 
         SuccessText: [`@{name} is blessing {target}! They take less damage for {0} seconds.`],
         PersonalMoveCooldownInSeconds: 60 * 8
@@ -441,11 +411,63 @@ export const MoveDefinitions: Array<ClassMove> = [
         Type: MoveType.GiveBuff,
         BuffToGive: StatusEffect.BetterChanceToCrit,
         BuffLengthInSeconds: 60 * 7,
-        MovePointsToUnlock: 10,
 
         SuccessText: [`@{name} is giving {target} guidance! They have an increased chance to crit for {0} seconds.`],
         PersonalMoveCooldownInSeconds: 60 * 10
     },
+    {
+        Command: 'iron skin',
+        Description: `Creates a thin sheet of iron skin around the target, making them resistant to ALL damage temporarily. Ex. !guidance @the7ark`,
+        ClassRequired: ClassType.Cleric,
+        LevelRequirement: 10,
+        Type: MoveType.GiveBuff,
+        BuffToGive: StatusEffect.AllResistance,
+        BuffLengthInSeconds: 60 * 5,
+
+        SuccessText: [`@{name} is giving {target} iron skin! They have resistance to ALL damage for {0} seconds.`],
+        PersonalMoveCooldownInSeconds: 60 * 10
+    },
+    {
+        Command: 'Revitalize',
+        Description: `Heals a target for about 40% - 60% of their map HP, cannot be used on self. Always restores a minimum of 5HP. Ex. !restore @the7ark`,
+        ClassRequired: ClassType.Cleric,
+        LevelRequirement: 10,
+        Type: MoveType.Heal,
+
+        HealAmountPercentage: { min: 40, max: 60 },
+        SuccessText: [`@{name} is revitalizing {target}, and healing them for {0}HP!`],
+        PersonalMoveCooldownInSeconds: 480
+    },
+    {
+        Command: 'sacred flame',
+        Description: `A cleric attack that deals fire damage to monsters`,
+        ClassRequired: ClassType.Cleric,
+        LevelRequirement: 10,
+        Type: MoveType.Attack,
+
+        HitModifier: 7,
+        Damage: { min: 15, max: 20 },
+        DamageTypes: [DamageType.Fire],
+        SuccessText: [`@{name} rolled {roll} and engulfs the {monster} in sacred fire for {0} damage!`],
+        PersonalMoveCooldownInSeconds: 60
+    },
+    {
+        Command: 'holy burst',
+        Description: `A cleric attack that deals lightning damage to monsters`,
+        ClassRequired: ClassType.Cleric,
+        LevelRequirement: 10,
+        Type: MoveType.Attack,
+
+        HitModifier: 7,
+        Damage: { min: 10, max: 25 },
+        DamageTypes: [DamageType.Lightning],
+        SuccessText: [`@{name} rolled {roll} and a bolt of lightning strikes the {monster} for {0} damage!`],
+        PersonalMoveCooldownInSeconds: 60
+    },
+
+    //Cleric ideas:
+    //Automatically turn on the angel from the angel/devil code, and let them give me directions for a time period?
+    //Play angelic music and such, show a halo and things on me?
 
     //Give health on crits
     {
@@ -454,7 +476,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 5,
         Type: MoveType.GainHPOnCrit,
-        MovePointsToUnlock: 10,
 
         SuccessText: [`@{name} is giving a heroic speech, and everyone gains HP on critical hits for the next 5 minutes.`],
     },
@@ -466,7 +487,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 3,
         Type: MoveType.PlaySound,
-        MovePointsToUnlock: 10,
         PersonalMoveCooldownInSeconds: 10,
 
         SoundFile: 'battlecry',
@@ -480,7 +500,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 3,
         Type: MoveType.ChangeMonitorRotation,
-        MovePointsToUnlock: 10,
         SoundFile: 'confusion',
         PersonalMoveCooldownInSeconds: 15 * 60,
 
@@ -494,7 +513,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 3,
         Type: MoveType.DarkenMonitor,
-        MovePointsToUnlock: 10,
         SoundFile: 'shroud',
         PersonalMoveCooldownInSeconds: 10 * 60,
 
@@ -508,7 +526,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Warrior,
         LevelRequirement: 10,
         Type: MoveType.SayAllChat,
-        MovePointsToUnlock: 10,
         SoundFile: 'inspire',
 
         SuccessText: [`@{name} inspired chat! Every message said for the next 1 minutes will now be said out loud`],
@@ -521,7 +538,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Mage,
         LevelRequirement: 10,
         Type: MoveType.TeleportCameraRandomly,
-        MovePointsToUnlock: 10,
         SoundFile: 'teleport',
         PersonalMoveCooldownInSeconds: 10 * 60,
 
@@ -535,7 +551,6 @@ export const MoveDefinitions: Array<ClassMove> = [
         ClassRequired: ClassType.Rogue,
         LevelRequirement: 10,
         Type: MoveType.Silence,
-        MovePointsToUnlock: 10,
         SoundFile: 'silence',
         PersonalMoveCooldownInSeconds: 10 * 60,
 

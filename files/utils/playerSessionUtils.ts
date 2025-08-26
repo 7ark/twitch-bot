@@ -1,6 +1,7 @@
 import fs from "fs";
 import {GetRandomItem} from "./utils";
 import {LoadPlayer} from "./playerGameUtils";
+import {CreateNewWorldData, WorldData} from "./locationUtils";
 
 export interface PlayerSessionData {
     NameAsDisplayed: string;
@@ -137,7 +138,22 @@ export function HandleLoadingSession() {
         if (hourDifference > 1) {
             console.log("Wiping Player Session Info")
             fs.unlinkSync('playersessions.json')
+            if(fs.existsSync('worlddata.json')) {
+                fs.unlinkSync('worlddata.json')
+            }
+
+            CreateNewWorldData();
+        }
+        else {
+            if(fs.existsSync('worlddata.json')) {
+                WorldData = JSON.parse(fs.readFileSync('worlddata.json', 'utf-8'));
+            }
+            else {
+                CreateNewWorldData();
+            }
         }
     }
-
+    else {
+        CreateNewWorldData();
+    }
 }

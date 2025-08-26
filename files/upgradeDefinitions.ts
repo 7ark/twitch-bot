@@ -230,6 +230,66 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Rarity: 5,
         IsPermanent: false
     },
+    {
+        Name: `Plague Bearer`,
+        Description: `Apply {0} burning and {1} more of any affliction you inflict`,
+        Effects: [
+            {
+                Type: UpgradeType.ApplyAffliction,
+                Strength: 1,
+                AfflictionsImposed: [Affliction.Burning]
+            },
+            {
+                Type: UpgradeType.MoreAfflictions,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 10,
+        IsPermanent: false
+    },
+    {
+        Name: `Toxic Healer`,
+        Description: `Apply {0} poison on attacks and heal {1} when monsters take affliction damage`,
+        Effects: [
+            {
+                Type: UpgradeType.ApplyAffliction,
+                Strength: 2,
+                AfflictionsImposed: [Affliction.Poison]
+            },
+            {
+                Type: UpgradeType.HealWhenMonsterTakesAfflictionDamage,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 10,
+        IsPermanent: false
+    },
+    {
+        Name: `Curse Weaver`,
+        Description: `Apply {0} curse and inflict {1} more of any affliction`,
+        Effects: [
+            {
+                Type: UpgradeType.ApplyAffliction,
+                Strength: 1,
+                AfflictionsImposed: [Affliction.Curse]
+            },
+            {
+                Type: UpgradeType.MoreAfflictions,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [UpgradeType.ApplyAffliction],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
 
     //TODO New
     {
@@ -349,6 +409,225 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Rarity: 5,
         IsPermanent: false
     },
+
+    {
+        Name: `Berserker's Fury`,
+        Description: `Deal {0}% more damage and gain {1}% crit chance, but take {2}% more damage`,
+        Effects: [
+            {
+                Type: UpgradeType.DamageChangePercentage,
+                Strength: 15
+            },
+            {
+                Type: UpgradeType.CriticalHitChance,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.TakenDamageChangedByPercent,
+                Strength: -10 // more damage taken
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Arcane Scholar`,
+        Description: `Gain {0}% more EXP and {1}% cooldown reduction, but deal {2}% less damage`,
+        Effects: [
+            {
+                Type: UpgradeType.MoreEXP,
+                Strength: 10
+            },
+            {
+                Type: UpgradeType.ReducedCooldowns,
+                Strength: 10
+            },
+            {
+                Type: UpgradeType.DamageChangePercentage,
+                Strength: -10
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Fortune's Blessing`,
+        Description: `Gain {0}% crit chance, {1} gems per enemy defeated, and {2}% chance to not trigger cooldowns`,
+        Effects: [
+            {
+                Type: UpgradeType.CriticalHitChance,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.DefeatGems,
+                Strength: 150
+            },
+            {
+                Type: UpgradeType.CooldownCancelChance,
+                Strength: 5
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Fortress`,
+        Description: `Gain {0} armor, {1}% max HP, and {2}% chance to be set to 1hp instead of dying`,
+        Effects: [
+            {
+                Type: UpgradeType.IncreaseAC,
+                Strength: 2
+            },
+            {
+                Type: UpgradeType.IncreaseMaxHPPercent,
+                Strength: 10
+            },
+            {
+                Type: UpgradeType.FatalDamageSave,
+                Strength: 5
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Merchant Warrior`,
+        Description: `Gain {0} gems per defeat and {1}% chance for gems equal to damage dealt`,
+        Effects: [
+            {
+                Type: UpgradeType.DefeatGems,
+                Strength: 150
+            },
+            {
+                Type: UpgradeType.GemsForDamageChance,
+                Strength: 5
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Greedy Fighter`,
+        Description: `Gain {0} gems per defeat and {1}% more EXP, but deal {2}% less damage`,
+        Effects: [
+            {
+                Type: UpgradeType.DefeatGems,
+                Strength: 200
+            },
+            {
+                Type: UpgradeType.MoreEXP,
+                Strength: 8
+            },
+            {
+                Type: UpgradeType.DamageChangePercentage,
+                Strength: -8
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Desperate Warrior`,
+        Description: `When below 30% HP: deal {0}% more damage and take {1}% less damage`,
+        Effects: [
+            {
+                Type: UpgradeType.MoreDamageWhenBelow30Percent,
+                Strength: 15
+            },
+            {
+                Type: UpgradeType.LessDamageWhenBelow30Percent,
+                Strength: 10
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Combat Medic`,
+        Description: `Heal {0}% of damage dealt and {1} when monsters take affliction damage`,
+        Effects: [
+            {
+                Type: UpgradeType.HealForDamageDealt,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.HealWhenMonsterTakesAfflictionDamage,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [UpgradeType.ApplyAffliction],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Precision Fighter`,
+        Description: `Gain +{0} to hit, {1}% crit chance, and {2}% consecutive damage bonus`,
+        Effects: [
+            {
+                Type: UpgradeType.ChangeHitModifier,
+                Strength: 2
+            },
+            {
+                Type: UpgradeType.CriticalHitChance,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.ConsecutiveDamage,
+                Strength: 3
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Flurry Master`,
+        Description: `{0}% cooldown reduction, {1}% chance to not trigger cooldowns, and +{2} to hit`,
+        Effects: [
+            {
+                Type: UpgradeType.ReducedCooldowns,
+                Strength: 8
+            },
+            {
+                Type: UpgradeType.CooldownCancelChance,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.ChangeHitModifier,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
     //receives % more damage from other players, unlocks many from above, but also + extra health
     //each time you do x, % chance to destroy random item
     //-gems but plus hp
@@ -419,6 +698,52 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         UpgradeRequirements: [],
         Savable: true,
         Rarity: 3,
+        IsPermanent: false
+    },
+    {
+        Name: `Weapon Master`,
+        Description: `{0}% chance to strike twice, +{1} to hit, and {2}% more damage when below 30% HP`,
+        Effects: [
+            {
+                Type: UpgradeType.WarriorStrikeTwiceChance,
+                Strength: 10
+            },
+            {
+                Type: UpgradeType.ChangeHitModifier,
+                Strength: 1
+            },
+            {
+                Type: UpgradeType.MoreDamageWhenBelow30Percent,
+                Strength: 10
+            }
+        ],
+        ClassRequirements: [ClassType.Warrior],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Unstoppable Force`,
+        Description: `Take {0}% less damage, {1}% chance to strike twice, and +{2} armor`,
+        Effects: [
+            {
+                Type: UpgradeType.TakenDamageChangedByPercent,
+                Strength: 8
+            },
+            {
+                Type: UpgradeType.WarriorStrikeTwiceChance,
+                Strength: 8
+            },
+            {
+                Type: UpgradeType.IncreaseAC,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [ClassType.Warrior],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
         IsPermanent: false
     },
 
@@ -499,6 +824,53 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Rarity: 5,
         IsPermanent: false
     },
+    {
+        Name: `Shadow Assassin`,
+        Description: `{0}% lifesteal chance, {1}% crit chance, and heal {2} when monsters miss you`,
+        Effects: [
+            {
+                Type: UpgradeType.LifestealChance,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.CriticalHitChance,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.DodgeHeal,
+                Strength: 5
+            }
+        ],
+        ClassRequirements: [ClassType.Rogue],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Wealthy Assassin`,
+        Description: `{0}% chance for gems equal to damage, {1} gems per defeat, and apply {2} poison`,
+        Effects: [
+            {
+                Type: UpgradeType.GemsForDamageChance,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.DefeatGems,
+                Strength: 100
+            },
+            {
+                Type: UpgradeType.ApplyAffliction,
+                Strength: 1,
+                AfflictionsImposed: [Affliction.Poison]
+            }
+        ],
+        ClassRequirements: [ClassType.Rogue],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 8,
+        IsPermanent: false
+    },
 
     //Mage
     {
@@ -561,6 +933,52 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Rarity: 5,
         IsPermanent: false
     },
+    {
+        Name: `Chaos Mage`,
+        Description: `{0}% chance for random afflictions, {1}% chance to double afflictions, and {2}% more mage damage`,
+        Effects: [
+            {
+                Type: UpgradeType.RandomAfflictionChance,
+                Strength: 8
+            },
+            {
+                Type: UpgradeType.DoubleAfflictionsChance,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.MoreMageDamage,
+                Strength: 8
+            }
+        ],
+        ClassRequirements: [ClassType.Mage],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Scholar Mage`,
+        Description: `{0}% more EXP, {1}% cooldown reduction, and {2}% more mage damage`,
+        Effects: [
+            {
+                Type: UpgradeType.MoreEXP,
+                Strength: 8
+            },
+            {
+                Type: UpgradeType.ReducedCooldowns,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.MoreMageDamage,
+                Strength: 8
+            }
+        ],
+        ClassRequirements: [ClassType.Mage],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
 
     //Cleric
     {
@@ -599,6 +1017,52 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Effects: [
             {
                 Type: UpgradeType.HealForDamageDealt,
+                Strength: 10
+            }
+        ],
+        ClassRequirements: [ClassType.Cleric],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Battle Cleric`,
+        Description: `{0}% stronger healing, heal {1}% of damage dealt, and +{2} armor when above 70% HP`,
+        Effects: [
+            {
+                Type: UpgradeType.StrongerHealing,
+                Strength: 15
+            },
+            {
+                Type: UpgradeType.HealForDamageDealt,
+                Strength: 5
+            },
+            {
+                Type: UpgradeType.IncreaseArmorWhenAbove70Percent,
+                Strength: 2
+            }
+        ],
+        ClassRequirements: [ClassType.Cleric],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: false
+    },
+    {
+        Name: `Divine Guardian`,
+        Description: `{0}% stronger healing, take {1} extra damage per player hit, and {2}% max HP`,
+        Effects: [
+            {
+                Type: UpgradeType.StrongerHealing,
+                Strength: 20
+            },
+            {
+                Type: UpgradeType.ShieldDamageFromOtherPlayers,
+                Strength: 1
+            },
+            {
+                Type: UpgradeType.IncreaseMaxHPPercent,
                 Strength: 10
             }
         ],
@@ -700,4 +1164,118 @@ export const UpgradeDefinitions: Array<Upgrade> = [
         Rarity: 5,
         IsPermanent: true
     },
+    {
+        Name: `SUPER COMBO`,
+        Description: `Gain {0}% crit chance and {1}% consecutive damage bonus`,
+        Effects: [
+            {
+                Type: UpgradeType.CriticalHitChance,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.ConsecutiveDamage,
+                Strength: 3
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER TANK`,
+        Description: `Gain {0}% max HP and {1} armor`,
+        Effects: [
+            {
+                Type: UpgradeType.IncreaseMaxHPPercent,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.IncreaseAC,
+                Strength: 1
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER SPEED`,
+        Description: `{0}% cooldown reduction and {1}% chance to not trigger cooldowns`,
+        Effects: [
+            {
+                Type: UpgradeType.ReducedCooldowns,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.CooldownCancelChance,
+                Strength: 3
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER RICH`,
+        Description: `Gain {0} gems per defeat and {1}% more EXP`,
+        Effects: [
+            {
+                Type: UpgradeType.DefeatGems,
+                Strength: 100
+            },
+            {
+                Type: UpgradeType.MoreEXP,
+                Strength: 3
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER ACCURATE`,
+        Description: `Gain +{0} to hit and {1}% crit chance`,
+        Effects: [
+            {
+                Type: UpgradeType.ChangeHitModifier,
+                Strength: 1
+            },
+            {
+                Type: UpgradeType.CriticalHitChance,
+                Strength: 3
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    },
+    {
+        Name: `SUPER SURVIVOR`,
+        Description: `{0}% chance to be set to 1hp instead of dying and {1}% less damage taken`,
+        Effects: [
+            {
+                Type: UpgradeType.FatalDamageSave,
+                Strength: 3
+            },
+            {
+                Type: UpgradeType.TakenDamageChangedByPercent,
+                Strength: 3
+            }
+        ],
+        ClassRequirements: [],
+        UpgradeRequirements: [],
+        Savable: true,
+        Rarity: 5,
+        IsPermanent: true
+    }
 ];

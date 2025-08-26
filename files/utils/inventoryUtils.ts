@@ -1,5 +1,5 @@
 import {AllInventoryObjects, InventoryObject, ObjectRetrievalType} from "../inventoryDefinitions";
-import {FormatListNicely} from "./utils";
+import {FormatListNicely, GetRandomItem} from "./utils";
 
 export function GetInventoryObjectsBySource(source: ObjectRetrievalType) {
     let allObjs = [...AllInventoryObjects];
@@ -16,4 +16,15 @@ export function GetRecipesItemUsedIn(object: InventoryObject): string {
     }
 
     return FormatListNicely(objs);
+}
+
+export function GetRandomInventoryObjectByRarity(items: InventoryObject[]) {
+    let options = [];
+    for (let i = 0; i < items.length; i++) {
+        for (let j = 0; j < items[i].Rarity; j++) {
+            options.push(items[i]);
+        }
+    }
+
+    return GetRandomItem(options);
 }

@@ -1,7 +1,8 @@
 import {Client} from "tmi.js";
 import {Affliction, ClassType, MoveType, Player, StatusEffect} from "./valueDefinitions";
 import {
-    AddSpacesBeforeCapitals, CountOccurrences,
+    AddSpacesBeforeCapitals,
+    CountOccurrences, FormatSeconds,
     GetItemsAsPages,
     GetNumberWithOrdinal,
     GetPageNumberFromCommand,
@@ -10,9 +11,10 @@ import {
     IsCommand
 } from "./utils/utils";
 import {
+    ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
     GetCommandCooldownTimeLeftInSeconds,
-    GetObjectFromInputText,
+    GetObjectFromInputText, GetPlayerCoordinates,
     GetPlayerStatsDisplay,
     GetUpgradeDescription,
     GetUpgradeOptions,
@@ -28,7 +30,7 @@ import {
     TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {WhisperUser} from "./utils/twitchUtils";
-import {LoadMonsterData} from "./utils/monsterUtils";
+import {DamageType, LoadMonsterData} from "./utils/monsterUtils";
 import {GetMove, MoveDefinitions} from "./movesDefinitions";
 import {CurrentCaller, CurrentGTARider, IsMonsterActive} from "./globals";
 import {BattlecryStarted, CreditsGoing, DoBattleCry} from "./utils/commandUtils";
@@ -62,10 +64,11 @@ import {
 } from "./utils/gtaUtils";
 import {DoesSceneContainItem, GetOpenScene, SetSceneItemEnabled} from "./utils/obsutils";
 import {
+    BankReceiveFromSpend, DoesBankHaveEnoughCoinsForGemTransaction,
     ExchangeCoinsForGems,
     ExchangeGemsForCoins,
-    GetBankStatusText,
-    GetExchangeRateText,
+    GetBankStatusText, GetCoinsToExchangeForGems, GetExchangeFee, GetExchangeFeeForGems,
+    GetExchangeRateText, GetGemsToExchangeForCoins,
     LoadBankData,
     SaveBankData,
     UpdateExchangeRate
@@ -86,11 +89,19 @@ import {GetRecipesItemUsedIn} from "./utils/inventoryUtils";
 import {
     AD_AngelQueue,
     AD_CurrentAngel,
-    AD_CurrentDevil, AD_DevilQueue,
-    AD_PendingAngel, AD_PendingDevil,
-    AddPendingPerson, GiveADQuest, LoadAD, RemoveAD
+    AD_CurrentDevil,
+    AD_DevilQueue,
+    AD_PendingAngel,
+    AD_PendingDevil,
+    AddPendingPerson,
+    GiveADQuest,
+    LoadAD,
+    RemoveAD
 } from "./utils/angelDevilUtils";
 import {ClearMeeting} from "./utils/meetingUtils";
+import {CreatePoll} from "./utils/pollUtils";
+import {GetLocation, GetTravelSecondsRemaining, StartTravelToLocation} from "./utils/locationUtils";
+import {AllLocations} from "./locationDefinitions";
 
 export interface CommandDefinition {
     Commands: Array<string>;
@@ -208,6 +219,13 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     case "voices":
                         await client.say(process.env.CHANNEL!, `When using text-to-speech, you can set what voice you'd like to use with !setvoice [voicename]. You can get a list of supported voice names with !voices. You can also use emotions in your messages by typing something like "*shouting* Hello! *angry* You suck!". Use !emotions to check which I support. (Not all voices support all emotions, check https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts#voice-styles-and-roles to see whats supported)`);
                         break;
+                    case "travel":
+                    case "world":
+                    case "travels":
+                    case "location":
+                    case "locations":
+                        await client.say(process.env.CHANNEL!, `You are in a world! Use !whereami to find out which settlement you're in. Use !locations to see all the settlements in the world. You can use !travel [place name] to travel to a new location. Different locations yield different types of resources. If you mine, cook, and fish too much in one location, it may run out of supplies, and you'll have to travel elsewhere.`);
+                        break;
                     default:
                         await client.say(process.env.CHANNEL!, `This subject doesn't exist in the help command yet! Cory is taking note and will update it in the future.`);
 
@@ -242,6 +260,9 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     break;
                 case "angeldevil":
                     await client.say(process.env.CHANNEL!, `Today Cory is trying to complete quests given to him by both an ANGEL and a DEVIL! You can use !iamgood or !iamevil to be in the pool to be randomly selected as an angel or devil, to then give Cory a related quest. Everything you say will be said out loud through TTS.`);
+                    break;
+                case "bees":
+                    await client.say(process.env.CHANNEL!, `Today Cory is trying to make a beautiful bee farm. First he must find a flower meadow biome, then he must collect beehives to make a bee paradise. Talk about bees, or do a little 'buzz' in chat and see what happens.`);
                     break;
             }
         }
@@ -926,6 +947,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
                     if (player.ByteCoins >= cost) {
                         player.ByteCoins -= cost;
+                        BankReceiveFromSpend(cost);
                         SavePlayer(player);
                         await GivePlayerObject(client, player.Username, chosenObject.ObjectName);
                     } else {
@@ -1088,12 +1110,19 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
+            if(player.CookingFood) {
+                await WhisperUser(client, player.Username, `@${player.Username}, you're already cooking. Wait until it's done before you start another!`);
+            }
+
             let parameter = GetAllParameterTextAfter(command, 1);
 
             let obj = GetObjectFromInputText(parameter);
 
             if(obj !== undefined) {
                 if(obj.CookTimeInSeconds !== undefined && obj.CookTimeInSeconds > 0 && obj.CookedVersion !== undefined) {
+                    player.CookingFood = true;
+                    SavePlayer(player);
+
                     await WhisperUser(client, player.Username, `@${player.Username}, you begin cooking your ${obj.ObjectName}`);
                     TakeObjectFromPlayer(player.Username, obj.ObjectName);
 
@@ -1101,6 +1130,10 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
                     await WhisperUser(client, player.Username, `@${player.Username}, you have finished cooking your ${obj.ObjectName} and now have ${obj.CookedVersion}`);
                     await GivePlayerObject(client, player.Username, obj.CookedVersion, false);
+
+                    let playerAfter = LoadPlayer(player.Username);
+                    playerAfter.CookingFood = false;
+                    SavePlayer(playerAfter);
                 }
                 else {
                     await WhisperUser(client, player.Username, `@${player.Username}, ${obj.ContextualName} is not cookable!`);
@@ -1139,7 +1172,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            StartGathering(client, player, GatherType.Forage);
+            await StartGathering(client, player, GatherType.Forage);
         }
     },
     {
@@ -1147,7 +1180,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
-            StartGathering(client, player, GatherType.Hunt);
+            await StartGathering(client, player, GatherType.Hunt);
         }
     },
     {
@@ -1184,6 +1217,48 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             } else {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, I could not find that player. Ex !give the7ark bananas`);
             }
+        }
+    },
+    {
+        Commands: ["auto"],
+        Description: "Allows you to automatically play cook/mine/fish minigames for 30 minutes. By default it will mine, cook, and then fish. You can also specify a pattern. Ex. '!auto fish mine' will fish and mine or '!auto cook' will only cook",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let pattern = `mine cook fish`;
+
+            let extraInput = GetAllParameterTextAfter(command, 1).toLowerCase();
+            if(extraInput.trim() != '') {
+                if(extraInput
+                    .replace('mine', ``)
+                    .replace(`cook`, ``)
+                    .replace(`fish`, ``)
+                    .trim() != '') {
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, '${extraInput}' is not a valid pattern. `);
+                    return;
+                }
+
+                let inputTrimmed = extraInput.trimStart().trimEnd();
+                let inputNodes = inputTrimmed.split(' ').length;
+
+                if(inputNodes > 4) {
+                    await client.say(process.env.CHANNEL!, `@${player.Username}, you can only have a maximum of 5 defined patterns.`);
+                    return;
+                }
+
+                if(inputNodes == 0) {
+                    pattern = `${inputTrimmed} ${inputTrimmed} ${inputTrimmed}`;
+                }
+                else {
+                    pattern = extraInput;
+                }
+            }
+
+            player.AutoMinigameStartTime = new Date();
+            player.AutoMinigamePattern = pattern;
+            SavePlayer(player);
+
+            await client.say(process.env.CHANNEL!, `You have started automatically playing minigames with a pattern of: ${pattern}`);
         }
     },
     {
@@ -1257,28 +1332,23 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 return;
             }
 
-            let coinsToReceive = ExchangeGemsForCoins(gemsToExchange);
+            if(!DoesBankHaveEnoughCoinsForGemTransaction(gemsToExchange)) {
+                await client.say(process.env.CHANNEL!, `@${player.Username}, the bank doesn't have enough ByteCoins for this exchange! Come back later or purchase things.`);
+                return;
+            }
+
+            let coinsToReceive = GetCoinsToExchangeForGems(gemsToExchange);
             if (coinsToReceive <= 0) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you need to exchange at least ${UpdateExchangeRate()} gems to get 1 ByteCoin`);
                 return;
             }
 
-            let bankData = LoadBankData();
-            if (bankData.totalCoins < coinsToReceive) {
-                await client.say(process.env.CHANNEL!, `@${player.Username}, the bank doesn't have enough ByteCoins for this exchange!`);
-                return;
-            }
-
             if (player.ByteCoins === undefined) player.ByteCoins = 0;
 
-            player.SpendableGems -= gemsToExchange;
-            player.ByteCoins += coinsToReceive;
-            bankData.totalCoins -= coinsToReceive;
+            let exchangeFee = GetExchangeFeeForGems(gemsToExchange);
+            let coinsReceived = ExchangeGemsForCoins(gemsToExchange, player);
 
-            SavePlayer(player);
-            SaveBankData(bankData);
-
-            await client.say(process.env.CHANNEL!, `@${player.Username} exchanged ${gemsToExchange} gems for ${coinsToReceive} ByteCoins!`);
+            await client.say(process.env.CHANNEL!, `@${player.Username} exchanged ${gemsToExchange} gems for ${coinsReceived} ByteCoins! An exchange fee of ${(exchangeFee * 100)}% (${(Math.ceil(coinsToReceive * exchangeFee))} Bytecoins) was charged.`);
         }
     },
     {
@@ -1305,28 +1375,23 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                 return;
             }
 
-            let gemsToReceive = ExchangeCoinsForGems(coinsToExchange);
+            let gemsToReceive = GetGemsToExchangeForCoins(coinsToExchange);
             if (gemsToReceive <= 0) {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, you need to exchange at least ${UpdateExchangeRate()} Bytecoins to get 1 gem`);
                 return;
             }
 
-            let bankData = LoadBankData();
             // if(bankData.totalCoins < gemsToReceive) {
             //     await client.say(process.env.CHANNEL!, `@${player.Username}, the bank doesn't have enough Gems for this exchange!`);
             //     return;
             // }
 
+            let exchangeFee = GetExchangeFee(coinsToExchange);
             if (player.ByteCoins == undefined) player.ByteCoins = 0;
 
-            player.ByteCoins -= coinsToExchange;
-            player.SpendableGems += gemsToReceive;
-            bankData.totalCoins += coinsToExchange;
+            let gemsReceived = ExchangeCoinsForGems(coinsToExchange, player);
 
-            SavePlayer(player);
-            SaveBankData(bankData);
-
-            await client.say(process.env.CHANNEL!, `@${player.Username} exchanged ${coinsToExchange} Bytecoins for ${gemsToReceive} gems!`);
+            await client.say(process.env.CHANNEL!, `@${player.Username} exchanged ${coinsToExchange} Bytecoins for ${gemsReceived} gems! An exchange fee of ${(exchangeFee * 100)}% (${(Math.ceil(coinsToExchange * exchangeFee))} Bytecoins) was charged.`);
         }
     },
     {
@@ -1360,6 +1425,56 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             await WhisperUser(client, player.Username, `Commands: ${txt}`);
         }
     },
+
+    //Location stuff
+    {
+        Commands: ["whereami"],
+        Description: "Tells you where you currently are in the world",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            if(player.Travelling) {
+                let secondsRemaining = GetTravelSecondsRemaining(player);
+                let formattedDisplay = FormatSeconds(secondsRemaining);
+
+                await WhisperUser(client, player.Username, `@${player.Username}, you are currently travelling to ${player.TravelDestination}, it will take ${formattedDisplay} to arrive there.`);
+            }
+            else {
+                await WhisperUser(client, player.Username, `@${player.Username}, you are currently at ${player.CurrentLocation}`);
+            }
+        }
+    },
+    {
+        Commands: ["locations"],
+        Description: "Gives the name of all unique locations in the world",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let page = GetPageNumberFromCommand(command);
+            let displayableLocations = AllLocations.filter(x => x.Coordinates.length == 1 && x.Info != undefined);
+
+            let txt = GetItemsAsPages("locations", displayableLocations.map(x => `${x.Name} - ${x.Info.Description}`), page);
+
+            await WhisperUser(client, player.Username, `Locations: ${txt}`);
+        }
+    },
+    {
+        Commands: ["travel"],
+        Description: "Allows you to travel to a new location. Use !locations to see what options you have. (!travel Norcha)",
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let locationName = GetAllParameterTextAfter(command, 1);
+            let location = GetLocation(locationName);
+
+            if(location !== undefined) {
+                await StartTravelToLocation(client, player, location.Name);
+            }
+            else {
+                await client.say(process.env.CHANNEL!, `@${player.Username}, no location by the name of ${locationName} could be found! Use !locations to see whats in the world.`);
+            }
+        }
+    },
     // {
     //     Commands: [""],
     //     Description: "",
@@ -1369,6 +1484,14 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
     //
     //     }
     // },
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///
+    /// SPECIAL EVENTS
+    ///
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //Used by multiple things
     {
@@ -1652,7 +1775,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         }
     },
     {
-        Commands: ["locations"],
+        Commands: ["gtalocations"],
         Description: "",
         AdminCommand: false,
 
@@ -1838,6 +1961,35 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         }
     },
     {
+        Commands: ["exp25"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
+            for (let i = 0; i < allPlayerData.length; i++) {
+                let currPlayer: Player = allPlayerData[i];
+
+
+
+                await GiveExp(client, currPlayer.Username, Math.floor(currPlayer.CurrentExpNeeded * 0.25));
+            }
+        }
+    },
+    {
+        Commands: ["healall"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let allPlayerData = JSON.parse(fs.readFileSync('playerData.json', 'utf-8'));
+            for (let i = 0; i < allPlayerData.length; i++) {
+                let currPlayer: Player = allPlayerData[i];
+
+                await ChangePlayerHealth(client, currPlayer.Username, 999999, DamageType.None);
+            }
+            await client.say(process.env.CHANNEL!, `I've healed ALL adventurers!`);
+        }
+    },
+    {
         Commands: ["adventure"],
         AdminCommand: true,
 
@@ -1899,6 +2051,54 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             await ClearMeeting();
         }
     },
+    {
+        Commands: ["createpoll"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let text = command.replace("!createpoll ", "");
+            let pieces = text.split('|');
+            let title = pieces[0];
+            let choices = [];
+            for (let i = 1; i < pieces.length; i++) {
+                choices.push(pieces[i]);
+            }
+
+            await CreatePoll(client, {title: title, choices: choices}, 60);
+        }
+    },
+    // {
+    //     Commands: [""],
+    //     AdminCommand: true,
+    //
+    //     Action: async (client: Client, player: Player, command: string) => {
+    //
+    //     }
+    // },
+    // {
+    //     Commands: [""],
+    //     AdminCommand: true,
+    //
+    //     Action: async (client: Client, player: Player, command: string) => {
+    //
+    //     }
+    // },
+    // {
+    //     Commands: [""],
+    //     AdminCommand: true,
+    //
+    //     Action: async (client: Client, player: Player, command: string) => {
+    //
+    //     }
+    // },
+    // {
+    //     Commands: [""],
+    //     AdminCommand: true,
+    //
+    //     Action: async (client: Client, player: Player, command: string) => {
+    //
+    //     }
+    // },
     // {
     //     Commands: [""],
     //     AdminCommand: true,

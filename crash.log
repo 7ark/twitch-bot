@@ -1,0 +1,32 @@
+PID 23936 received SIGSEGV for address: 0x2026f3c9
+SymInit: Symbol-SearchPath: '.;D:\Misc Projects\twitch bot;C:\Program Files\nodejs;C:\WINDOWS;C:\WINDOWS\system32;SRV*C:\websymbols*http://msdl.microsoft.com/download/symbols;', symOptions: 530, UserName: 'Cory'
+OS-Version: 10.0.19045 () 0x100-0x1
+D:\Misc Projects\twitch bot\node_modules\segfault-handler\src\StackWalker.cpp (941): StackWalker::ShowCallstack
+D:\Misc Projects\twitch bot\node_modules\segfault-handler\src\segfault-handler.cpp (242): segfault_handler
+00007FFC201E9B4C (ntdll): (filename not available): RtlDeleteAce
+00007FFC201C2376 (ntdll): (filename not available): RtlRaiseException
+00007FFC201C22A7 (ntdll): (filename not available): RtlRaiseException
+00007FFC2026F3C9 (ntdll): (filename not available): RtlIsZeroMemory
+00007FFC2026F393 (ntdll): (filename not available): RtlIsZeroMemory
+00007FFC20278112 (ntdll): (filename not available): RtlpNtSetValueKey
+00007FFC202783FA (ntdll): (filename not available): RtlpNtSetValueKey
+00007FFC2027E081 (ntdll): (filename not available): RtlpNtSetValueKey
+00007FFC2021FE67 (ntdll): (filename not available): memset
+00007FFC2018E2A9 (ntdll): (filename not available): RtlGetFullPathName_UstrEx
+00007FFC2018EA31 (ntdll): (filename not available): RtlGetFullPathName_UstrEx
+00007FFC2018E3AD (ntdll): (filename not available): RtlGetFullPathName_UstrEx
+00007FFC201965F6 (ntdll): (filename not available): RtlGetCurrentServiceSessionId
+00007FFC20195B74 (ntdll): (filename not available): RtlGetCurrentServiceSessionId
+00007FFC201947B1 (ntdll): (filename not available): RtlFreeHeap
+00007FFC1D85DC6F (KERNELBASE): (filename not available): GlobalFree
+00007FFC20015EB3 (KERNEL32): (filename not available): GlobalFree
+00007FFBFB286237 (portaudio_x64): (filename not available): Pa_WriteStream
+00007FFBFB2908E5 (portaudio_x64): (filename not available): PaWasapi_ThreadPriorityRevert
+00007FFBFB283535 (portaudio_x64): (filename not available): Pa_CloseStream
+D:\Misc Projects\twitch bot\node_modules\naudiodon\src\AudioIO.cc (317): streampunk::quitExecute
+00007FF687988328 (node): (filename not available): v8::internal::HashTable<v8::internal::StringSet,v8::internal::StringSetShape>::HashTable<v8::internal::StringSet,v8::internal::StringSetShape>
+00007FF687BFD24E (node): (filename not available): uv_queue_work
+00007FF687BE907D (node): (filename not available): uv_poll_stop
+00007FF688BEE7E0 (node): (filename not available): inflateValidate
+00007FFC20017374 (KERNEL32): (filename not available): BaseThreadInitThunk
+00007FFC201BCC91 (ntdll): (filename not available): RtlUserThreadStart

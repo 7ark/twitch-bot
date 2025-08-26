@@ -4,24 +4,16 @@
       "the7ark",
       {
         "NameAsDisplayed": "The7ark",
-        "Messages": [
-          "test",
-          "test",
-          "test",
-          "test",
-          "test",
-          "hello",
-          "test"
-        ],
+        "Messages": [],
         "TimesAttackedEnemy": 0,
         "NameColor": "#8A2BE2",
         "TimesDied": 0,
         "IsSubscribed": true,
         "AttackedEnemySinceDeath": false,
-        "LastMessageTime": "2025-04-06T17:07:59.625Z",
+        "LastMessageTime": "2025-08-26T19:58:31.485Z",
         "SeenChristmasMessage": false
       }
     ]
   ],
-  "timestamp": "2025-04-06T17:12:34.537Z"
+  "timestamp": "2025-08-26T19:58:56.712Z"
 }

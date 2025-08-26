@@ -11,9 +11,9 @@ import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {CurrentStreamSettings} from "../streamSettings";
 import {AdsRunning} from "./adUtils";
 import {
-    ClassType,
+    ClassType, LocationCoordinate, LocationType, MapLocation,
     MAX_LEVEL,
-    MAX_PRESTIGE,
+    MAX_PRESTIGE, NamedLocationInfo,
     Player,
     QuestType,
     StatusEffect,
@@ -23,6 +23,7 @@ import {
 import {UpgradeDefinitions} from "../upgradeDefinitions";
 import {MoveDefinitions} from "../movesDefinitions";
 import {CleanMessage} from "./messageUtils";
+import {GetLocation, GetRandomLocation} from "./locationUtils";
 
 const COZY_POINT_HEALTH_CONVERSION = 5;
 
@@ -96,6 +97,8 @@ export function LoadPlayer(displayName: string): Player {
         Inventory: [],
         StatusEffects: [],
         CommandCooldowns: [],
+        EquippedObject: undefined,
+        EquippedBacklog: [],
         PassiveModeEnabled: false,
         Gems: 0,
         SpendableGems: 0,
@@ -105,9 +108,14 @@ export function LoadPlayer(displayName: string): Player {
         HasVip: false,
         HitStreak: 0,
         ByteCoins: 0,
+        CookingFood: false,
 
         Prestige: 0,
-        Mastery: 0
+        Mastery: 0,
+
+        CurrentLocation: "",
+        CurrentLocationCoordinates: { X: 0, Y: 0 },
+        Travelling: false
     }
 
     if (fs.existsSync('playerData.json')) {
@@ -219,6 +227,19 @@ export function LoadPlayer(displayName: string): Player {
         player.CozyPoints = 0;
     }
 
+    if(player.CurrentLocation == undefined || player.CurrentLocation == "") {
+        //Give them a random settlement thats civilized
+        let loc = GetRandomLocation(LocationType.Settlement, (loc) =>
+            (loc as MapLocation<NamedLocationInfo>).Info.Civilized);
+        player.CurrentLocation = loc.Name;
+        player.CurrentLocationCoordinates = loc.Coordinates[0];
+    }
+
+    if(player.CurrentLocationCoordinates == undefined) {
+        let loc = GetLocation(player.CurrentLocation)!;
+        player.CurrentLocationCoordinates = loc.Coordinates[0];
+    }
+
     for (let i = player.StatusEffects.length - 1; i >= 0; i--) {
         let se = player.StatusEffects[i];
 
@@ -289,7 +310,7 @@ export function CalculateMaxHealth(player: Player): number {
 
     max += player.CozyPoints * COZY_POINT_HEALTH_CONVERSION;
 
-    DoPlayerUpgradeWithPlayer(player, UpgradeType.IncreaseMaxHPPercent, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgradeWithPlayer(player, UpgradeType.IncreaseMaxHPPercent, (upgrades, strength, strengthPercentage) => {
         max += max * strengthPercentage;
     });
 
@@ -415,6 +436,28 @@ async function CalculateDamageAmountForPlayer(client: Client, player: Player, am
         await client.say(process.env.CHANNEL!, `${player.Username} resisted the cold damage and only took half damage!`);
     }
 
+    if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.PhysicalResistance)) {
+        switch (damageType) {
+            case DamageType.Piercing:
+            case DamageType.Slashing:
+            case DamageType.Bludgeoning:
+                amount = Math.floor(amount * 0.5);
+                await client.say(process.env.CHANNEL!, `${player.Username} resisted the ${DamageType[damageType]} damage and only took half damage!`);
+                break;
+        }
+    }
+
+    if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.ElementalResistance)) {
+        switch (damageType) {
+            case DamageType.Fire:
+            case DamageType.Cold:
+            case DamageType.Lightning:
+                amount = Math.floor(amount * 0.5);
+                await client.say(process.env.CHANNEL!, `${player.Username} resisted the ${DamageType[damageType]} damage and only took half damage!`);
+                break;
+        }
+    }
+
     if (DoesPlayerHaveStatusEffect(player.Username, StatusEffect.AllVulnerability)) {
         amount = Math.ceil(amount * 2);
         await client.say(process.env.CHANNEL!, `${player.Username} is vulnerable to the ${DamageType[damageType]} and took double damage!`);
@@ -495,7 +538,7 @@ export async function ChangePlayerHealth(client: Client, playerName: string, amo
             amount -= poisonDamage;
         }
 
-        DoPlayerUpgrade(player.Username, UpgradeType.TakenDamageChangedByPercent, (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(player.Username, UpgradeType.TakenDamageChangedByPercent, (upgrades, strength, strengthPercentage) => {
             let reduction = Math.floor(amount * strengthPercentage);
             amount -= reduction;
         });
@@ -587,7 +630,6 @@ async function CheckForPrestige(client: Client, player: Player, levelAddition: n
     if (player.Level + levelAddition >= MAX_LEVEL) {
         player.Upgrades = [];
         player.KnownMoves = [];
-        player.CurrentHealth = CalculateMaxHealth(player);
         for (let i = 0; i < player.Classes.length; i++) {
             player.Classes[i].Level = 0;
         }
@@ -596,6 +638,7 @@ async function CheckForPrestige(client: Client, player: Player, levelAddition: n
         player.CurrentExpNeeded = CalculateExpNeeded(0);
         player.LevelUpAvailable = false;
         player.Prestige++;
+        player.CurrentHealth = CalculateMaxHealth(player);
 
         if (player.Prestige >= MAX_PRESTIGE) {
             player.PermanentUpgrades = [];
@@ -626,7 +669,7 @@ export async function GiveExp(client: Client, username: string, amount: number, 
             amount *= 2;
         }
 
-        DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrades, strength, strengthPercentage) => {
             amount += Math.floor(amount * strengthPercentage);
         });
     }
@@ -735,26 +778,26 @@ export async function LevelUpPlayer(client: Client, username: string, classType:
             switch (classType) {
                 case ClassType.Warrior:
                     if (!player.Inventory.includes("sword")) {
-                        await GivePlayerObject(client, player.Username, "sword");
-                        await GivePlayerObject(client, player.Username, "hammer");
+                        await GivePlayerObject(client, player.Username, "sword", false);
+                        await GivePlayerObject(client, player.Username, "hammer", false);
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
                 case ClassType.Mage:
                     if (!player.Inventory.includes("wand")) {
-                        await GivePlayerObject(client, player.Username, "wand");
+                        await GivePlayerObject(client, player.Username, "wand", false);
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
                 case ClassType.Rogue:
                     if (!player.Inventory.includes("dagger")) {
-                        await GivePlayerObject(client, player.Username, "dagger");
+                        await GivePlayerObject(client, player.Username, "dagger", false);
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
                 case ClassType.Cleric:
                     if (!player.Inventory.includes("healing amulet")) {
-                        await GivePlayerObject(client, player.Username, "healing amulet");
+                        await GivePlayerObject(client, player.Username, "healing amulet", false);
                     }
                     await LearnRandomMove(client, player, classType);
                     break;
@@ -895,39 +938,61 @@ export async function SelectPlayerUpgrade(client: Client, username: string, sele
         return;
     }
 
+    let moveText = '';
+
+    function SetupToLearnMove(free: boolean) {
+        let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
+
+        if (validDefs.length > 0) {
+            let chosenMove = GetRandomItem(validDefs);
+
+            player.KnownMoves.push(chosenMove!.Command);
+
+            let monsterStats = LoadMonsterData().Stats;
+
+            let desc = chosenMove!.Description;
+
+            while (desc.includes("{monster}")) {
+                desc = desc.replace("{monster}", monsterStats.Name);
+            }
+
+            if(free) {
+                moveText += `Additionally, you have learned a FREE new move: `
+            }
+            else {
+                moveText += `You have learned `;
+            }
+
+            moveText += `!${chosenMove!.Command}: ${desc}. `;
+        }
+    }
+
     if (chosenUpgrade.Savable) {
         if(chosenUpgrade.IsPermanent) {
             player.PermanentUpgrades.push(chosenUpgradeName);
+
+            SetupToLearnMove(true);
         }
         else {
             player.Upgrades.push(chosenUpgradeName);
         }
+
+        if(player.Level == 5 ||
+           player.Level == 10 ||
+           player.Level == 15 ||
+           player.Level == 20) {
+            SetupToLearnMove(true);
+        }
     } else {
         if (chosenUpgrade.Effects.some(x => x.Type === UpgradeType.LearnMove)) {
-            let validDefs = MoveDefinitions.filter(def => !player.KnownMoves.includes(def.Command) && player.Classes.some(x => x.Level > 0 && x.Type === def.ClassRequired && x.Level >= (def.LevelRequirement ?? 0)));
-
-            if (validDefs.length > 0) {
-                let chosenMove = GetRandomItem(validDefs);
-
-                player.KnownMoves.push(chosenMove!.Command);
-
-                let monsterStats = LoadMonsterData().Stats;
-
-                let desc = chosenMove!.Description;
-
-                while (desc.includes("{monster}")) {
-                    desc = desc.replace("{monster}", monsterStats.Name);
-                }
-
-                final = `@${username}, you have learned !${chosenMove!.Command}: ${desc}`;
-            }
+            SetupToLearnMove(false);
         }
     }
 
     player.UpgradeOptions = [];
 
     if (final === ``) {
-        final += `@${player.Username}, you have selected ${chosenUpgrade.Name}! `;
+        final += `@${player.Username}, you have selected ${chosenUpgrade.Name}! ${moveText}`;
         final += GetPlayerStatsDisplay(player);
     }
 
@@ -955,13 +1020,13 @@ export function DoesPlayerHaveUpgrade(username: string, upgradeType: UpgradeType
     return player.Upgrades.some(upgrade => UpgradeDefinitions.find(x => x.Name === upgrade)?.Effects.some(x => x.Type === upgradeType));
 }
 
-export function DoPlayerUpgrade(username: string, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
+export function DoPlayerUpgrade(username: string, upgradeType: UpgradeType, out: (upgrades: Upgrade[], strength: number, strengthPercentage: number) => void): boolean {
     let player = LoadPlayer(username);
 
     return DoPlayerUpgradeWithPlayer(player, upgradeType, out);
 }
 
-export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeType, out: (upgrade: Upgrade, strength: number, strengthPercentage: number) => void): boolean {
+export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeType, out: (upgrades: Upgrade[], strength: number, strengthPercentage: number) => void): boolean {
     let totalStrength = 0;
     let matchingUpgrades = player.Upgrades
         .map(upgradeName => UpgradeDefinitions.find(x => x.Name === upgradeName && x.Effects.some(x => x.Type === upgradeType)))
@@ -989,7 +1054,7 @@ export function DoPlayerUpgradeWithPlayer(player: Player, upgradeType: UpgradeTy
 
             return sum + upgradeSum;
         }, 0);
-        out(matchingUpgrades[0]!, totalStrength, totalStrength / 100);
+        out(matchingUpgrades!, totalStrength, totalStrength / 100);
         return true;
     }
     return false;
@@ -1086,12 +1151,12 @@ function CheckTextInstance(text: string): InventoryObject | undefined {
 export function TriggerCommandCooldownOnPlayer(username: string, command: string, timeInSeconds: number) {
     let player = LoadPlayer(username);
 
-    DoPlayerUpgrade(username, UpgradeType.ReducedCooldowns, async (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.ReducedCooldowns, async (upgrades, strength, strengthPercentage) => {
         timeInSeconds -= Math.floor(timeInSeconds * strengthPercentage);
     });
 
     let cancel = false;
-    DoPlayerUpgrade(username, UpgradeType.CooldownCancelChance, async (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.CooldownCancelChance, async (upgrades, strength, strengthPercentage) => {
         if (GetRandomIntI(0, 100) <= strength) {
             cancel = true;
         }
@@ -1189,6 +1254,27 @@ export function TickAllCozyPoints() {
     for (let i = 0; i < players.length; i++) {
         ProcessCozyPointTick(players[i].Username);
     }
+}
+
+export function GetPlayerCoordinates(player: Player): LocationCoordinate {
+    if (player.Travelling && player.TravelStartTime && player.TravelTimeInSeconds != null && player.TravelDestinationCoordinates) {
+        let now = new Date();
+        let start = new Date(player.TravelStartTime).getSeconds();
+        let end = new Date(start);
+        end.setSeconds(end.getSeconds() + player.TravelTimeInSeconds);
+
+        const t = Math.min(1, Math.max(0, (now.getSeconds() - start) / (end - start))); // 0..1 progress
+
+        const from = player.CurrentLocationCoordinates;
+        const to = player.TravelDestinationCoordinates;
+
+        return {
+            X: Math.floor(from.X + (to.X - from.X) * t),
+            Y: Math.floor(from.Y + (to.Y - from.Y) * t)
+        };
+    }
+
+    return player.CurrentLocationCoordinates;
 }
 
 

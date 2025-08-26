@@ -14,8 +14,8 @@ let defaultLightColor: {
 
 async function GetDevices(): Promise<Array<AnyDevice>> {
     return [
-        await client.getDevice({ host: bottomLightsIp }),
-        await client.getDevice({ host: topLightsIp }),
+        // await client.getDevice({ host: bottomLightsIp }),
+        // await client.getDevice({ host: topLightsIp }),
     ]
 }
 

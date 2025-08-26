@@ -1,20 +1,19 @@
-import {ChatUserstate, client, Client} from "tmi.js";
+import {ChatUserstate, Client} from "tmi.js";
 import {CurrentCaller, CurrentGTARider, MessageDelegate, SayAllChat} from "../globals";
-import {DoesPlayerHaveStatusEffect, GivePlayerObject, LoadPlayer, RandomlyGiveExp} from "./playerGameUtils";
-import {CheckMessageSimilarity, GetRandomInt, GetRandomIntI, GetRandomItem,} from "./utils";
+import {DoesPlayerHaveStatusEffect, LoadPlayer, RandomlyGiveExp} from "./playerGameUtils";
+import {CheckMessageSimilarity, GetRandomInt, GetRandomIntI, GetRandomItem, GetTextInstances,} from "./utils";
 import {ProcessCommands, ProcessUniqueCommands} from "./commandUtils";
 import {Broadcast} from "../bot";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {PlayTextToSpeech, TryGetPlayerVoice} from "./audioUtils";
 import {MinigameType} from "./minigameUtils";
 import {DoesPlayerHaveQuest, GivePlayerRandomQuest} from "./questUtils";
-import {AudioType} from "../streamSettings";
-import {CheckForScare} from "./scareUtils";
+import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {StatusEffect} from "../valueDefinitions";
 import {BanUser, WhisperUser} from "./twitchUtils";
-import {CheckIfShouldHaveNPCResponse, GetNPCResponse} from "./timmyUtils";
+import {CheckIfShouldHaveNPCResponse} from "./timmyUtils";
 import {COOK_CurrentCustomers, ShowCustomerText} from "./cookingSimUtils";
-import {AddChapterMarker, GetOpenScene} from "./obsutils";
+import {GetOpenScene} from "./obsutils";
 import {AD_CurrentAngel, AD_CurrentDevil, ShowADText} from "./angelDevilUtils";
 import {ShowMeetingText} from "./meetingUtils";
 
@@ -83,7 +82,83 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
     Broadcast(JSON.stringify({ type: 'message', displayName, message, color: col }));
 
     let player = LoadPlayer(userState['display-name']!);
-    if(message[0] != '!' && !message.includes("!yell")) {
+    let doesTTS = true;
+
+    if((await GetOpenScene()).includes("Streaming Primary")) {
+        if(CurrentStreamSettings.challengeType == "bees") {
+            let text = "";
+            if(message.toLowerCase().includes("bee")) {
+                if(!message.includes("!") || message.includes("!yell")) {
+                    let instances = GetTextInstances(message, "bee");
+
+                    if(message.replace(" ", "").includes("beebee") || message.replace(" ", "").includes("beesbee")) {
+                        await client.say(process.env.CHANNEL!, `@${displayName}, let's have a more interesting discussion about bees, please.`);
+                        instances = 1;
+                    }
+
+                    PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player), () => {
+                        if(instances <= 3) {
+                            text = "Spawning honey";
+                        }
+                        else if(instances <= 6) {
+                            text = "Spawning MORE honey";
+                        }
+                        else {
+                            text = "Spawning SO MUCH honey";
+                        }
+
+                        if(message.toLowerCase().includes("buzz")) {
+                            text += " AND bees!"
+                        }
+                        if(message.toLowerCase().includes("hive")) {
+                            text += " AND a random lootbox!"
+                        }
+                        if(message.toLowerCase().includes("honey")) {
+                            text += " AND honey"
+                        }
+
+                        PlayTextToSpeech(text, AudioType.UserTTS);
+                    });
+
+
+                    doesTTS = false;
+                }
+            }
+            else if(message.toLowerCase().includes("buzz")) {
+                let zs = GetTextInstances(message, "z");
+                if(message.includes("!yell")) {
+                    PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player), () => {
+                        BeeTTS();
+                    });
+
+                    doesTTS = false;
+                }
+                else if(!message.includes("!")) {
+                    BeeTTS();
+                }
+
+                function BeeTTS() {
+                    if(zs <= 5) {
+                        PlayTextToSpeech("Spawning bees", AudioType.UserTTS);
+                    }
+                    else if(zs <= 10) {
+                        PlayTextToSpeech("Spawning MORE bees", AudioType.UserTTS);
+                    }
+                    else {
+                        PlayTextToSpeech("Spawning SO MANY bees", AudioType.UserTTS);
+                    }
+                }
+            }
+            else if(message.toLowerCase().includes("hive")) {
+                PlayTextToSpeech("Spawning a random lootbox", AudioType.UserTTS);
+            }
+            else if(message.toLowerCase().includes("honey")) {
+                PlayTextToSpeech("Spawning a honey", AudioType.UserTTS);
+            }
+        }
+    }
+
+    if(message[0] != '!' && !message.includes("!yell") && doesTTS) {
         if(SayAllChat && !displayName.includes("the7ark")) {
             PlayTextToSpeech(message, AudioType.UserTTS, TryGetPlayerVoice(player));
             setTimeout(() => {
@@ -202,10 +277,16 @@ const minigameKeys = Object
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
     "Check out my socials - Discord: https://discord.gg/6dEKeStTEM, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
-    `Chat is interactive! Use '!help options' to see all subjects to learn about. Use !commands to see all command options. Use '!help fight' to learn about fighting monsters. Use '!help minigames' to learn about playing small minigames. Use '!help interact' to learn about more interactive elements of chat.`,
-    `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot!`,
-    `Check out my latest Youtube video: https://youtu.be/DO38Nx-51Zc`
+    `Chat is interactive! Use '!help options' to see all subjects to learn about`,
+    `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot! You can also use !auto to automatically play these minigames for 30 minutes.`,
+    `Use !forage or !hunt to go out looking for food or goodies! Hunting is more dangerous.`,
+    `Check out my latest Youtube video: https://youtu.be/1rBPm-C7OHM`
 ];
+
+// if(CurrentStreamSettings.challengeType != undefined && CurrentStreamSettings.challengeType.length > 1) {
+//
+// }
+
 let regularMessageIndex: number = GetRandomInt(0, regularMessages.length);
 
 export async function PostNewRegularMessage(client: Client) {

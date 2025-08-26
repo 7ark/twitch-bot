@@ -8,8 +8,10 @@ import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {Player} from "../valueDefinitions";
 import fs from "fs";
 import prism from 'prism-media';
-import Speaker from 'speaker';
-import { getDevices } from 'naudiodon';
+import Speaker from "speaker";
+import play, {AudioPlayHandle} from "audio-play";
+const naudiodon = require('naudiodon');
+const getDevices = naudiodon.getDevices;
 
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
@@ -69,36 +71,52 @@ export function PlaySound(soundName: string, type: AudioType, extension: string 
         return;
     }
 
-    const decoder = new prism.FFmpeg({
-        args: [
-            '-analyzeduration', '0',
-            '-loglevel', '0',
-            '-i', filepath,
-            '-f', 's16le',
-            '-ar', '48000',
-            '-ac', '2',
-        ],
-    });
+    const channelCount = 2;
+    const sampleFormat = naudiodon.SampleFormat16Bit; // use constant, not raw number
 
     let volume = CurrentStreamSettings.volume.get(type);
     const volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume });
 
+    let device = getDevices().find(x => x.name == "Speakers (VB-Audio Point)");
+    if(device == undefined) {
+        console.error(`Could not find speakers`);
+        return;
+    }
+    let deviceId = device.id; //The VB-audio cable (Speakers VB Point)
+    let sampleRate = 48000;//device.sampleRate;
+
+    const decoder = new prism.FFmpeg({
+        args: [
+            '-analyzeduration', '0',
+            '-loglevel', 'quiet',
+            '-re', // realtime encoding, ensures FFmpeg pushes audio at realtime speed
+            '-i', filepath,
+            '-f', 's16le',
+            '-ar', `${sampleRate}`,
+            '-ac', `${channelCount}`,
+            '-af', 'apad=pad_dur=0.5',
+        ],
+    });
+
+    // Let speaker handle it
     const speaker = new Speaker({
         channels: 2,
         bitDepth: 16,
         sampleRate: 48000,
+        signed: true,
+        float: false
     });
 
-    let called = false;
-    decoder
-        .pipe(volumeTransform)
-        .pipe(speaker)
-        .on('close', () => {
-            if (!called && callback){
-                called = true;
-                callback();
-            }
-        });
+    speaker.on("close", () => {
+        callback?.();
+    });
+    speaker.on("error", err => {
+        console.error("Speaker error:", err);
+        callback?.();
+    });
+
+    decoder.pipe(volumeTransform).pipe(speaker);
+
     // try {
     //     let fileLoc = `files/extras/${soundName}.${extension}`;
     //     console.log(`Playing audio at: ${fileLoc}`);

@@ -848,12 +848,21 @@ export function StartChatChallenge(client: Client, username: string) {
 
 export async function PlayHypeTrainAlert() {
     const train = "Train";
-    const camera = "Small Camera";
+    const smallCamera = "Small Camera";
+    const bigCamera = "Full Camera";
 
     let sceneName = await GetOpenScene();
 
-    if(!await DoesSceneContainItem(sceneName, train) || !await DoesSceneContainItem(sceneName, camera)) {
+    if(!await DoesSceneContainItem(sceneName, train) || (!await DoesSceneContainItem(sceneName, smallCamera) && !await DoesSceneContainItem(sceneName, bigCamera))) {
         return;
+    }
+
+    let camera = "";
+    if(await DoesSceneContainItem(sceneName, smallCamera)) {
+        camera = smallCamera;
+    }
+    else {
+        camera = bigCamera;
     }
 
     PlaySound("train", AudioType.ImportantStreamEffects);

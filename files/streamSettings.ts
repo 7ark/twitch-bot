@@ -91,7 +91,7 @@ const COLLAB_SOCIAL_SETTINGS: StreamSettings = {
         [AudioType.UserGameActions, 0.3],
         [AudioType.GameAlerts, 0.05],
         [AudioType.StreamInfrastructure, 1],
-        [AudioType.ImportantStreamEffects, 0.5],
+        [AudioType.ImportantStreamEffects, 0.7],
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
@@ -139,6 +139,21 @@ const ANGELDEVIL_CHALLENGE: StreamSettings = {
     doesRandomChatChallenges: true,
     cooldownMultiplier: 2,
     challengeType: "angeldevil"
+}
+
+//Playing alone, casually
+const MINECRAFTBEES_CHALLENGE: StreamSettings = {
+    volume: new Map<AudioType, number>([
+        [AudioType.UserTTS, 1],
+        [AudioType.UserGameActions, 0.3],
+        [AudioType.GameAlerts, 0],
+        [AudioType.StreamInfrastructure, 1],
+        [AudioType.ImportantStreamEffects, 1],
+        [AudioType.Ads, 0],
+    ]),
+    doesRandomChatChallenges: false,
+    cooldownMultiplier: 2,
+    challengeType: "bees"
 }
 
 const PURE_SILENCE: StreamSettings = {

@@ -4,7 +4,6 @@ import {FormatTextIntoLines, GetRandomItem} from "./utils";
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./audioUtils";
 import {AudioType} from "../streamSettings";
 import {LoadPlayer} from "./playerGameUtils";
-import {CreateTwitchPoll} from "./twitchUtils";
 import {GTA_CurrentRating, GTA_Ratings, GTA_Reviews} from "./gtaUtils";
 import fs from "fs";
 

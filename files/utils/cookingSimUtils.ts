@@ -18,7 +18,7 @@ export let COOK_CurrentCustomers: Array<string> = [];
 export let COOK_PositionsToCustomer: Map<number, string> = new Map<number, string>();
 export let COOK_CustomerToPosition: Map<string, number> = new Map<string, number>();
 export let COOK_CurrentOrders: Map<string, string> = new Map<string, string>();
-export let COOK_Money = 1099.99;
+export let COOK_Money = 0;
 let orderUps: Array<string> = [];
 
 const MAX_CUSTOMERS = 3;

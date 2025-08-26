@@ -1,4 +1,5 @@
 import {DamageType} from "./utils/monsterUtils";
+import {LocationCoordinate} from "./utils/locationUtils";
 
 export enum QuestType {
     DoCook,
@@ -8,7 +9,9 @@ export enum QuestType {
     TellJoke, //Deprecated
     GetItem,
     Gamble,
-    LevelUp
+    LevelUp, //Deprecated
+    DoHunting,
+    DoForaging,
 }
 
 export interface Quest {
@@ -44,6 +47,8 @@ export enum StatusEffect {
     BetterChanceToCrit,
     AllResistance,
     RandomAccuracy,
+    PhysicalResistance,
+    ElementalResistance
 }
 
 export interface StatusEffectModule {
@@ -91,9 +96,22 @@ export interface Player {
     HitStreak: number;
     ByteCoins: number;
     GatheringResources: boolean;
+    CookingFood: boolean;
 
     Prestige: number;
     Mastery: number;
+
+    AutoMinigameStartTime?: Date;
+    AutoMinigamePattern?: string;
+
+    //Location stuff
+    CurrentLocation: string;
+    CurrentLocationCoordinates: LocationCoordinate;
+    Travelling: boolean;
+    TravelStartTime?: Date;
+    TravelTimeInSeconds?: number;
+    TravelDestination?: string;
+    TravelDestinationCoordinates?: LocationCoordinate;
 }
 
 export interface Class {
@@ -120,7 +138,6 @@ export interface ClassMove {
     ClassRequired?: ClassType;
     LevelRequirement?: number;
     Type: MoveType;
-    MovePointsToUnlock: number;
 
     //Attacking
     HitModifier?: number;
@@ -129,7 +146,7 @@ export interface ClassMove {
     StunChance?: number;
     Poison?: boolean;
 
-    HealAmount?: { min: number, max: number };
+    HealAmountPercentage?: { min: number, max: number };
     BuffLengthInSeconds?: number;
     BuffToGive?: StatusEffect;
     //Play Sound
@@ -211,4 +228,88 @@ export function GetAfflictionDescription(affliction: Affliction) {
         case Affliction.Poison:
             return "Every tick deals 1 damage per stack of poison.";
     }
+}
+
+//Location stuff
+export interface SessionSaveableWorldData {
+    LocationMinigameNodes: Record<CoordKey, SessionLocationData>;
+}
+
+export enum LocationType {
+    Wilderness,
+    Settlement,
+    Landmark
+}
+
+export enum TerrainType {
+    Ocean,
+    Tundra,
+    Mountain,
+    Lake,
+    Desert,
+    Forest,
+    Wasteland,
+    Volcano,
+    Plains,
+    Swamp,
+    Jungle,
+}
+
+export enum LocationResourceType {
+    OreRock, //Metals, etc.
+    MineralRock, //Salts, clays, sulfur, coal
+    Crystals, //Gemstones, crystals, obsidian, etc
+
+    SoftWood, //Planks, charcoal/fuel, flexible timber ala pine, bamboo
+    HardWood, //Dense, strong ala oak, ironwood
+    Wetland, //Reeds, mosses, herbal/medicinal
+    Dryland, //Cactus, shrubs, etc
+    Grassland, //Forage plants, grazing animals
+
+    SmallGame, //Rabbits, birds, fish, vermin
+    LargeGame, //Deer, boar, bison
+
+    FreshWater, //River, lake
+    SaltWater, //Ocean
+}
+
+export interface LocationCoordinate {
+    X: number;
+    Y: number;
+}
+
+export type CoordKey = `${number},${number}`;
+export const coordKey = (x: number, y: number): CoordKey => `${x},${y}`;
+
+export interface BaseLocation {
+    Name: string;
+    ContextualName: string;
+    Type: LocationType;
+    NavigationCost: number;
+    Coordinates: Array<LocationCoordinate>;
+
+    //Minigames
+    MineNodes: { Min: number; Max: number; } //150 = ~50 minutes
+    FishNodes: { Min: number; Max: number; } //50 = ~16 minutes
+    CookNodes: { Min: number; Max: number; }
+}
+
+export interface SessionLocationData {
+    MineNodesLeft: number;
+    FishNodesLeft: number;
+    CookNodesLeft: number;
+    ValueMultiplier: number;
+}
+
+export interface MapLocation<T = undefined> extends BaseLocation {
+    Info?: T;
+}
+
+export interface NamedLocationInfo {
+    Description: string;
+    Civilized: boolean; //Are people here and is society actually running? Or is it like abandoned
+}
+
+export interface WildernessLocationInfo {
+    Type: TerrainType;
 }

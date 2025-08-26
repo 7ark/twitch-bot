@@ -1,6 +1,6 @@
 import {Client} from "tmi.js";
 import {
-    AddStatusEffectToPlayer,
+    AddStatusEffectToPlayer, CalculateMaxHealth,
     ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
     DoPlayerUpgrade,
@@ -22,7 +22,7 @@ import {
 } from "./playerGameUtils";
 import {Broadcast} from "../bot";
 import {
-    AddSpacesBeforeCapitals,
+    AddSpacesBeforeCapitals, DisplayAsList,
     GetNumberWithOrdinal,
     GetRandomInt,
     GetRandomIntI,
@@ -60,7 +60,7 @@ import {
     DamageType,
     DoDamageToMonster,
     GetAdjustedDamage,
-    GetDamageTypeText,
+    GetDamageTypeText, IsMonsterImmune, IsMonsterResistant, IsMonsterVulnerable,
     LoadMonsterData,
     ReduceMonsterHits,
     StunMonster
@@ -622,9 +622,14 @@ async function HandleMoveHeal(client: Client, moveAttempted: ClassMove, player: 
         await FadeOutLights();
     }, 2000);
 
-    let healAmount = GetRandomIntI(moveAttempted.HealAmount!.min, moveAttempted.HealAmount!.max);
+    let healAmountPercentage = GetRandomIntI(moveAttempted.HealAmountPercentage!.min, moveAttempted.HealAmountPercentage!.max);
+    let otherPlayerMaxHP = CalculateMaxHealth(otherPlayer);
+    let healAmount = Math.ceil(otherPlayerMaxHP * (healAmountPercentage / 100));
+    if(healAmount < 5) {
+        healAmount = 5;
+    }
 
-    DoPlayerUpgrade(username, UpgradeType.StrongerHealing, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.StrongerHealing, (upgrades, strength, strengthPercentage) => {
         healAmount += Math.floor(healAmount * strengthPercentage);
     });
 
@@ -633,7 +638,8 @@ async function HandleMoveHeal(client: Client, moveAttempted: ClassMove, player: 
         .replace(`{target}`, otherPlayer.Username)
         .replace(`{0}`, Math.abs(healAmount).toString());
     await client.say(process.env.CHANNEL!, successText);
-    await ChangePlayerHealth(client, otherPlayer!.Username, healAmount, DamageType.None);
+    await ChangePlayerHealth(client, otherPlayer!.Username, healAmount, DamageType.None, ``, false);
+    await GiveExp(client, username, GetRandomIntI(1, 10));
 }
 
 async function HandleMoveGiveBuff(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
@@ -683,6 +689,7 @@ async function HandleMoveGiveBuff(client: Client, moveAttempted: ClassMove, play
         .replace(`{target}`, otherPlayer.Username)
         .replace(`{0}`, Math.abs(moveAttempted.BuffLengthInSeconds!).toString());
     await client.say(process.env.CHANNEL!, successText);
+    await GiveExp(client, username, GetRandomIntI(1, 10));
 }
 
 async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player: Player, username: string, command: string) {
@@ -720,7 +727,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
     }
     
     if(!wasCrit) {
-        DoPlayerUpgrade(username, UpgradeType.CriticalHitChance, async (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(username, UpgradeType.CriticalHitChance, async (upgrades, strength, strengthPercentage) => {
             if(GetRandomIntI(0, 100) <= strength) {
                 wasCrit = true;
             }
@@ -731,7 +738,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         extraRollAddition += Math.round(player.Classes.find(x => x.Type === moveAttempted?.ClassRequired)!.Level / 5);
     }
 
-    DoPlayerUpgrade(username, UpgradeType.ChangeHitModifier, async (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.ChangeHitModifier, async (upgrades, strength, strengthPercentage) => {
         extraRollAddition += strength;
     });
 
@@ -931,13 +938,13 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         player.HitStreak++;
         SavePlayer(player);
 
-        DoPlayerUpgrade(username, UpgradeType.ConsecutiveDamage, async (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(username, UpgradeType.ConsecutiveDamage, async (upgrades, strength, strengthPercentage) => {
             let extraDamage = Math.round(scaledDamage * strengthPercentage);
             scaledDamage += extraDamage * (player.HitStreak - 1);
         });
         
         if(moveAttempted.ClassRequired === ClassType.Mage) {    
-            DoPlayerUpgrade(username, UpgradeType.MoreMageDamage, async (upgrade, strength, strengthPercentage) => {
+            DoPlayerUpgrade(username, UpgradeType.MoreMageDamage, async (upgrades, strength, strengthPercentage) => {
                 scaledDamage += scaledDamage * strengthPercentage;
             });
         }
@@ -945,22 +952,32 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         scaledDamage = Math.floor(scaledDamage);
 
         // Apply the damage
-        let dragonDead = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
+        let monsterResults = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
+        let monsterDied = monsterResults.MonsterDied;
+        let baseReceivedDamage = monsterResults.DamageReceived;
+        let totalDamage = monsterResults.DamageReceived;
 
         let struckTwice = false;
-        if(!dragonDead) {
-            DoPlayerUpgrade(username, UpgradeType.WarriorStrikeTwiceChance, async (upgrade, strength, strengthPercentage) => {
+        let strikeTwiceDamage = 0;
+        if(!monsterDied) {
+            DoPlayerUpgrade(username, UpgradeType.WarriorStrikeTwiceChance, async (upgrades, strength, strengthPercentage) => {
                 if(GetRandomIntI(0, 100) <= strength) {
-                    dragonDead = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
+                    let strikeTwiceResults = await DoDamageToMonster(client, username, Math.round(baseReceivedDamage), damageTypeDealt, false);
+                    monsterDied = strikeTwiceResults.MonsterDied;
+                    totalDamage += strikeTwiceResults.DamageReceived;
+                    strikeTwiceDamage = strikeTwiceResults.DamageReceived;
                     struckTwice = true;
                 }
             });
         }
 
-        let poisonDamage = Math.max(1, Math.round(scaledDamage * 0.2));
-        if(isMonsterPoisoned && scaledDamage > 0) {
-            if(!dragonDead) {
-                dragonDead = await DoDamageToMonster(client, username, Math.round(poisonDamage), DamageType.Poison, false);
+        let poisonDamage = Math.max(1, Math.round(baseReceivedDamage * 0.2));
+        if(isMonsterPoisoned && baseReceivedDamage > 0) {
+            if(!monsterDied) {
+                let poisonedResults = await DoDamageToMonster(client, username, Math.round(poisonDamage), DamageType.Poison, false);
+                monsterDied = poisonedResults.MonsterDied;
+                totalDamage += poisonedResults.DamageReceived;
+                poisonDamage = poisonedResults.DamageReceived;
             }
 
             if(!allDamageTypesDealt.includes(DamageType.Poison)) {
@@ -968,9 +985,13 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             }
         }
 
+        let objectDamage = 0;
         if(isUsingObject && extraObjectDamageInfo !== undefined && extraObjectDamageInfo.damage > 0) {
-            if(!dragonDead) {
-                dragonDead = await DoDamageToMonster(client, username, Math.round(extraObjectDamageInfo.damage), extraObjectDamageInfo.damageType, false);
+            if(!monsterDied) {
+                let objectDamageResults = await DoDamageToMonster(client, username, Math.round(extraObjectDamageInfo.damage), extraObjectDamageInfo.damageType, false);
+                monsterDied = objectDamageResults.MonsterDied;
+                totalDamage += objectDamageResults.DamageReceived;
+                objectDamage = objectDamageResults.DamageReceived;
             }
 
             if(!allDamageTypesDealt.includes(extraObjectDamageInfo.damageType)) {
@@ -981,24 +1002,18 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         if(scaledDamage < 0) {
             finalSuccessText = finalSuccessText.replace("{0} damage", "{0} healing");
         }
-
-        scaledDamage = await GetAdjustedDamage(client, scaledDamage, damageTypeDealt);
         
         finalSuccessText = finalSuccessText
-            .replace('{0}', `${Math.abs(scaledDamage).toString()} ${DamageType[damageTypeDealt].toLowerCase()}`)
+            .replace('{0}', `${Math.abs(baseReceivedDamage).toString()} ${DamageType[damageTypeDealt].toLowerCase()}`)
             .replace('{name}', username)
             .replace("{roll}", rollDisplay);
 
         if(isMonsterPoisoned) {
-            poisonDamage = await GetAdjustedDamage(client, poisonDamage, DamageType.Poison);
             finalSuccessText += ` He took an extra ${poisonDamage} poison damage.`;
         }
 
         if(isUsingObject && extraObjectDamageInfo !== undefined) {
-            let damageDisplay = extraObjectDamageInfo.damage;
-            damageDisplay = await GetAdjustedDamage(client, extraObjectDamageInfo.damage, extraObjectDamageInfo.damageType);
-
-            finalSuccessText += ` Your attack with ${extraObjectName} did an extra ${damageDisplay} ${DamageType[extraObjectDamageInfo.damageType].toLowerCase()} damage!`;
+            finalSuccessText += ` Your attack with ${extraObjectName} did an extra ${objectDamage} ${DamageType[extraObjectDamageInfo.damageType].toLowerCase()} damage!`;
         }
 
         if(isDrunk) {
@@ -1006,7 +1021,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
 
         if(struckTwice) {
-            finalSuccessText += ` You struck twice! You do another ${scaledDamage} ${DamageType[damageTypeDealt].toLowerCase()} damage!`;
+            finalSuccessText += ` You struck twice! You do another ${strikeTwiceDamage} ${DamageType[damageTypeDealt].toLowerCase()} damage!`;
         }
         
         if(wasCrit) {
@@ -1017,19 +1032,74 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             }
         }
 
+        DoPlayerUpgrade(username, UpgradeType.LifestealChance, async (upgrades, strength, strengthPercentage) => {
+            if(GetRandomIntI(0, 100) <= strength) {
+                await ChangePlayerHealth(client, username, Math.floor(totalDamage), DamageType.None);
+                finalSuccessText += ` You gained ${Math.floor(totalDamage)} health from your ${DisplayAsList(upgrades, x => x.Name)}!`
+            }
+        });
+
+        DoPlayerUpgrade(username, UpgradeType.GemsForDamageChance, async (upgrades, strength, strengthPercentage) => {
+            if(GetRandomIntI(0, 100) <= strength) {
+                player.SpendableGems += Math.floor(totalDamage);
+                SavePlayer(player)
+                finalSuccessText += ` You gained ${Math.floor(totalDamage)} gems from your ${DisplayAsList(upgrades, x => x.Name)}!`;
+            }
+        });
+
         ReduceMonsterHits(client);
 
-        client.say(process.env.CHANNEL!, finalSuccessText);
+        let extraDamageInfo = ``;
 
-        let damageText = ``;
+        let immuneDamages = [];
+        let resistantDamages = [];
+        let vulnerableDamages = [];
         for (let i = 0; i < allDamageTypesDealt.length; i++) {
-            let text = GetDamageTypeText(allDamageTypesDealt[i]);
-            if(text != '') {
-                damageText += text + ' ';
+            if(IsMonsterImmune(allDamageTypesDealt[i])) {
+                immuneDamages.push(allDamageTypesDealt[i]);
+            }
+            if(IsMonsterResistant(allDamageTypesDealt[i])) {
+                resistantDamages.push(allDamageTypesDealt[i]);
+            }
+            if(IsMonsterVulnerable(allDamageTypesDealt[i])) {
+                vulnerableDamages.push(allDamageTypesDealt[i]);
             }
         }
 
-        client.say(process.env.CHANNEL!, damageText);
+        if(immuneDamages.length > 0) {
+            if(extraDamageInfo == ``) {
+                extraDamageInfo = ` Unfortunately, the monster was `;
+            }
+            extraDamageInfo += `immune to ${DisplayAsList(immuneDamages, x => DamageType[x])}`
+        }
+
+        if(resistantDamages.length > 0) {
+            if(extraDamageInfo == ``) {
+                extraDamageInfo = ` Unfortunately, the monster was `;
+            }
+            else {
+                extraDamageInfo += `, and `
+            }
+            extraDamageInfo += `resistant to ${DisplayAsList(resistantDamages, x => DamageType[x])}`
+        }
+
+        if(vulnerableDamages.length > 0) {
+            if(extraDamageInfo == ``) {
+                extraDamageInfo = ` Additionally, the monster was `;
+            }
+            else {
+                extraDamageInfo += `. However they were also `
+            }
+            extraDamageInfo += `vulnerable to ${DisplayAsList(vulnerableDamages, x => DamageType[x])}!`
+        }
+
+        if(!extraDamageInfo.endsWith('!')) {
+            extraDamageInfo += "!";
+        }
+
+        finalSuccessText += extraDamageInfo;
+
+        await client.say(process.env.CHANNEL!, finalSuccessText);
 
         HandleTimeout(command);
         

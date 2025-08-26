@@ -20,7 +20,15 @@ import {
     LoadPlayer, SavePlayer,
 } from "./playerGameUtils";
 import {SetSceneItemEnabled} from "./obsutils";
-import {FormatListNicely, GetEnumValues, GetRandomEnum, GetRandomIntI, GetRandomItem, GetRandomNumber} from "./utils";
+import {
+    DisplayAsList,
+    FormatListNicely,
+    GetEnumValues,
+    GetRandomEnum,
+    GetRandomIntI,
+    GetRandomItem,
+    GetRandomNumber
+} from "./utils";
 import {HandleQuestProgress} from "./questUtils";
 import {PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
@@ -343,7 +351,7 @@ function TriggerAffliction(client: Client, monsterInfo: MonsterInfo, affliction:
 
     let allPlayersInSession = GetAllPlayerSessions();
     for (let i = 0; i < allPlayersInSession.length; i++) {
-        DoPlayerUpgrade(allPlayersInSession[i].NameAsDisplayed.toLowerCase(), UpgradeType.HealWhenMonsterTakesAfflictionDamage, async (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(allPlayersInSession[i].NameAsDisplayed.toLowerCase(), UpgradeType.HealWhenMonsterTakesAfflictionDamage, async (upgrades, strength, strengthPercentage) => {
             await ChangePlayerHealth(client, allPlayersInSession[i].NameAsDisplayed.toLowerCase(), strength, DamageType.None, "", false);
         });
     }
@@ -373,7 +381,7 @@ export async function TriggerMonsterAttack(client: Client) {
     for (const [key, player] of allPlayerSessionData.entries()) {
         if(player.TimesAttackedEnemy !== 0) {
             unshieldedPlayers++;
-            DoPlayerUpgrade(player.NameAsDisplayed.toLowerCase(), UpgradeType.ShieldDamageFromOtherPlayers, (upgrade, strength, strengthPercentage) => {
+            DoPlayerUpgrade(player.NameAsDisplayed.toLowerCase(), UpgradeType.ShieldDamageFromOtherPlayers, (upgrades, strength, strengthPercentage) => {
                 playersWithShield.push({
                     player: player.NameAsDisplayed.toLowerCase(),
                     reduce: strength
@@ -399,12 +407,12 @@ export async function TriggerMonsterAttack(client: Client) {
                 ac += 3;
             }
             
-            DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.IncreaseAC, async (upgrade, strength, strengthPercentage) => {
+            DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.IncreaseAC, async (upgrades, strength, strengthPercentage) => {
                 ac += strength;
             });
 
             if(playerClassInfo.CurrentHealth > CalculateMaxHealth(playerClassInfo) * 0.7) {
-                DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.IncreaseArmorWhenAbove70Percent, async (upgrade, strength, strengthPercentage) => {
+                DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.IncreaseArmorWhenAbove70Percent, async (upgrades, strength, strengthPercentage) => {
                     ac += strength;
                 });
             }
@@ -452,7 +460,7 @@ export async function TriggerMonsterAttack(client: Client) {
                 }
                 misses.push(txt);
 
-                DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.DodgeHeal, async (upgrade, strength, strengthPercentage) => {
+                DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.DodgeHeal, async (upgrades, strength, strengthPercentage) => {
                     setTimeout(async () => {
                         await ChangePlayerHealth(client, playerClassInfo.Username, Math.floor(strength), DamageType.None);
                     }, 10)
@@ -484,7 +492,7 @@ export async function TriggerMonsterAttack(client: Client) {
                 }
 
                 if(damage > 0) {
-                    DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.LessDamageWhenBelow30Percent, async (upgrade, strength, strengthPercentage) => {
+                    DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.LessDamageWhenBelow30Percent, async (upgrades, strength, strengthPercentage) => {
                         let maxHealth = CalculateMaxHealth(playerClassInfo);
                         let currentHealth = playerClassInfo.CurrentHealth;
                         let healthPercentage = currentHealth / maxHealth;
@@ -493,16 +501,16 @@ export async function TriggerMonsterAttack(client: Client) {
                             let reduction = Math.ceil(damage * strengthPercentage);
                             damage -= reduction;
 
-                            txt += `(-${reduction}DMG - ${upgrade.Name}) `;
+                            txt += `(${reduction} Less DMG from ${DisplayAsList(upgrades, x => x.Name)}) `;
                         }
                     });
 
-                    DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.FatalDamageSave, async (upgrade, strength, strengthPercentage) => {
+                    DoPlayerUpgrade(playerClassInfo.Username, UpgradeType.FatalDamageSave, async (upgrades, strength, strengthPercentage) => {
                         if(damage >= CalculateMaxHealth(playerClassInfo)) {
                             if(GetRandomIntI(0, 100) <= strength) {
                                 damage = CalculateMaxHealth(playerClassInfo) - 1;
                                 setTimeout(async () => {
-                                    await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s ${upgrade.Name} saved them from death!`);
+                                    await client.say(process.env.CHANNEL!, `@${playerClassInfo.Username}'s ${DisplayAsList(upgrades, x => x.Name)} saved them from death!`);
                                 }, 10)
                             }
                         }
@@ -629,11 +637,17 @@ export async function GetAdjustedDamage(client: Client, damage: number, damageTy
     return result;
 }
 
-export async function DoDamageToMonster(client: Client, username: string, damage: number, damageType: DamageType, showDamageTypeResponse: boolean = true): Promise<boolean> {
+export async function DoDamageToMonster(client: Client, username: string, damage: number, damageType: DamageType, showDamageTypeResponse: boolean = true): Promise<{
+    MonsterDied: boolean,
+    DamageReceived: number
+}> {
     let monsterInfo = LoadMonsterData();
     if(monsterInfo.Health <= 0)
     {
-        return true;
+        return {
+            MonsterDied: true,
+            DamageReceived: 0
+        };
     }
 
     if(DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleDamage)) {
@@ -643,31 +657,36 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         damage *= 1.5;
     }
 
-    DoPlayerUpgrade(username, UpgradeType.ApplyAffliction, (upgrade, strength, strengthPercentage) => {
-        for (let j = 0; j < upgrade.Effects.length; j++) {
-            for (let i = 0; i < upgrade.Effects[j].AfflictionsImposed.length; i++) {
-                let afflictionCount = strength;
-                DoPlayerUpgrade(username, UpgradeType.MoreAfflictions, (upgrade, strength, strengthPercentage) => {
-                    afflictionCount += strength;
-                });
-                AddAffliction(upgrade.Effects[j].AfflictionsImposed[i], afflictionCount);
+    DoPlayerUpgrade(username, UpgradeType.ApplyAffliction, (upgrades, strength, strengthPercentage) => {
+        upgrades.forEach(upgrade => {
+            for (let j = 0; j < upgrade.Effects.length; j++) {
+                if(upgrade.Effects[j].AfflictionsImposed != undefined) {
+                    for (let i = 0; i < upgrade.Effects[j].AfflictionsImposed.length; i++) {
+                        let afflictionCount = strength;
+                        DoPlayerUpgrade(username, UpgradeType.MoreAfflictions, (upgrades, strength, strengthPercentage) => {
+                            afflictionCount += strength;
+                        });
+                        AddAffliction(upgrade.Effects[j].AfflictionsImposed[i], afflictionCount);
+                    }
+                }
             }
-        }
+        });
+
     });
 
-    DoPlayerUpgrade(username, UpgradeType.RandomAfflictionChance, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.RandomAfflictionChance, (upgrades, strength, strengthPercentage) => {
         if(GetRandomIntI(0, 100) <= strength) {
             AddAffliction(GetRandomEnum(Affliction)!, 1);
         }
     });
 
-    DoPlayerUpgrade(username, UpgradeType.DamageChangePercentage, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.DamageChangePercentage, (upgrades, strength, strengthPercentage) => {
         damage += damage * strengthPercentage;
     });
 
     let player = LoadPlayer(username);
     if(player.CurrentHealth <= CalculateMaxHealth(player) * 0.3) {
-        DoPlayerUpgrade(username, UpgradeType.MoreDamageWhenBelow30Percent, (upgrade, strength, strengthPercentage) => {
+        DoPlayerUpgrade(username, UpgradeType.MoreDamageWhenBelow30Percent, (upgrades, strength, strengthPercentage) => {
             damage += damage * strengthPercentage;
         });
     }
@@ -683,22 +702,7 @@ export async function DoDamageToMonster(client: Client, username: string, damage
 
     damage = await GetAdjustedDamage(client, damage, damageType, showDamageTypeResponse);
 
-    DoPlayerUpgrade(username, UpgradeType.LifestealChance, async (upgrade, strength, strengthPercentage) => {
-        if(GetRandomIntI(0, 100) <= strength) {
-            await ChangePlayerHealth(client, username, Math.floor(damage), DamageType.None);
-            await client.say(process.env.CHANNEL!, `@${username} gained ${Math.floor(damage)} health from their ${upgrade.Name}!`);
-        }
-    });
-
-    DoPlayerUpgrade(username, UpgradeType.GemsForDamageChance, async (upgrade, strength, strengthPercentage) => {
-        if(GetRandomIntI(0, 100) <= strength) {
-            player.SpendableGems += Math.floor(damage);
-            SavePlayer(player)
-            await client.say(process.env.CHANNEL!, `@${username} gained ${Math.floor(damage)} gems from their ${upgrade.Name}!`);
-        }
-    });
-
-    DoPlayerUpgrade(username, UpgradeType.DoubleAfflictionsChance, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.DoubleAfflictionsChance, (upgrades, strength, strengthPercentage) => {
         if(GetRandomIntI(0, 100) <= strength) {
             for (let i = 0; i < monsterInfo.Afflictions.length; i++) {
                 AddAffliction(monsterInfo.Afflictions[i].AfflictionType, monsterInfo.Afflictions[i].Amount);
@@ -706,11 +710,11 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         }
     });
 
-    DoPlayerUpgrade(username, UpgradeType.HealForDamageDealt, (upgrade, strength, strengthPercentage) => {
+    DoPlayerUpgrade(username, UpgradeType.HealForDamageDealt, (upgrades, strength, strengthPercentage) => {
         ChangePlayerHealth(client, username, Math.floor(damage * strengthPercentage), DamageType.None);
     });
 
-    let dragonDied = HandleDamage(client, damage, damageType);
+    let monsterDied = HandleDamage(client, damage, damageType);
 
     setTimeout(async () => {
         await HandleQuestProgress(client, username, QuestType.DealDamage, damage);
@@ -724,9 +728,14 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         SavePlayerSession(username, playerSession);
     }, 10);
 
-    await GiveExp(client, username, 1);
+    let maxExp = Math.ceil(damage / 4);
+    // maxExp = Math.min(10, maxExp);
+    await GiveExp(client, username, GetRandomIntI(1, maxExp));
 
-    return dragonDied;
+    return {
+        MonsterDied: monsterDied,
+        DamageReceived: damage
+    };
 }
 
 function HandleDamage(client: Client, damage: number, damageType: DamageType): boolean {
@@ -771,10 +780,10 @@ function HandleDamage(client: Client, damage: number, damageType: DamageType): b
                     let player = LoadPlayer(sessions[i].NameAsDisplayed);
 
                     let expToGive = GetRandomIntI(monsterInfo.Stats.ExpRange.min, monsterInfo.Stats.ExpRange.max) * player.Level;
-                    DoPlayerUpgrade(sessions[i].NameAsDisplayed, UpgradeType.DefeatGems, async (upgrade, strength, strengthPercentage) => {
+                    DoPlayerUpgrade(sessions[i].NameAsDisplayed, UpgradeType.DefeatGems, async (upgrades, strength, strengthPercentage) => {
                         player.SpendableGems += strength;
                         SavePlayer(player);
-                        await client.say(process.env.CHANNEL!, `${player.Username} received ${strength} extra gems for defeating ${monsterInfo.Stats.Name} because of ${upgrade.Name}!`);
+                        await client.say(process.env.CHANNEL!, `${player.Username} received ${strength} extra gems for defeating ${monsterInfo.Stats.Name} because of ${DisplayAsList(upgrades, x => x.Name)}!`);
                     });
                     await GiveExp(client, sessions[i].NameAsDisplayed, expToGive);
                     await GivePlayerRandomObject(client, sessions[i].NameAsDisplayed, ObjectRetrievalType.RandomReward);

@@ -4,6 +4,11 @@ const obs = new OBSWebSocket();
 export const SCENE_WIDTH = 1920;
 export const SCENE_HEIGHT = 1080;
 
+const fallbackScenes = [
+    "Regular Games",
+    "Special Events"
+];
+
 export async function ConnectToObs() {
     console.log(`Connecting to OBS`);
     await obs.connect('ws://127.0.0.1:4455', 'loafloaf').catch(e => console.error(e));
@@ -58,10 +63,29 @@ async function GetSceneItemIdByName(name: string, sceneName: string) {
     return response.sceneItemId;
 }
 
-export async function GetObsSourceScale(name: string): Promise<{ x: number, y: number }> {
+async function CheckSceneForSource(name: string): Promise<string> {
     let sceneName = await GetOpenScene();
 
     if(!await DoesSceneContainItem(sceneName, name)) {
+        let found = false;
+        for (let i = 0; i < fallbackScenes.length; i++) {
+            sceneName = fallbackScenes[i];
+            if(await DoesSceneContainItem(sceneName, name)) {
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            return ``;
+        }
+    }
+
+    return sceneName;
+}
+
+export async function GetObsSourceScale(name: string): Promise<{ x: number, y: number }> {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
         return;
     }
 
@@ -77,9 +101,8 @@ export async function GetObsSourceScale(name: string): Promise<{ x: number, y: n
 }
 
 export async function SetObsSourceScale(name: string, x: number, y: number) {
-    let sceneName = await GetOpenScene();
-
-    if(!await DoesSceneContainItem(sceneName, name)) {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
         return;
     }
 
@@ -94,9 +117,8 @@ export async function SetObsSourceScale(name: string, x: number, y: number) {
 }
 
 export async function GetObsSourcePosition(name: string): Promise<{ x: number, y: number, width: number, height: number }> {
-    let sceneName = await GetOpenScene();
-
-    if(!await DoesSceneContainItem(sceneName, name)) {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
         return;
     }
 
@@ -114,9 +136,8 @@ export async function GetObsSourcePosition(name: string): Promise<{ x: number, y
 }
 
 export async function SetObsSourcePosition(name: string, x: number, y: number) {
-    let sceneName = await GetOpenScene();
-
-    if(!await DoesSceneContainItem(sceneName, name)) {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
         return;
     }
 
@@ -131,9 +152,8 @@ export async function SetObsSourcePosition(name: string, x: number, y: number) {
 }
 
 export async function RotateOBSSource(name: string, rotationDegrees: number) {
-    let sceneName = await GetOpenScene();
-
-    if(!await DoesSceneContainItem(sceneName, name)) {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
         return;
     }
 
@@ -173,7 +193,7 @@ export async function GetTextValue(sourceName: string): Promise<string> {
         inputName: sourceName
     });
 
-    return response.inputSettings.text;
+    return `${response.inputSettings.text}`;
 }
 export async function SetTextColor(sourceName: string, red: number, green: number, blue: number) {
     // Convert decimal color to hexadecimal format that OBS expects
@@ -201,10 +221,9 @@ export async function ToggleObject(name: string) {
 }
 
 export async function GetSceneItemEnabled(name: string): Promise<boolean> {
-    let sceneName = await GetOpenScene();
-
-    if(!await DoesSceneContainItem(sceneName, name)) {
-        return false;
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
+        return;
     }
 
     const response = await obs.call('GetSceneItemEnabled', {
@@ -216,9 +235,8 @@ export async function GetSceneItemEnabled(name: string): Promise<boolean> {
 }
 
 export async function SetSceneItemEnabled(name: string, enabled: boolean) {
-    let sceneName = await GetOpenScene();
-
-    if(!await DoesSceneContainItem(sceneName, name)) {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
         return;
     }
 

@@ -1,0 +1,4612 @@
+{
+  "LocationMinigameNodes": {
+    "7,1": {
+      "MineNodesLeft": 82,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "6,3": {
+      "MineNodesLeft": 47,
+      "FishNodesLeft": 67,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "16,4": {
+      "MineNodesLeft": 89,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 45,
+      "ValueMultiplier": 1
+    },
+    "22,4": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 84,
+      "ValueMultiplier": 1
+    },
+    "30,4": {
+      "MineNodesLeft": 83,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 42,
+      "ValueMultiplier": 1
+    },
+    "12,5": {
+      "MineNodesLeft": 83,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 58,
+      "ValueMultiplier": 1
+    },
+    "14,7": {
+      "MineNodesLeft": 61,
+      "FishNodesLeft": 74,
+      "CookNodesLeft": 67,
+      "ValueMultiplier": 1
+    },
+    "20,8": {
+      "MineNodesLeft": 76,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 60,
+      "ValueMultiplier": 1
+    },
+    "4,10": {
+      "MineNodesLeft": 10,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 51,
+      "ValueMultiplier": 1
+    },
+    "24,16": {
+      "MineNodesLeft": 117,
+      "FishNodesLeft": 67,
+      "CookNodesLeft": 64,
+      "ValueMultiplier": 1
+    },
+    "5,17": {
+      "MineNodesLeft": 72,
+      "FishNodesLeft": 37,
+      "CookNodesLeft": 67,
+      "ValueMultiplier": 1
+    },
+    "29,17": {
+      "MineNodesLeft": 106,
+      "FishNodesLeft": 57,
+      "CookNodesLeft": 45,
+      "ValueMultiplier": 1
+    },
+    "21,18": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "29,19": {
+      "MineNodesLeft": 70,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 49,
+      "ValueMultiplier": 1
+    },
+    "28,21": {
+      "MineNodesLeft": 74,
+      "FishNodesLeft": 56,
+      "CookNodesLeft": 83,
+      "ValueMultiplier": 1
+    },
+    "1,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "2,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "3,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "4,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "5,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "11,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "12,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "13,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "14,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "15,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "16,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "17,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "18,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "19,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "20,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "21,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "22,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "23,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "24,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "25,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "26,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "27,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "28,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "29,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "30,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "31,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "32,1": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "1,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "2,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "3,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "4,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1.5
+    },
+    "5,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 0.25
+    },
+    "12,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "13,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "20,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "21,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "22,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "23,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "24,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "25,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "26,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "27,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "28,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "29,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "32,2": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "1,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "2,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "3,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "4,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "12,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "23,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "24,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "25,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "26,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "27,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "28,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "32,3": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 89,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "1,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "2,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "3,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "24,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "25,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "26,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 0.25
+    },
+    "27,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "28,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 104,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "32,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "1,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 0.5
+    },
+    "2,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "3,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 89,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "24,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 104,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "25,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "26,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "27,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "28,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "32,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 2
+    },
+    "1,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 0.25
+    },
+    "2,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "3,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "4,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 0.25
+    },
+    "24,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "25,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "26,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1.5
+    },
+    "27,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "28,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "29,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "32,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "1,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "2,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "3,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1.5
+    },
+    "4,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "12,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1.5
+    },
+    "13,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "24,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 2
+    },
+    "25,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "26,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "27,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "28,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "29,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "32,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "1,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "2,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "13,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "14,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "23,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "24,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 2
+    },
+    "25,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "26,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "27,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "28,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "29,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "30,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "32,8": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "1,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "2,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "3,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "4,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "5,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "6,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "14,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "15,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "16,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "17,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "22,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "23,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "24,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "25,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "26,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "27,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "28,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "29,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "30,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "31,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "32,9": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "1,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "2,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "5,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "6,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "7,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "9,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "10,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "13,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "14,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "17,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "18,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "21,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "22,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "23,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "24,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "25,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "26,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "27,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "28,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "29,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "30,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "31,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "32,10": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "1,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "2,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1.5
+    },
+    "5,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "6,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "7,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "8,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "9,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "10,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "11,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "12,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "13,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "19,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "20,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "21,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "22,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "23,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "24,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "25,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "26,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "27,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 0.5
+    },
+    "28,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "29,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "30,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "31,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "32,11": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "1,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "5,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "6,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "7,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "8,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "9,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "10,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 93,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "11,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "12,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "19,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "20,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "21,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 0.5
+    },
+    "22,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "23,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 93,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "24,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "25,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "26,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "27,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "28,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "29,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "30,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "31,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "32,12": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "1,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "6,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "7,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 2
+    },
+    "8,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 104,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "9,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "10,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "11,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "12,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 93,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "13,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "14,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "15,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "16,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "19,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "24,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "25,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "26,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "27,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "28,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 2
+    },
+    "29,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "30,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "31,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "32,13": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "1,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "9,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "10,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "11,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "12,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "13,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "14,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "15,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "16,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "17,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "18,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "19,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "26,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "27,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "28,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "29,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "30,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "31,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "32,14": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 93,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "1,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "10,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "13,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "17,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "18,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "19,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "20,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "21,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "28,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "29,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "30,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 104,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "31,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "32,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "1,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "2,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "10,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "13,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "17,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 0.5
+    },
+    "18,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "19,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "20,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "21,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "30,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 0.25
+    },
+    "31,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "32,16": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "1,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "2,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 93,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "10,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "17,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "18,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "19,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "20,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "21,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "30,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "31,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 2
+    },
+    "32,17": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "1,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 2
+    },
+    "2,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "10,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "13,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "14,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "17,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "18,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "19,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "23,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "30,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "31,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "32,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "1,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "2,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "10,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "13,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "14,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "17,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "18,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 0.5
+    },
+    "19,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "20,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "22,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "23,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "24,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "30,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "31,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 0.25
+    },
+    "32,19": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "1,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "9,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "10,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "11,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "13,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "17,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "18,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "19,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1.5
+    },
+    "20,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "21,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "22,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "23,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 90,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "24,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "25,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 0.5
+    },
+    "26,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "30,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "31,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "32,20": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "1,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "9,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1.5
+    },
+    "10,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "11,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "13,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "14,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "15,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "16,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 83,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "17,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "18,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "19,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "20,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "21,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "22,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "23,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 0.25
+    },
+    "24,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "25,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "26,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 93,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "29,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "30,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "31,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 88,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "32,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "1,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "8,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "9,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "10,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 101,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "11,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "12,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "13,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "14,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "15,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "16,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 94,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "17,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "18,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "19,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "20,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "21,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "22,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "23,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 117,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "24,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 95,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "25,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "26,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "29,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 113,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "30,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "31,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "32,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "1,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "2,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "3,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "6,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "7,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "8,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 8,
+      "ValueMultiplier": 1
+    },
+    "9,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "10,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "11,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "12,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "13,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 100,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "14,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "15,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "16,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "17,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "18,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 0.5
+    },
+    "19,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "20,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 89,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "21,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 82,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "22,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 106,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "23,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "24,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "25,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 109,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "26,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "27,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 98,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "28,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "29,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 119,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "30,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "31,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "32,23": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "1,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 118,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "2,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 96,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "3,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "4,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "5,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "6,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 92,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "7,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 108,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "8,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "9,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 112,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "10,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 107,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "11,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "12,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 114,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 0.5
+    },
+    "13,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 9,
+      "ValueMultiplier": 1
+    },
+    "14,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 102,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "15,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 103,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "16,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 115,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "17,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "18,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 110,
+      "CookNodesLeft": 4,
+      "ValueMultiplier": 1
+    },
+    "19,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 87,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "20,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "21,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 84,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "22,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 80,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "23,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 120,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "24,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 111,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "25,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 99,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "26,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 105,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "27,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 116,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "28,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 81,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "29,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 85,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "30,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 97,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "31,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 86,
+      "CookNodesLeft": 7,
+      "ValueMultiplier": 1
+    },
+    "32,24": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 91,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "6,1": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "8,1": {
+      "MineNodesLeft": 30,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "9,1": {
+      "MineNodesLeft": 35,
+      "FishNodesLeft": 7,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "10,1": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "6,2": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 6,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "10,2": {
+      "MineNodesLeft": 11,
+      "FishNodesLeft": 7,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "11,2": {
+      "MineNodesLeft": 32,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "14,2": {
+      "MineNodesLeft": 23,
+      "FishNodesLeft": 2,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "15,2": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "16,2": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 3,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "17,2": {
+      "MineNodesLeft": 35,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 0.25
+    },
+    "18,2": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "19,2": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "5,3": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 6,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "10,3": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "11,3": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 8,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "13,3": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 2,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "18,3": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 19,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "19,3": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 2,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "20,3": {
+      "MineNodesLeft": 11,
+      "FishNodesLeft": 19,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "21,3": {
+      "MineNodesLeft": 39,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "22,3": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "4,4": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 9,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "5,4": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 3,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "6,4": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "11,4": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 11,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "12,4": {
+      "MineNodesLeft": 23,
+      "FishNodesLeft": 15,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "13,4": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "19,4": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 1,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "23,4": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "4,5": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "5,5": {
+      "MineNodesLeft": 31,
+      "FishNodesLeft": 19,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "6,5": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "11,5": {
+      "MineNodesLeft": 33,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "22,5": {
+      "MineNodesLeft": 15,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "23,5": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 9,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "5,6": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "11,6": {
+      "MineNodesLeft": 36,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "12,6": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "13,6": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "14,6": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "18,6": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 14,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "20,6": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 4,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "21,6": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 19,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "23,6": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 6,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "5,7": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 4,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "6,7": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "8,7": {
+      "MineNodesLeft": 37,
+      "FishNodesLeft": 5,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 0.25
+    },
+    "11,7": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "15,7": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 8,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "16,7": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "17,7": {
+      "MineNodesLeft": 37,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "18,7": {
+      "MineNodesLeft": 30,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "19,7": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 7,
+      "CookNodesLeft": 37,
+      "ValueMultiplier": 1
+    },
+    "21,7": {
+      "MineNodesLeft": 15,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "22,7": {
+      "MineNodesLeft": 31,
+      "FishNodesLeft": 5,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "23,7": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 6,
+      "CookNodesLeft": 37,
+      "ValueMultiplier": 1
+    },
+    "3,8": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 3,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "4,8": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 7,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "5,8": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 3,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "6,8": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "7,8": {
+      "MineNodesLeft": 33,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "8,8": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 4,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "9,8": {
+      "MineNodesLeft": 11,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "12,8": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 6,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "15,8": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 3,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "16,8": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "17,8": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "18,8": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "19,8": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 15,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "21,8": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "22,8": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 14,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "7,9": {
+      "MineNodesLeft": 11,
+      "FishNodesLeft": 6,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "8,9": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 3,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "9,9": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "10,9": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "13,9": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "18,9": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1.5
+    },
+    "19,9": {
+      "MineNodesLeft": 10,
+      "FishNodesLeft": 8,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "20,9": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "21,9": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 19,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "8,10": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 16,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "11,10": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "12,10": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "19,10": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "20,10": {
+      "MineNodesLeft": 35,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "7,2": {
+      "MineNodesLeft": 76,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "8,2": {
+      "MineNodesLeft": 50,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "9,2": {
+      "MineNodesLeft": 76,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "7,3": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 16,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "8,3": {
+      "MineNodesLeft": 64,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "9,3": {
+      "MineNodesLeft": 60,
+      "FishNodesLeft": 11,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "14,3": {
+      "MineNodesLeft": 67,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "15,3": {
+      "MineNodesLeft": 80,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "16,3": {
+      "MineNodesLeft": 75,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "17,3": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "7,4": {
+      "MineNodesLeft": 70,
+      "FishNodesLeft": 11,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "8,4": {
+      "MineNodesLeft": 78,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "9,4": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "10,4": {
+      "MineNodesLeft": 52,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "14,4": {
+      "MineNodesLeft": 56,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "15,4": {
+      "MineNodesLeft": 60,
+      "FishNodesLeft": 12,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 0.25
+    },
+    "17,4": {
+      "MineNodesLeft": 51,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "18,4": {
+      "MineNodesLeft": 58,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "7,5": {
+      "MineNodesLeft": 60,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "8,5": {
+      "MineNodesLeft": 68,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "9,5": {
+      "MineNodesLeft": 78,
+      "FishNodesLeft": 14,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "10,5": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "13,5": {
+      "MineNodesLeft": 68,
+      "FishNodesLeft": 14,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "14,5": {
+      "MineNodesLeft": 70,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "17,5": {
+      "MineNodesLeft": 59,
+      "FishNodesLeft": 19,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "18,5": {
+      "MineNodesLeft": 62,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "19,5": {
+      "MineNodesLeft": 62,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "8,6": {
+      "MineNodesLeft": 63,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "9,6": {
+      "MineNodesLeft": 70,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "10,6": {
+      "MineNodesLeft": 76,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "15,6": {
+      "MineNodesLeft": 66,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "16,6": {
+      "MineNodesLeft": 75,
+      "FishNodesLeft": 15,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "17,6": {
+      "MineNodesLeft": 54,
+      "FishNodesLeft": 16,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "19,6": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "9,7": {
+      "MineNodesLeft": 72,
+      "FishNodesLeft": 12,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "10,7": {
+      "MineNodesLeft": 63,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "20,7": {
+      "MineNodesLeft": 51,
+      "FishNodesLeft": 11,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "10,8": {
+      "MineNodesLeft": 72,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "11,8": {
+      "MineNodesLeft": 58,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "11,9": {
+      "MineNodesLeft": 76,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "12,9": {
+      "MineNodesLeft": 59,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "22,14": {
+      "MineNodesLeft": 63,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "23,14": {
+      "MineNodesLeft": 51,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "6,15": {
+      "MineNodesLeft": 70,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "7,15": {
+      "MineNodesLeft": 78,
+      "FishNodesLeft": 17,
+      "CookNodesLeft": 37,
+      "ValueMultiplier": 1
+    },
+    "24,15": {
+      "MineNodesLeft": 77,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "25,15": {
+      "MineNodesLeft": 57,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "5,16": {
+      "MineNodesLeft": 60,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "6,16": {
+      "MineNodesLeft": 66,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "7,16": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "25,16": {
+      "MineNodesLeft": 64,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "26,16": {
+      "MineNodesLeft": 57,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "27,16": {
+      "MineNodesLeft": 63,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "6,17": {
+      "MineNodesLeft": 54,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 0.5
+    },
+    "7,17": {
+      "MineNodesLeft": 57,
+      "FishNodesLeft": 16,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "26,17": {
+      "MineNodesLeft": 51,
+      "FishNodesLeft": 14,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "27,17": {
+      "MineNodesLeft": 63,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "28,17": {
+      "MineNodesLeft": 72,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "5,18": {
+      "MineNodesLeft": 73,
+      "FishNodesLeft": 14,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "6,18": {
+      "MineNodesLeft": 72,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "7,18": {
+      "MineNodesLeft": 56,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "27,18": {
+      "MineNodesLeft": 54,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "28,18": {
+      "MineNodesLeft": 79,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "5,19": {
+      "MineNodesLeft": 74,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "6,19": {
+      "MineNodesLeft": 70,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "7,19": {
+      "MineNodesLeft": 61,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "4,20": {
+      "MineNodesLeft": 68,
+      "FishNodesLeft": 16,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "5,20": {
+      "MineNodesLeft": 71,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "6,20": {
+      "MineNodesLeft": 54,
+      "FishNodesLeft": 15,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "30,2": {
+      "MineNodesLeft": 35,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "31,2": {
+      "MineNodesLeft": 23,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "29,3": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "30,3": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1.5
+    },
+    "31,3": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "29,4": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "31,4": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "29,5": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "30,5": {
+      "MineNodesLeft": 37,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "31,5": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "30,6": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "31,6": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "30,7": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "31,7": {
+      "MineNodesLeft": 36,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "31,8": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "6,14": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "7,14": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 0.5
+    },
+    "8,14": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "8,15": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "9,15": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "8,16": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "9,16": {
+      "MineNodesLeft": 36,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "8,17": {
+      "MineNodesLeft": 31,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "9,17": {
+      "MineNodesLeft": 32,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "8,18": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "9,18": {
+      "MineNodesLeft": 39,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "8,19": {
+      "MineNodesLeft": 39,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "9,19": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "8,20": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "8,21": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 1
+    },
+    "20,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 65,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "21,4": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 66,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "20,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 71,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "21,5": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 52,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "6,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 67,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "7,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 53,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "22,6": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 52,
+      "CookNodesLeft": 18,
+      "ValueMultiplier": 1
+    },
+    "7,7": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 70,
+      "CookNodesLeft": 14,
+      "ValueMultiplier": 1
+    },
+    "4,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 53,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "5,15": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 59,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "25,18": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 60,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "4,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 60,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "5,21": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 69,
+      "CookNodesLeft": 15,
+      "ValueMultiplier": 0.25
+    },
+    "4,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 61,
+      "CookNodesLeft": 11,
+      "ValueMultiplier": 1
+    },
+    "5,22": {
+      "MineNodesLeft": 0,
+      "FishNodesLeft": 74,
+      "CookNodesLeft": 12,
+      "ValueMultiplier": 1
+    },
+    "15,5": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "16,5": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 37,
+      "CookNodesLeft": 37,
+      "ValueMultiplier": 1
+    },
+    "3,10": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 40,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "3,11": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 37,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "4,11": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 38,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "2,12": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "3,12": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 40,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "4,12": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "2,13": {
+      "MineNodesLeft": 10,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "3,13": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 22,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "4,13": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "5,13": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "2,14": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "3,14": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "4,14": {
+      "MineNodesLeft": 11,
+      "FishNodesLeft": 31,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "5,14": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "2,15": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "3,15": {
+      "MineNodesLeft": 10,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "3,16": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 39,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "4,16": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "3,17": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "4,17": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 34,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "3,18": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "4,18": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 38,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "3,19": {
+      "MineNodesLeft": 15,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "4,19": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "15,10": {
+      "MineNodesLeft": 35,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "16,10": {
+      "MineNodesLeft": 55,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "14,11": {
+      "MineNodesLeft": 48,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 5,
+      "ValueMultiplier": 1
+    },
+    "17,11": {
+      "MineNodesLeft": 57,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 10,
+      "ValueMultiplier": 1
+    },
+    "18,11": {
+      "MineNodesLeft": 57,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "13,12": {
+      "MineNodesLeft": 57,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 6,
+      "ValueMultiplier": 1
+    },
+    "14,12": {
+      "MineNodesLeft": 45,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "15,12": {
+      "MineNodesLeft": 37,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 16,
+      "ValueMultiplier": 1
+    },
+    "16,12": {
+      "MineNodesLeft": 44,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 17,
+      "ValueMultiplier": 1
+    },
+    "17,12": {
+      "MineNodesLeft": 48,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 19,
+      "ValueMultiplier": 1
+    },
+    "18,12": {
+      "MineNodesLeft": 42,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 0,
+      "ValueMultiplier": 1
+    },
+    "17,13": {
+      "MineNodesLeft": 30,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 3,
+      "ValueMultiplier": 1
+    },
+    "18,13": {
+      "MineNodesLeft": 49,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 2,
+      "ValueMultiplier": 1
+    },
+    "15,11": {
+      "MineNodesLeft": 80,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 13,
+      "ValueMultiplier": 1
+    },
+    "16,11": {
+      "MineNodesLeft": 51,
+      "FishNodesLeft": 0,
+      "CookNodesLeft": 1,
+      "ValueMultiplier": 1
+    },
+    "20,13": {
+      "MineNodesLeft": 10,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "21,13": {
+      "MineNodesLeft": 11,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "22,13": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 31,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "23,13": {
+      "MineNodesLeft": 33,
+      "FishNodesLeft": 36,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "20,14": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "21,14": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "24,14": {
+      "MineNodesLeft": 39,
+      "FishNodesLeft": 40,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "25,14": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "22,15": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 34,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "23,15": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 37,
+      "CookNodesLeft": 31,
+      "ValueMultiplier": 1
+    },
+    "26,15": {
+      "MineNodesLeft": 34,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "27,15": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 0.5
+    },
+    "22,16": {
+      "MineNodesLeft": 30,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "23,16": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 20,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "22,17": {
+      "MineNodesLeft": 38,
+      "FishNodesLeft": 30,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "23,17": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 12,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "24,17": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "25,17": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 25,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "20,18": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 26,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 0.25
+    },
+    "22,18": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "24,18": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 31,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "26,18": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 36,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "21,19": {
+      "MineNodesLeft": 35,
+      "FishNodesLeft": 13,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "25,19": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 18,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "26,19": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 15,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "2,20": {
+      "MineNodesLeft": 31,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "3,20": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 31,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "7,20": {
+      "MineNodesLeft": 25,
+      "FishNodesLeft": 10,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "2,21": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 23,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "3,21": {
+      "MineNodesLeft": 40,
+      "FishNodesLeft": 15,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1.5
+    },
+    "6,21": {
+      "MineNodesLeft": 15,
+      "FishNodesLeft": 33,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "7,21": {
+      "MineNodesLeft": 31,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "2,22": {
+      "MineNodesLeft": 15,
+      "FishNodesLeft": 21,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "3,22": {
+      "MineNodesLeft": 10,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 37,
+      "ValueMultiplier": 1
+    },
+    "6,22": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 33,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "7,22": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 37,
+      "ValueMultiplier": 1
+    },
+    "4,23": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 36,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "5,23": {
+      "MineNodesLeft": 23,
+      "FishNodesLeft": 24,
+      "CookNodesLeft": 32,
+      "ValueMultiplier": 1
+    },
+    "11,15": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 48,
+      "CookNodesLeft": 23,
+      "ValueMultiplier": 1
+    },
+    "12,15": {
+      "MineNodesLeft": 2,
+      "FishNodesLeft": 51,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "14,15": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 33,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "15,15": {
+      "MineNodesLeft": 3,
+      "FishNodesLeft": 59,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 1
+    },
+    "16,15": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 43,
+      "CookNodesLeft": 39,
+      "ValueMultiplier": 0.25
+    },
+    "11,16": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 42,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "12,16": {
+      "MineNodesLeft": 12,
+      "FishNodesLeft": 43,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "14,16": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 57,
+      "CookNodesLeft": 34,
+      "ValueMultiplier": 1
+    },
+    "15,16": {
+      "MineNodesLeft": 21,
+      "FishNodesLeft": 40,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "16,16": {
+      "MineNodesLeft": 23,
+      "FishNodesLeft": 37,
+      "CookNodesLeft": 40,
+      "ValueMultiplier": 1
+    },
+    "11,17": {
+      "MineNodesLeft": 20,
+      "FishNodesLeft": 56,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "12,17": {
+      "MineNodesLeft": 28,
+      "FishNodesLeft": 53,
+      "CookNodesLeft": 35,
+      "ValueMultiplier": 1
+    },
+    "13,17": {
+      "MineNodesLeft": 13,
+      "FishNodesLeft": 48,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "14,17": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 44,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "15,17": {
+      "MineNodesLeft": 17,
+      "FishNodesLeft": 42,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "16,17": {
+      "MineNodesLeft": 27,
+      "FishNodesLeft": 34,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "11,18": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 55,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "12,18": {
+      "MineNodesLeft": 18,
+      "FishNodesLeft": 40,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "15,18": {
+      "MineNodesLeft": 6,
+      "FishNodesLeft": 49,
+      "CookNodesLeft": 26,
+      "ValueMultiplier": 1
+    },
+    "16,18": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 43,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "11,19": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 57,
+      "CookNodesLeft": 24,
+      "ValueMultiplier": 1
+    },
+    "12,19": {
+      "MineNodesLeft": 24,
+      "FishNodesLeft": 47,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "15,19": {
+      "MineNodesLeft": 3,
+      "FishNodesLeft": 54,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "16,19": {
+      "MineNodesLeft": 3,
+      "FishNodesLeft": 60,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "12,20": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 32,
+      "CookNodesLeft": 29,
+      "ValueMultiplier": 1
+    },
+    "14,20": {
+      "MineNodesLeft": 16,
+      "FishNodesLeft": 55,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "15,20": {
+      "MineNodesLeft": 3,
+      "FishNodesLeft": 35,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 1
+    },
+    "16,20": {
+      "MineNodesLeft": 1,
+      "FishNodesLeft": 35,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "12,21": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 48,
+      "CookNodesLeft": 33,
+      "ValueMultiplier": 1
+    },
+    "28,16": {
+      "MineNodesLeft": 29,
+      "FishNodesLeft": 39,
+      "CookNodesLeft": 25,
+      "ValueMultiplier": 1
+    },
+    "29,16": {
+      "MineNodesLeft": 23,
+      "FishNodesLeft": 34,
+      "CookNodesLeft": 28,
+      "ValueMultiplier": 1
+    },
+    "29,18": {
+      "MineNodesLeft": 26,
+      "FishNodesLeft": 35,
+      "CookNodesLeft": 20,
+      "ValueMultiplier": 1
+    },
+    "27,19": {
+      "MineNodesLeft": 8,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 22,
+      "ValueMultiplier": 1
+    },
+    "28,19": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 28,
+      "CookNodesLeft": 27,
+      "ValueMultiplier": 2
+    },
+    "27,20": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 35,
+      "CookNodesLeft": 30,
+      "ValueMultiplier": 1
+    },
+    "28,20": {
+      "MineNodesLeft": 8,
+      "FishNodesLeft": 32,
+      "CookNodesLeft": 38,
+      "ValueMultiplier": 1
+    },
+    "29,20": {
+      "MineNodesLeft": 14,
+      "FishNodesLeft": 29,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "27,21": {
+      "MineNodesLeft": 22,
+      "FishNodesLeft": 39,
+      "CookNodesLeft": 21,
+      "ValueMultiplier": 1
+    },
+    "27,22": {
+      "MineNodesLeft": 19,
+      "FishNodesLeft": 27,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1
+    },
+    "28,22": {
+      "MineNodesLeft": 1,
+      "FishNodesLeft": 37,
+      "CookNodesLeft": 36,
+      "ValueMultiplier": 1.5
+    }
+  }
+}

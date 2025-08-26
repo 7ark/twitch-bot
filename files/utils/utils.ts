@@ -2,6 +2,7 @@ import {Client} from "tmi.js";
 import { UpgradeDefinitions } from "../upgradeDefinitions";
 import {GetParameterFromCommand} from "./messageUtils";
 import {AllInventoryObjects, ObjectRetrievalType} from "../inventoryDefinitions";
+import {LocationCoordinate} from "./locationUtils";
 
 export interface Dictionary<T> {
     [key: string]: T;
@@ -229,4 +230,34 @@ export function FormatTextIntoLines(text: string, letterCount: number = 15): str
     }
 
     return obsText;
+}
+
+export function FormatSeconds(totalSeconds: number): string {
+    const seconds = Math.floor(totalSeconds % 60);
+    const minutes = Math.floor((totalSeconds / 60) % 60);
+    const hours   = Math.floor(totalSeconds / 3600);
+
+    const parts: string[] = [];
+
+    if (hours > 0) {
+        parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes} ${minutes === 1 ? "minute" : "minutes"}`);
+    }
+    if (seconds > 0 || parts.length === 0) {
+        parts.push(`${seconds} ${seconds === 1 ? "second" : "seconds"}`);
+    }
+
+    // "1 hour, 2 minutes and 3 seconds"
+    if (parts.length > 1) {
+        const last = parts.pop();
+        return parts.join(", ") + " and " + last;
+    }
+    return parts[0];
+}
+
+export function DisplayAsList<T>(arr: T[], selector: (x: T) => string = x => String(x)): string {
+    const formatter = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
+    return formatter.format(arr.map(selector));
 }
