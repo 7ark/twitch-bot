@@ -170,4 +170,4 @@ const PURE_SILENCE: StreamSettings = {
 }
 
 //I SET MY SETTINGS HERE
-export const CurrentStreamSettings: StreamSettings = SOLO_SETTINGS;
+export const CurrentStreamSettings: StreamSettings = COLLAB_SETTINGS;
