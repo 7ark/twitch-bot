@@ -1,5 +1,4 @@
 import {DamageType} from "./utils/monsterUtils";
-import {LocationCoordinate} from "./utils/locationUtils";
 
 export enum QuestType {
     DoCook,
@@ -108,10 +107,15 @@ export interface Player {
     CurrentLocation: string;
     CurrentLocationCoordinates: LocationCoordinate;
     Travelling: boolean;
-    TravelStartTime?: Date;
-    TravelTimeInSeconds?: number;
+    TravelWaiting: boolean;
+    TravelPlan?: Array<TravelChunk>;
+    TravelChunkIndex?: number; //Current index of chunk theyre in
+    TravelPathChoiceIndex?: number; //Index of path they've chosen
+    TravelPathProgressIndex?: number; //Progress on a path
     TravelDestination?: string;
     TravelDestinationCoordinates?: LocationCoordinate;
+    TravelTick?: number;
+    TravelChoiceText?: string;
 }
 
 export interface Class {
@@ -253,6 +257,8 @@ export enum TerrainType {
     Plains,
     Swamp,
     Jungle,
+
+    Urban
 }
 
 export enum LocationResourceType {
@@ -284,8 +290,11 @@ export const coordKey = (x: number, y: number): CoordKey => `${x},${y}`;
 export interface BaseLocation {
     Name: string;
     ContextualName: string;
+    PluralizedName: string;
     Type: LocationType;
     NavigationCost: number;
+    NavigationTimeInTicks: number;
+    DangerRating: number;
     Coordinates: Array<LocationCoordinate>;
 
     //Minigames
@@ -308,8 +317,23 @@ export interface MapLocation<T = undefined> extends BaseLocation {
 export interface NamedLocationInfo {
     Description: string;
     Civilized: boolean; //Are people here and is society actually running? Or is it like abandoned
+    HasPort: boolean;
 }
 
 export interface WildernessLocationInfo {
-    Type: TerrainType;
+    TerrainType: TerrainType;
+}
+
+export interface TravelChunk {
+    StartCoordinate: LocationCoordinate;
+    EndCoordinate: LocationCoordinate;
+    PathOptions: Array<TravelChunkPath>;
+}
+
+export interface TravelChunkPath {
+    Path: Array<LocationCoordinate>;
+    HighestCostTerrain: TerrainType;
+    LowestCostTerrain: TerrainType;
+    MajorityTerrainType: TerrainType;
+    DifficultyScore: number;
 }

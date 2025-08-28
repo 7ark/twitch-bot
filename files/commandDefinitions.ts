@@ -100,7 +100,12 @@ import {
 } from "./utils/angelDevilUtils";
 import {ClearMeeting} from "./utils/meetingUtils";
 import {CreatePoll} from "./utils/pollUtils";
-import {GetLocation, GetTravelSecondsRemaining, StartTravelToLocation} from "./utils/locationUtils";
+import {
+    GetLocation, GetLocationFromCoordinate,
+    GetTravelSecondsRemaining,
+    SelectPlayerTravelPath,
+    StartTravelToLocation
+} from "./utils/locationUtils";
 import {AllLocations} from "./locationDefinitions";
 
 export interface CommandDefinition {
@@ -1434,10 +1439,19 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             if(player.Travelling) {
-                let secondsRemaining = GetTravelSecondsRemaining(player);
-                let formattedDisplay = FormatSeconds(secondsRemaining);
+                if(player.TravelWaiting) {
+                    let text = `@${player.Username}, you are trying to travel to ${player.TravelDestination}, however you've stopped because you have a decision to make. Before you, ${player.TravelChoiceText}`;
+                    //TODO: Different reasons for why theyve stopped
+                    await WhisperUser(client, player.Username, text);
+                }
+                else {
+                    let secondsRemaining = GetTravelSecondsRemaining(player);
+                    let formattedDisplay = FormatSeconds(secondsRemaining);
+                    let playerLoc = GetLocationFromCoordinate(player.CurrentLocationCoordinates);
 
-                await WhisperUser(client, player.Username, `@${player.Username}, you are currently travelling to ${player.TravelDestination}, it will take ${formattedDisplay} to arrive there.`);
+                    await WhisperUser(client, player.Username, `@${player.Username}, you are currently in ${playerLoc.ContextualName} traveling to ${player.TravelDestination}, it will take ${formattedDisplay} to arrive there.`);
+                }
+
             }
             else {
                 await WhisperUser(client, player.Username, `@${player.Username}, you are currently at ${player.CurrentLocation}`);
@@ -1472,6 +1486,27 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             }
             else {
                 await client.say(process.env.CHANNEL!, `@${player.Username}, no location by the name of ${locationName} could be found! Use !locations to see whats in the world.`);
+            }
+        }
+    },
+    {
+        Commands: ["path"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let split = command.replace('!path', '').trim().split(' ');
+            if (split.length > 0) {
+                let value: number = parseInt(split[0]);
+                console.log("Parsed value:", value);
+                if (Number.isNaN(value)) {
+                    await WhisperUser(client, player.Username, `@${player.Username}, that is not a valid path option number. Use !whereami to check your options.`);
+                    return;
+                }
+
+                await SelectPlayerTravelPath(client, player, value - 1);
+            } else {
+                console.log(`No number in message: ${command}}`);
+                await WhisperUser(client, player.Username, `@${player.Username}, you must select a number. Use !whereami to check your path options. Ex. !path 1`);
             }
         }
     },

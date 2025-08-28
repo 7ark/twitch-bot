@@ -227,6 +227,14 @@ export function LoadPlayer(displayName: string): Player {
         player.CozyPoints = 0;
     }
 
+    if (player.Travelling == undefined) {
+        player.Travelling = false;
+    }
+
+    if (player.TravelWaiting == undefined) {
+        player.TravelWaiting = false;
+    }
+
     if(player.CurrentLocation == undefined || player.CurrentLocation == "") {
         //Give them a random settlement thats civilized
         let loc = GetRandomLocation(LocationType.Settlement, (loc) =>

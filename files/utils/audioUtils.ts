@@ -61,7 +61,7 @@ function convertMp3ToWav(mp3FilePath: string, wavFilePath: string): Promise<void
     });
 }
 
-console.log(getDevices());
+// console.log(getDevices());
 
 
 export function PlaySound(soundName: string, type: AudioType, extension: string = "wav", callback?: () => void) {

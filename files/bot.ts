@@ -29,11 +29,12 @@ import {InitializeGroceryStore, InitializeSalesman} from "./utils/shopUtils";
 import {WipePlayerGatherState} from "./utils/gatherUtils";
 import {SelectRole} from "./utils/angelDevilUtils";
 import {ClearMeeting} from "./utils/meetingUtils";
-import {SetupPlayerTravel, SetupWorldGrid} from "./utils/locationUtils";
+import {SetupWorldGrid, TickPlayerTravel} from "./utils/locationUtils";
 import {DisplayAsList, GetSecondsBetweenDates} from "./utils/utils";
 import {Player} from "./valueDefinitions";
 import {MinigameType, StartMinigame} from "./utils/minigameUtils";
 import {GetUserMinigameCount} from "./actionqueue";
+import {TravelTimeInSeconds} from "./globals";
 
 const ngrok = require('ngrok');
 
@@ -170,7 +171,6 @@ async function InitializeBot() {
                 }, 200);
 
                 await SetupWorldGrid();
-                await SetupPlayerTravel(client);
                 await ClearMeeting();
                 await SetLightVisible(true);
                 await FadeOutLights();
@@ -218,13 +218,13 @@ async function InitializeBot() {
     // client.on('redeem', redeemHandler);
 
     // let redeemMessageMapper : Map<string, string> = new Map<string, string>();
-    // await CheckNewFollowers(client);
-    //
-    // async function CheckNewFollowersInterval() {
-    //     await CheckNewFollowers(client);
-    // }
+    await CheckNewFollowers(client);
 
-    // setInterval(CheckNewFollowersInterval, 60000); //1 minute
+    async function CheckNewFollowersInterval() {
+        await CheckNewFollowers(client);
+    }
+
+    setInterval(CheckNewFollowersInterval, 60000); //1 minute
     setInterval(UpdateViewerCountInfo, 10000); //10 seconds
 
     setInterval(() => {
@@ -256,6 +256,10 @@ async function InitializeBot() {
     setInterval(() => {
         TickAfflictions(client);
     }, 1000 * 15); //15 seconds
+
+    setInterval(() => {
+        TickPlayerTravel(client);
+    }, 1000 * TravelTimeInSeconds);
 
     //Auto minigames
     setInterval(async () => {

@@ -72,29 +72,29 @@ async function HandleGatherResult(
     //Filter out bad locations if this is the first time
     if(previousLocation == null) {
         //Filter out oceans
-        let newLocations = potentialLocations.filter(x => x.Location.Info!.Type != TerrainType.Ocean);
+        let newLocations = potentialLocations.filter(x => x.Location.Info!.TerrainType != TerrainType.Ocean);
         if(newLocations.length > 0) {
             potentialLocations = newLocations;
         }
         //Filter out deserts
-        newLocations = newLocations.filter(x => x.Location.Info!.Type != TerrainType.Desert);
+        newLocations = newLocations.filter(x => x.Location.Info!.TerrainType != TerrainType.Desert);
         if(newLocations.length > 0) {
             potentialLocations = newLocations;
         }
         //Filter out wasteland
-        newLocations = newLocations.filter(x => x.Location.Info!.Type != TerrainType.Wasteland);
+        newLocations = newLocations.filter(x => x.Location.Info!.TerrainType != TerrainType.Wasteland);
         if(newLocations.length > 0) {
             potentialLocations = newLocations;
         }
         //Filter out tundra
-        newLocations = newLocations.filter(x => x.Location.Info!.Type != TerrainType.Tundra);
+        newLocations = newLocations.filter(x => x.Location.Info!.TerrainType != TerrainType.Tundra);
         if(newLocations.length > 0) {
             potentialLocations = newLocations;
         }
     }
 
     let location = GetRandomItem(potentialLocations)!;
-    let terrainType = location.Location.Info!.Type;
+    let terrainType = location.Location.Info!.TerrainType;
 
     let itemOptions = FilterObjectsByLocation(allItems, location.Location);
 

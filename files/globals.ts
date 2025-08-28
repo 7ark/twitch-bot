@@ -5,3 +5,4 @@ export let CurrentPollJoker: string = "";
 export let CurrentCaller: string = ``;
 
 export let MessageDelegate: Array<(username: string, message: string) => void> = [];
+export const TravelTimeInSeconds: number = 5;

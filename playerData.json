@@ -21,7 +21,7 @@
       }
     ],
     "LevelUpAvailable": true,
-    "CurrentExp": 797,
+    "CurrentExp": 799,
     "CurrentExpNeeded": 56,
     "KnownMoves": [
       "punch",
@@ -145,10 +145,10 @@
     "ByteCoins": 3505,
     "GatheringResources": false,
     "HitStreak": 2,
-    "CurrentLocation": "Portcullis",
+    "CurrentLocation": "Alba Arce",
     "CurrentLocationCoordinates": {
-      "X": 29,
-      "Y": 17
+      "X": 12,
+      "Y": 5
     },
     "Travelling": false,
     "CurrentQuest": {
@@ -157,7 +157,8 @@
       "Goal": 3150,
       "FiveStarDifficulty": 5
     },
-    "AutoMinigamePattern": "fish"
+    "AutoMinigamePattern": "fish",
+    "TravelWaiting": false
   },
   {
     "Username": "one_1egged_duck",
@@ -2256,7 +2257,7 @@
       }
     ],
     "LevelUpAvailable": false,
-    "CurrentExp": 136,
+    "CurrentExp": 160,
     "CurrentExpNeeded": 721,
     "KnownMoves": [
       "punch",

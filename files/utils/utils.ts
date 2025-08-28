@@ -2,7 +2,6 @@ import {Client} from "tmi.js";
 import { UpgradeDefinitions } from "../upgradeDefinitions";
 import {GetParameterFromCommand} from "./messageUtils";
 import {AllInventoryObjects, ObjectRetrievalType} from "../inventoryDefinitions";
-import {LocationCoordinate} from "./locationUtils";
 
 export interface Dictionary<T> {
     [key: string]: T;
@@ -260,4 +259,24 @@ export function FormatSeconds(totalSeconds: number): string {
 export function DisplayAsList<T>(arr: T[], selector: (x: T) => string = x => String(x)): string {
     const formatter = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
     return formatter.format(arr.map(selector));
+}
+
+export function GetMostCommonEnum<T extends string | number>(values: T[]): T | undefined {
+    const counts: Record<string, number> = {};
+
+    for (const v of values) {
+        counts[v as any] = (counts[v as any] ?? 0) + 1;
+    }
+
+    let bestValue: T | undefined = undefined;
+    let bestCount = -1;
+
+    for (const key in counts) {
+        if (counts[key] > bestCount) {
+            bestCount = counts[key];
+            bestValue = key as unknown as T;
+        }
+    }
+
+    return bestValue;
 }
