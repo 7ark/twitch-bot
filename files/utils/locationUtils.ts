@@ -35,8 +35,6 @@ let emptyGrid: Grid;
 let oceanGrid: Grid;
 
 export function CreateNewWorldData() {
-    let minigameNodes: Record<CoordKey, SessionLocationData> = {};
-
     for (let i = 0; i < AllLocations.length; i++) {
         for (let j = 0; j < AllLocations[i].Coordinates.length; j++) {
             let valueMultiplier = 1;
@@ -68,18 +66,17 @@ export function CreateNewWorldData() {
                 }
             }
 
-            minigameNodes[coordKey(AllLocations[i].Coordinates[j].X, AllLocations[i].Coordinates[j].Y)] = {
-                MineNodesLeft: GetRandomIntI(AllLocations[i].MineNodes.Min, AllLocations[i].MineNodes.Max),
-                FishNodesLeft: GetRandomIntI(AllLocations[i].FishNodes.Min, AllLocations[i].FishNodes.Max),
-                CookNodesLeft: GetRandomIntI(AllLocations[i].CookNodes.Min, AllLocations[i].CookNodes.Max),
-                ValueMultiplier: valueMultiplier
-            }
+            //Scalar to easily change the amount of nodes on all areas without manually rebalancing
+            let nodeScalar = 0.5;
+
+            let node = WorldData.LocationMinigameNodes[coordKey(AllLocations[i].Coordinates[j].X, AllLocations[i].Coordinates[j].Y)];
+            node.MineNodesLeft = Math.floor(GetRandomIntI(AllLocations[i].MineNodes.Min, AllLocations[i].MineNodes.Max) * nodeScalar);
+            node.FishNodesLeft = Math.floor(GetRandomIntI(AllLocations[i].FishNodes.Min, AllLocations[i].FishNodes.Max) * nodeScalar);
+            node.CookNodesLeft = Math.floor(GetRandomIntI(AllLocations[i].CookNodes.Min, AllLocations[i].CookNodes.Max) * nodeScalar);
+            node.ValueMultiplier = valueMultiplier;
         }
     }
 
-    WorldData = {
-        LocationMinigameNodes: minigameNodes
-    };
     SaveWorldData();
 }
 

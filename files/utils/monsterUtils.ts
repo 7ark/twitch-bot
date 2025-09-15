@@ -34,9 +34,18 @@ import {PlayTextToSpeech} from "./audioUtils";
 import {AudioType} from "../streamSettings";
 import {InventoryObject, ObjectRetrievalType} from "../inventoryDefinitions";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
-import {Affliction, ClassType, QuestType, StatusEffect, UpgradeType} from "../valueDefinitions";
-
-enum MonsterType { Dragon, Loaf, Tank, FrankTheTrafficCone }
+import {
+    Affliction,
+    ClassType,
+    DamageType,
+    MonsterStats,
+    QuestType,
+    StatusEffect,
+    UpgradeType,
+    MonsterInfo,
+    AfflictionStack,
+    MonsterType
+} from "../valueDefinitions";
 
 function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
     switch (type) {
@@ -134,46 +143,6 @@ function GenerateMonsterStatsFromType(type: MonsterType): MonsterStats {
         //         VulnerabilityDamageTypeOptions: [DamageType.Bludgeoning, DamageType.Slashing, DamageType.Fire, DamageType.Piercing, DamageType.Poison],
         //     };
     }
-}
-
-export enum DamageType {
-    None,
-    Piercing,
-    Slashing,
-    Bludgeoning,
-    Fire,
-    Cold,
-    Lightning,
-    Poison,
-    Psychic,
-}
-
-export interface MonsterStats {
-    Name: string;
-    Type: MonsterType;
-    AttackMessage: string;
-    AttackAddition: number;
-    DamageRange: { min: number; max: number; }
-    DamageTypes: Array<DamageType>;
-    MaxHealth: number;
-    MonsterAttackRateRange: { min: number; max: number; }
-    ResistImmuneDamageTypeOptions: Array<DamageType>;
-    VulnerabilityDamageTypeOptions: Array<DamageType>;
-    ExpRange: { min: number; max: number; }
-    ArmorRange: { min: number; max: number; }
-}
-
-interface AfflictionStack {
-    AfflictionType: Affliction,
-    Amount: number
-}
-
-export interface MonsterInfo {
-    Health: number;
-    HitsBeforeAttack: number;
-    CurrentArmor: number;
-    Stats: MonsterStats;
-    Afflictions: Array<AfflictionStack>;
 }
 
 const RESISTANCE_COUNT = 2;
@@ -279,7 +248,7 @@ export function LoadMonsterData(): MonsterInfo {
         monsterInfo.CurrentArmor = Math.floor(GetRandomIntI(monsterInfo.Stats.ArmorRange.min, monsterInfo.Stats.ArmorRange.max));
     }
 
-    if(monsterInfo.Afflictions === undefined) {
+    if(monsterInfo.Afflictions === undefined || monsterInfo.Afflictions.length == 0) {
         ResetMonsterAfflictions(monsterInfo);
     }
 
@@ -714,6 +683,8 @@ export async function DoDamageToMonster(client: Client, username: string, damage
         ChangePlayerHealth(client, username, Math.floor(damage * strengthPercentage), DamageType.None);
     });
 
+    damage = Math.floor(damage);
+
     let monsterDied = HandleDamage(client, damage, damageType);
 
     setTimeout(async () => {
@@ -734,7 +705,7 @@ export async function DoDamageToMonster(client: Client, username: string, damage
 
     return {
         MonsterDied: monsterDied,
-        DamageReceived: damage
+        DamageReceived: Math.floor(damage)
     };
 }
 
@@ -848,7 +819,7 @@ export function GenerateNewMonster(): MonsterInfo {
 function SetMonsterData(monsterData: MonsterInfo) {
     //If it was Bytefire, move to something else, otherwise go back to Bytefire
     if(monsterData.Stats.Type === MonsterType.Dragon) {
-        let newMonsterType = GetRandomEnum(MonsterType, [MonsterType.Dragon])!;
+        let newMonsterType = GetRandomEnum(MonsterType, [MonsterType.Dragon, MonsterType.RandomEncounterMonster])!;
         monsterData.Stats = GenerateMonsterStatsFromType(newMonsterType);
     }
     else {

@@ -228,7 +228,7 @@ export async function StartMinigame(client: Client, username: string, minigameTy
     if(outOfNodes) {
         let outText = `@${username}, this location is all out of spots to ${MinigameType[minigameType].toLowerCase()}! You'll have to try another minigame type, or move to a new location. Use !help travel for more information.`;
         if(loadedPlayer.AutoMinigameStartTime != undefined) {
-            outText = ` Your !auto has been cancelled.`;
+            outText += ` Your !auto has been cancelled.`;
         }
         loadedPlayer.AutoMinigameStartTime = undefined;
         SavePlayer(loadedPlayer);

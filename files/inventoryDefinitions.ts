@@ -22,11 +22,11 @@ import {
 import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./utils/audioUtils";
 import {BanUser} from "./utils/twitchUtils";
 import {IsMonsterActive} from "./globals";
-import {DamageType, DoDamageToMonster, LoadMonsterData} from "./utils/monsterUtils";
+import {DoDamageToMonster, LoadMonsterData} from "./utils/monsterUtils";
 import {SetSceneItemEnabled} from "./utils/obsutils";
 import {AudioType} from "./streamSettings";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./utils/lightsUtils";
-import {ClassType, IconType, LocationResourceType, Player, StatusEffect, TerrainType} from "./valueDefinitions";
+import {ClassType, IconType, LocationResourceType, Player, StatusEffect, TerrainType, DamageType} from "./valueDefinitions";
 import {CreatePoll} from "./utils/pollUtils";
 import {GetInventoryObjectsBySource} from "./utils/inventoryUtils";
 

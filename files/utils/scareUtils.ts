@@ -11,8 +11,9 @@ import {
     GivePlayerRandomObject,
     LoadPlayer
 } from "./playerGameUtils";
-import {DamageType, TriggerMonsterAttack} from "./monsterUtils";
+import {TriggerMonsterAttack} from "./monsterUtils";
 import {ObjectRetrievalType} from "../inventoryDefinitions";
+import {DamageType, StatusEffect} from "../valueDefinitions";
 
 let scareWords: Array<string> = [
     `boo`,

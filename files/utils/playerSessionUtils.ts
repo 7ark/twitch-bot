@@ -130,6 +130,13 @@ export function GetStringifiedSessionData(): string {
 }
 
 export function HandleLoadingSession() {
+    if(fs.existsSync('worlddata.json')) {
+        WorldData = JSON.parse(fs.readFileSync('worlddata.json', 'utf-8'));
+    }
+    else {
+        CreateNewWorldData();
+    }
+
     if(fs.existsSync('playersessions.json')) {
         let loadedInfo = JSON.parse(fs.readFileSync('playersessions.json', 'utf-8'));
         timestamp = new Date(loadedInfo.timestamp);
@@ -138,19 +145,8 @@ export function HandleLoadingSession() {
         if (hourDifference > 1) {
             console.log("Wiping Player Session Info")
             fs.unlinkSync('playersessions.json')
-            if(fs.existsSync('worlddata.json')) {
-                fs.unlinkSync('worlddata.json')
-            }
 
             CreateNewWorldData();
-        }
-        else {
-            if(fs.existsSync('worlddata.json')) {
-                WorldData = JSON.parse(fs.readFileSync('worlddata.json', 'utf-8'));
-            }
-            else {
-                CreateNewWorldData();
-            }
         }
     }
     else {

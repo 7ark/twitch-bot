@@ -100,7 +100,7 @@ wss.on('connection', async (ws) => {
     ws.on('message', async (message) => {
         await ReceiveMessageFromHTML(message.toString());
     });
-    // // Example: Sending a message to all connected WebSocket clients
+
     ws.send(JSON.stringify({ type: 'init' }));
 });
 

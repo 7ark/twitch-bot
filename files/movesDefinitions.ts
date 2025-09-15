@@ -1,5 +1,4 @@
-import {DamageType} from "./utils/monsterUtils";
-import {ClassMove, ClassType, MoveType, StatusEffect} from "./valueDefinitions";
+import {ClassMove, ClassType, MoveType, StatusEffect, DamageType} from "./valueDefinitions";
 
 
 export function GetMove(name: string) {

@@ -6,7 +6,7 @@ import {GetNumberWithOrdinal, GetRandomIntI, GetRandomItem, GetSecondsBetweenDat
 import {BanUser, WhisperUser} from "./twitchUtils";
 import {LoadPlayerSession, SavePlayerSession} from "./playerSessionUtils";
 import {HandleQuestProgress} from "./questUtils";
-import {DamageType, LoadMonsterData} from "./monsterUtils";
+import {LoadMonsterData} from "./monsterUtils";
 import {FadeOutLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {CurrentStreamSettings} from "../streamSettings";
 import {AdsRunning} from "./adUtils";
@@ -18,7 +18,8 @@ import {
     QuestType,
     StatusEffect,
     Upgrade,
-    UpgradeType
+    UpgradeType,
+    DamageType
 } from "../valueDefinitions";
 import {UpgradeDefinitions} from "../upgradeDefinitions";
 import {MoveDefinitions} from "../movesDefinitions";
@@ -115,7 +116,8 @@ export function LoadPlayer(displayName: string): Player {
 
         CurrentLocation: "",
         CurrentLocationCoordinates: { X: 0, Y: 0 },
-        Travelling: false
+        Travelling: false,
+        TravelWaiting: false
     }
 
     if (fs.existsSync('playerData.json')) {

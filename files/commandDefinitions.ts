@@ -1,5 +1,5 @@
 import {Client} from "tmi.js";
-import {Affliction, ClassType, MoveType, Player, StatusEffect} from "./valueDefinitions";
+import {Affliction, ClassType, MoveType, Player, StatusEffect, DamageType} from "./valueDefinitions";
 import {
     AddSpacesBeforeCapitals,
     CountOccurrences, FormatSeconds,
@@ -30,7 +30,7 @@ import {
     TryLoadPlayer
 } from "./utils/playerGameUtils";
 import {WhisperUser} from "./utils/twitchUtils";
-import {DamageType, LoadMonsterData} from "./utils/monsterUtils";
+import {LoadMonsterData} from "./utils/monsterUtils";
 import {GetMove, MoveDefinitions} from "./movesDefinitions";
 import {CurrentCaller, CurrentGTARider, IsMonsterActive} from "./globals";
 import {BattlecryStarted, CreditsGoing, DoBattleCry} from "./utils/commandUtils";

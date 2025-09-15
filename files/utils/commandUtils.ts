@@ -57,7 +57,6 @@ import {
     SavePlayerSession
 } from "./playerSessionUtils";
 import {
-    DamageType,
     DoDamageToMonster,
     GetAdjustedDamage,
     GetDamageTypeText, IsMonsterImmune, IsMonsterResistant, IsMonsterVulnerable,
@@ -81,7 +80,16 @@ import {AudioType} from "../streamSettings";
 import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {WhisperUser} from "./twitchUtils";
 import {GetUserMinigameCount} from "../actionqueue";
-import {Affliction, ClassMove, ClassType, MoveType, Player, StatusEffect, UpgradeType} from "../valueDefinitions";
+import {
+    Affliction,
+    ClassMove,
+    ClassType,
+    DamageType,
+    MoveType,
+    Player,
+    StatusEffect,
+    UpgradeType
+} from "../valueDefinitions";
 import {PlayHypeTrainAlert} from "./chatGamesUtils";
 import {isNaN} from "@tensorflow/tfjs-node";
 import {UpgradeDefinitions} from "../upgradeDefinitions";
@@ -869,14 +877,6 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
         // Calculate scaled damage
         let scaledDamage = Math.floor(baseDamage * scale);
-
-        //CRIT!
-        if(wasCrit) {
-            scaledDamage = maxDamage;
-
-            scaledDamage *= 2;
-        }
-
         // const MAX_DAMAGE = 50;
         // scaledDamage = Math.min(scaledDamage, MAX_DAMAGE);
 
@@ -951,6 +951,11 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
         scaledDamage = Math.floor(scaledDamage);
 
+        //CRIT!
+        if(wasCrit) {
+            scaledDamage *= 2;
+        }
+
         // Apply the damage
         let monsterResults = await DoDamageToMonster(client, username, Math.round(scaledDamage), damageTypeDealt, false);
         let monsterDied = monsterResults.MonsterDied;
@@ -972,6 +977,12 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         }
 
         let poisonDamage = Math.max(1, Math.round(baseReceivedDamage * 0.2));
+
+        //CRIT!
+        if(wasCrit) {
+            poisonDamage *= 2;
+        }
+
         if(isMonsterPoisoned && baseReceivedDamage > 0) {
             if(!monsterDied) {
                 let poisonedResults = await DoDamageToMonster(client, username, Math.round(poisonDamage), DamageType.Poison, false);
@@ -988,7 +999,12 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
         let objectDamage = 0;
         if(isUsingObject && extraObjectDamageInfo !== undefined && extraObjectDamageInfo.damage > 0) {
             if(!monsterDied) {
-                let objectDamageResults = await DoDamageToMonster(client, username, Math.round(extraObjectDamageInfo.damage), extraObjectDamageInfo.damageType, false);
+                let damageToDo = extraObjectDamageInfo.damage;
+
+                if(wasCrit) {
+                    damageToDo *= 2;
+                }
+                let objectDamageResults = await DoDamageToMonster(client, username, Math.round(damageToDo), extraObjectDamageInfo.damageType, false);
                 monsterDied = objectDamageResults.MonsterDied;
                 totalDamage += objectDamageResults.DamageReceived;
                 objectDamage = objectDamageResults.DamageReceived;

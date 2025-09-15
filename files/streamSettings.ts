@@ -53,7 +53,7 @@ const SOLO_STORY_SETTINGS: StreamSettings = {
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
-    cooldownMultiplier: 3
+    cooldownMultiplier: 5
 }
 
 //Playing with others
@@ -170,4 +170,4 @@ const PURE_SILENCE: StreamSettings = {
 }
 
 //I SET MY SETTINGS HERE
-export const CurrentStreamSettings: StreamSettings = COLLAB_SETTINGS;
+export const CurrentStreamSettings: StreamSettings = SOLO_SETTINGS;

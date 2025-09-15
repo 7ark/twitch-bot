@@ -1,5 +1,3 @@
-import {DamageType} from "./utils/monsterUtils";
-
 export enum QuestType {
     DoCook,
     DoMine,
@@ -232,6 +230,50 @@ export function GetAfflictionDescription(affliction: Affliction) {
         case Affliction.Poison:
             return "Every tick deals 1 damage per stack of poison.";
     }
+}
+
+//Monster
+
+export enum MonsterType { Dragon, Loaf, Tank, FrankTheTrafficCone, RandomEncounterMonster }
+
+export enum DamageType {
+    None,
+    Piercing,
+    Slashing,
+    Bludgeoning,
+    Fire,
+    Cold,
+    Lightning,
+    Poison,
+    Psychic,
+}
+
+export interface MonsterStats {
+    Name: string;
+    Type: MonsterType;
+    AttackMessage: string;
+    AttackAddition: number;
+    DamageRange: { min: number; max: number; }
+    DamageTypes: Array<DamageType>;
+    MaxHealth: number;
+    MonsterAttackRateRange: { min: number; max: number; }
+    ResistImmuneDamageTypeOptions: Array<DamageType>;
+    VulnerabilityDamageTypeOptions: Array<DamageType>;
+    ExpRange: { min: number; max: number; }
+    ArmorRange: { min: number; max: number; }
+}
+
+export interface AfflictionStack {
+    AfflictionType: Affliction,
+    Amount: number
+}
+
+export interface MonsterInfo {
+    Health: number;
+    HitsBeforeAttack: number;
+    CurrentArmor: number;
+    Stats: MonsterStats;
+    Afflictions: Array<AfflictionStack>;
 }
 
 //Location stuff

@@ -1,11 +1,12 @@
 import {IsMonsterActive} from "../globals";
 import {SetSceneItemEnabled} from "./obsutils";
 import {Broadcast} from "../bot";
-import {LoadMonsterData, SaveMonsterData, MonsterInfo, GenerateNewMonster} from "./monsterUtils";
+import {LoadMonsterData, SaveMonsterData, GenerateNewMonster} from "./monsterUtils";
 import {PlayTextToSpeech} from "./audioUtils";
 import {CreateTwitchPoll} from "./twitchUtils";
 import {AudioType} from "../streamSettings";
 import {UpdateProgressBar} from "./progressBarUtils";
+import {MonsterInfo} from "../valueDefinitions";
 
 
 export async function ReceiveMessageFromHTML(message: string) {

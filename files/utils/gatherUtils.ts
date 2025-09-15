@@ -1,5 +1,5 @@
 import {Client} from "tmi.js";
-import {LocationCoordinate, Player, TerrainType} from "../valueDefinitions";
+import {LocationCoordinate, Player, TerrainType, DamageType} from "../valueDefinitions";
 import {
     ChangePlayerHealth,
     GetPlayerCoordinates,
@@ -11,7 +11,6 @@ import {
 } from "./playerGameUtils";
 import {GetRandomIntI, GetRandomItem} from "./utils";
 import {InventoryObject, ObjectRetrievalType} from "../inventoryDefinitions";
-import {DamageType} from "./monsterUtils";
 import {GetInventoryObjectsBySource, GetRandomInventoryObjectByRarity} from "./inventoryUtils";
 import {
     FilterObjectsByLocation,
@@ -119,7 +118,7 @@ async function HandleGatherResult(
         ])!;
     }
 
-    let result = resultArray.length == 0 ? GatherResult.Nothing : GetRandomInventoryObjectByRarity(resultArray)!;
+    let result = resultArray.length == 0 ? GatherResult.Nothing : GetRandomItem(resultArray)!;
 
     resultText += await HandleGather(client, result, terrainType, itemOptions, player, timeInSeconds);
 
@@ -350,6 +349,7 @@ async function HandleGather(client: Client, gatherType: GatherResult, terrain: T
                 console.log(`Item undefined? Number of items ${items.length}`)
             }
             if(randomItem.GatherText !== undefined) {
+                console.log(randomItem);
                 let randomFlavorText = GetRandomItem(randomItem.GatherText(terrain))!;
 
                 if(time > 0) {
