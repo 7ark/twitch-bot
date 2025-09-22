@@ -276,11 +276,11 @@ const minigameKeys = Object
 
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
-    "Check out my socials - Discord: https://discord.gg/6dEKeStTEM, Bluesky: https://bsky.app/profile/7ark.dev, Youtube: https://www.youtube.com/@7ark",
-    `Chat is interactive! Use '!help options' to see all subjects to learn about`,
-    `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot! You can also use !auto to automatically play these minigames for 30 minutes.`,
-    `Use !forage or !hunt to go out looking for food or goodies! Hunting is more dangerous.`,
-    `Check out my latest Youtube video: https://youtu.be/1rBPm-C7OHM`
+    "We're playing Dungeons and Dragons with Crowd Control! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins",
+    `Our player Bella (@notbella, She/They) is playing Bella (She/Her), a bard who loves all the gossip. Bella is a Half-Elf Bard.`,
+    `Our player Courtney (@sakimcgee, She/Her) is playing Aloyd "Growing Darkness" Wentz (He/Him), a 16 year old kid who aspires to be an evil villain. Aloyd is a Gnome Artificer.`,
+    `Our player Nick (@redpawcreative, He/Him) is playing Antonius Two-Feet (He/Him), a family member of the Two-Feet Crime Family who is trying to prove himself. Antonius is a Halfling Rogue.`,
+    `Our player Julie (@justbearsy, She/Her) is playing Lula (She/Her), a little fella whose ravenous to learn. Lula is a Fairy Warlock.`
 ];
 
 // if(CurrentStreamSettings.challengeType != undefined && CurrentStreamSettings.challengeType.length > 1) {

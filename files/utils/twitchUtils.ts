@@ -366,24 +366,11 @@ export async function HandleEventSubResponse(client: Client, req: any) {
         case "channel.channel_points_custom_reward_redemption.add":
             await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
             break;
-        case "channel.subscribe":
-        case "channel.subscription.message":
-            await MakeRainbowLights(10);
-            break;
         case "channel.raid":
-            await MakeRainbowLights(15);
-            break;
-        case "channel.cheer":
-            await ProcessBits(client, req.body.event.user_name, req.body.event.message, req.body.event.bits);
+            await client.say(process.env.CHANNEL!, `Welcome Raiders! Come in and get comfy, we're playing Dungeons and Dragons today with Crowd Control!`);
             break;
         case "channel.ad_break.begin":
             await ProcessAds(client, req.body.event.duration_seconds);
-            break;
-        case "user.whisper.message":
-            await OnWhisper(client, req.body.event.whisper.text, req.body.event.from_user_name);
-            break;
-        case "channel.hype_train.begin":
-            await PlayHypeTrainAlert();
             break;
     }
 

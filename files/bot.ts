@@ -147,8 +147,6 @@ async function InitializeBot() {
             //Toggle objects automatically
 
             try {
-                await ToggleObject("Dragon Fight")
-                await ToggleObject("Bottom Stickmen")
                 // await ToggleObject("Follower Count")
                 await ToggleObject("Credits")
                 await ToggleObject("Special Display")
@@ -160,21 +158,10 @@ async function InitializeBot() {
                 // await ToggleObject("Chat")
 
                 //Broadcast delay
-                setTimeout(() => {
-                    let sessions = GetAllPlayerSessions();
-                    for (let i = 0; i < sessions.length; i++) {
-                        Broadcast(JSON.stringify({ type: 'addstickman', displayName: sessions[i].NameAsDisplayed, color: sessions[i].NameColor }));
-                    }
 
-                    LoadProgressBar();
-
-                }, 200);
-
-                await SetupWorldGrid();
-                await ClearMeeting();
                 await SetLightVisible(true);
                 await FadeOutLights();
-                await SetupNextAdsTime();
+                await SetupNextAdsTime(client);
             }
             catch (error) {
                 console.error(error)
@@ -229,99 +216,8 @@ async function InitializeBot() {
 
     setInterval(() => {
         PostNewRegularMessage(client);
-    }, 840000); //14 minutes
+    }, 1000 * 60 * 15); //15 minutes
 
-    if(CurrentStreamSettings.doesRandomChatChallenges) {
-        setInterval(() => {
-            TryToStartRandomChatChallenge(client);
-        }, 1800000); //30 minutes
-    }
-
-    if(CurrentStreamSettings.challengeType == "cook") {
-        setInterval(() => {
-            SelectCustomer(client);
-        }, 1000 * 60 * 3);
-    }
-    if(CurrentStreamSettings.challengeType == "angeldevil") {
-        setInterval(() => {
-            SelectRole(true, client);
-            SelectRole(false, client);
-        }, 1000 * 60 * 3);
-    }
-
-    setInterval(() => {
-        TickAllCozyPoints();
-    }, 1800000); //30 minutes
-
-    setInterval(() => {
-        TickAfflictions(client);
-    }, 1000 * 15); //15 seconds
-
-    setInterval(() => {
-        TickPlayerTravel(client);
-    }, 1000 * TravelTimeInSeconds);
-
-    //Auto minigames
-    setInterval(async () => {
-        let allPlayersWithAuto = LoadAllPlayers().filter(p => p.AutoMinigameStartTime != undefined);
-
-        if(allPlayersWithAuto.length == 0) {
-            return;
-        }
-
-        let expiredPlayers: Array<Player> = [];
-        for (let i = 0; i < allPlayersWithAuto.length; i++) {
-            let player = allPlayersWithAuto[i];
-
-            let secondsBetween = GetSecondsBetweenDates(new Date(player.AutoMinigameStartTime!), new Date());
-            if(secondsBetween >= 60 * 30) {
-                player.AutoMinigameStartTime = undefined;
-                SavePlayer(player);
-                expiredPlayers.push(player);
-            }
-            else {
-                let activeInstances = GetUserMinigameCount(player.Username);
-                if(activeInstances > 0) {
-                    return;
-                }
-
-                let games = player.AutoMinigamePattern!.split(' ');
-                for (let i = 0; i < games.length; i++) {
-                    switch (games[i]) {
-                        case `mine`:
-                            await StartMinigame(client, player.Username, MinigameType.Mine, false);
-                            break;
-                        case `cook`:
-                            await StartMinigame(client, player.Username, MinigameType.Cook, false);
-                            break;
-                        case `fish`:
-                            await StartMinigame(client, player.Username, MinigameType.Fish, false);
-                            break;
-                    }
-                }
-            }
-        }
-        if(expiredPlayers.length > 0) {
-            await client.say(process.env.CHANNEL!, `${DisplayAsList(expiredPlayers, p => `@${p.Username}`)}, your auto-minigame has run out. You can start another with !auto again.`);
-        }
-
-    }, 1000 * 30); //30 seconds
-
-    setInterval(() => {
-        SetupMonsterDamageTypes();
-
-        let monsterStats = LoadMonsterData().Stats;
-        client.say(process.env.CHANNEL!, `${monsterStats.Name} is adapting! Resistances, vulnerabilities, and immunities have all changed. Watch out!`);
-
-        // PlaySound("santa", AudioType.ImportantStreamEffects);
-        // client.say(process.env.CHANNEL!, `The sounds of jingle bells can be heard flying overhead... SANTA IS COMING! Gifts are falling from the sky! Type !gift in the next 60 seconds to get a gift!`);
-        // CanGrabGifts = true;
-        // setTimeout(() => {
-        //     CanGrabGifts = false;
-        // }, 1000 * 60)
-        }, 1800000); //30 minutes
-
-    await InitialMonsterSetup();
 
     process.on('SIGINT', async (code) => {
         if(turningOff) {
@@ -336,11 +232,6 @@ async function InitializeBot() {
 }
 
 // export let CanGrabGifts: boolean = false;
-
-HandleLoadingSession();
-InitializeSalesman();
-InitializeGroceryStore();
-WipePlayerGatherState();
 
 
 process.on('SIGINT', async (code) => {
