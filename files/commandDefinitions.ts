@@ -132,7 +132,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             let param = GetAllParameterTextAfter(command, 1).replace("@", "").toLowerCase();
-            let text = `Our players: Bella (@notbella, She/They) is playing Bella (She/Her), a bard who loves all the gossip. Bella is a Half-Elf Bard. Courtney (@sakimcgee, She/Her) is playing Aloyd "Growing Darkness" Wentz (He/Him), a 16 year old kid who aspires to be an evil villain. Aloyd is a Gnome Artificer. Nick (@redpawcreative, He/Him) is playing Antonius Two-Feet (He/Him), a family member of the Two-Feet Crime Family who is trying to prove himself. Antonius is a Halfling Rogue. Julie (@justbearsy, She/Her) is playing Lula (She/Her), a little fella whose ravenous to learn. Lula is a Fairy Warlock.`;
+            let text = `Our players: Bella (@notbella, She/They) is playing Bella (She/Her), a bard who loves all the gossip. Bella is a Half-Elf Bard. Courtney (@sakimcgee, She/Her) is playing Aloyd "Growing Darkness" Wentz (He/Him), a 16 year old kid who aspires to be a supervillain. Aloyd is a Gnome Artificer. Nick (@redpawcreative, He/Him) is playing Antonius Two-Feet (He/Him), a family member of the Two-Feet Crime Family who is trying to prove himself. Antonius is a Halfling Rogue. Julie (@justbearsy, She/Her) is playing Lula (She/Her), a little fella whose ravenous to learn. Lula is a Fairy Warlock.`;
             if(param.trim() != '') {
                 switch (param) {
                     case "notbella":
@@ -144,7 +144,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
                     case "courtney":
                     case "growing darkness":
                     case "aloyd":
-                        text = `Our player Courtney (@sakimcgee, She/Her) is playing Aloyd "Growing Darkness" Wentz (He/Him), a 16 year old kid who aspires to be an evil villain. Aloyd is a Gnome Artificer.`;
+                        text = `Our player Courtney (@sakimcgee, She/Her) is playing Aloyd "Growing Darkness" Wentz (He/Him), a 16 year old kid who aspires to be a supervillain. Aloyd is a Gnome Artificer.`;
                         break;
                     case "nic":
                     case "nick":

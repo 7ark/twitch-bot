@@ -169,6 +169,13 @@ let cooldowns: Map<string, CooldownInfo> = new Map<string, CooldownInfo>([
         showCooldownMessage: false,
         lastTimeCooldownTriggered: new Date('1900-01-01')
     }],
+    ["cc", {
+        gracePeriod: 0,
+        cooldown: 5 * 60, //5 minutes
+        isInGracePeriod: false,
+        showCooldownMessage: false,
+        lastTimeCooldownTriggered: new Date('1900-01-01')
+    }],
 ]);
 
 export let BattlecryStarted: boolean = false;
@@ -322,60 +329,60 @@ export async function ProcessCommands(client: Client, displayName: string, comma
             await validDef.Action(client, player, command);
         }
     }
-    else {
-        let playerItems = player.Inventory;
-        let didItemAction = false;
-        for (let i = 0; i < playerItems.length; i++) {
-            let item = AllInventoryObjects.find(x => x.ObjectName == playerItems[i]);
-
-            if(item != undefined) {
-                let validKey = "";
-                let usingAlias = false;
-                for(const commandKey in item.UseAction) {
-                    let isCommand = IsCommand(command, commandKey);
-
-                    if(isCommand) {
-                        validKey = commandKey;
-                        break;
-                    }
-                }
-
-                if(validKey == "") {
-                    if(item.UseAlias != undefined) {
-                        for (let j = 0; j < item.UseAlias.length; j++) {
-                            if(IsCommand(command, item.UseAlias[j])) {
-                                validKey = item.UseAlias[j];
-                                usingAlias = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if(validKey != "") {
-                    let objectUsed = command.replace("!" + validKey, "").trim();
-
-                    let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
-
-                    if (inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
-                        await WhisperUser(client, player.Username, `@${player.Username}, you don't have that!`);
-                        didItemAction = true;
-                    } else if(inventoryObject.ObjectName == item.ObjectName) {
-                        let func = item.UseAction[usingAlias ? "use" : validKey];
-                        let wasUsed = await func(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
-                        if (inventoryObject.Consumable && wasUsed) {
-                            TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
-                        }
-                        didItemAction = true;
-                    }
-                }
-            }
-        }
-
-        if(!didItemAction) {
-            await HandleMoves(client, displayName, command);
-        }
-    }
+    // else {
+    //     let playerItems = player.Inventory;
+    //     let didItemAction = false;
+    //     for (let i = 0; i < playerItems.length; i++) {
+    //         let item = AllInventoryObjects.find(x => x.ObjectName == playerItems[i]);
+    //
+    //         if(item != undefined) {
+    //             let validKey = "";
+    //             let usingAlias = false;
+    //             for(const commandKey in item.UseAction) {
+    //                 let isCommand = IsCommand(command, commandKey);
+    //
+    //                 if(isCommand) {
+    //                     validKey = commandKey;
+    //                     break;
+    //                 }
+    //             }
+    //
+    //             if(validKey == "") {
+    //                 if(item.UseAlias != undefined) {
+    //                     for (let j = 0; j < item.UseAlias.length; j++) {
+    //                         if(IsCommand(command, item.UseAlias[j])) {
+    //                             validKey = item.UseAlias[j];
+    //                             usingAlias = true;
+    //                             break;
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //
+    //             if(validKey != "") {
+    //                 let objectUsed = command.replace("!" + validKey, "").trim();
+    //
+    //                 let inventoryObject: InventoryObject = GetObjectFromInputText(objectUsed)!;
+    //
+    //                 if (inventoryObject === undefined || inventoryObject === null || !player.Inventory.includes(inventoryObject.ObjectName)) {
+    //                     await WhisperUser(client, player.Username, `@${player.Username}, you don't have that!`);
+    //                     didItemAction = true;
+    //                 } else if(inventoryObject.ObjectName == item.ObjectName) {
+    //                     let func = item.UseAction[usingAlias ? "use" : validKey];
+    //                     let wasUsed = await func(client, player, objectUsed.replace(inventoryObject.ObjectName, "").trim());
+    //                     if (inventoryObject.Consumable && wasUsed) {
+    //                         TakeObjectFromPlayer(player.Username, inventoryObject.ObjectName);
+    //                     }
+    //                     didItemAction = true;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     if(!didItemAction) {
+    //         await HandleMoves(client, displayName, command);
+    //     }
+    // }
 }
 
 async function HandleMoves(client: Client, displayName: string, command: string) {
