@@ -276,9 +276,10 @@ const minigameKeys = Object
 
 let hasBeenMessageSinceLastRegularMessage: boolean = true;
 const regularMessages: Array<string> = [
-    "We're playing Dungeons and Dragons with Crowd Control! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins",
+    "We're playing Dungeons and Dragons with Crowd Control which means you can cause things to happen in game! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins",
     `Our player Bella (@notbella, She/They) is playing Bella (She/Her), a bard who loves all the gossip. Bella is a Half-Elf Bard.`,
     `Our player Courtney (@sakimcgee, She/Her) is playing Aloyd "Growing Darkness" Wentz (He/Him), a 16 year old kid who aspires to be a supervillain. Aloyd is a Gnome Artificer.`,
+    "We're playing Dungeons and Dragons with Crowd Control which means you can cause things to happen in game! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins",
     `Our player Nick (@redpawcreative, He/Him) is playing Antonius Two-Feet (He/Him), a family member of the Two-Feet Crime Family who is trying to prove himself. Antonius is a Halfling Rogue.`,
     `Our player Julie (@justbearsy, She/Her) is playing Lula (She/Her), a little fella whose ravenous to learn. Lula is a Fairy Warlock.`
 ];

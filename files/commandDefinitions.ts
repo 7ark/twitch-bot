@@ -107,6 +107,8 @@ import {
     StartTravelToLocation
 } from "./utils/locationUtils";
 import {AllLocations} from "./locationDefinitions";
+import is from "@sindresorhus/is";
+import number = is.number;
 
 export interface CommandDefinition {
     Commands: Array<string>;
@@ -123,7 +125,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
         AdminCommand: true,
 
         Action: async (client: Client, player: Player, command: string) => {
-            await client.say(process.env.CHANNEL!, `We're playing Dungeons and Dragons with Crowd Control! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins`);
+            await client.say(process.env.CHANNEL!, `We're playing Dungeons and Dragons with Crowd Control which means you can cause things to happen in game! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins`);
         }
     },
     {
@@ -185,14 +187,43 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
 
         Action: async (client: Client, player: Player, command: string) => {
             let text = command.replace("!createpoll ", "");
-            let pieces = text.split('|');
+            let lengthPieces = text.split(`-`)
+            let pieces = lengthPieces[0].split('|');
             let title = pieces[0];
             let choices = [];
             for (let i = 1; i < pieces.length; i++) {
                 choices.push(pieces[i]);
             }
 
-            await CreatePoll(client, {title: title, choices: choices}, 60 * 5);
+            let pollLength = 60 * 5;
+            if(lengthPieces.length > 1) {
+                pollLength = parseInt(lengthPieces[1]);
+            }
+
+            await CreatePoll(client, {title: title, choices: choices}, pollLength, false);
+        }
+    },
+    {
+        Commands: ["playerpoll"],
+        AdminCommand: true,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            let text = command.replace("!playerpoll ", "");
+            let pieces = text.split('|');
+            let title = pieces[0];
+            let choices = [
+                "Aloyd",
+                "Antonius",
+                "Bella",
+                "Lula"
+            ];
+
+            let pollLength = 60 * 5;
+            if(pieces.length > 1) {
+                pollLength = parseInt(pieces[1]);
+            }
+
+            await CreatePoll(client, {title: title, choices: choices}, pollLength, false);
         }
     },
     // {

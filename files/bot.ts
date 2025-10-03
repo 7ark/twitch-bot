@@ -153,8 +153,8 @@ async function InitializeBot() {
                 await ToggleObject("Minigames")
                 await ToggleObject("Progress Bar")
                 await ToggleObject("ProgressBar")
-                await SetSceneItemEnabled("Poll", false);
-                await SetSceneItemEnabled("PollBig", false);
+                await SetSceneItemEnabled("Poll DnD", false);
+                await SetSceneItemEnabled("PollBig DnD", false);
                 // await ToggleObject("Chat")
 
                 //Broadcast delay

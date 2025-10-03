@@ -11,6 +11,7 @@ import {ProcessAds} from "./adUtils";
 import {OnWhisper} from "./messageUtils";
 import {GetAllPlayerSessions} from "./playerSessionUtils";
 import {PlayHypeTrainAlert} from "./chatGamesUtils";
+import {CreatePoll} from "./pollUtils";
 // const ngrok = require('ngrok');
 
 let ngrokUrl: string = '';
@@ -367,7 +368,16 @@ export async function HandleEventSubResponse(client: Client, req: any) {
             await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
             break;
         case "channel.raid":
-            await client.say(process.env.CHANNEL!, `Welcome Raiders! Come in and get comfy, we're playing Dungeons and Dragons today with Crowd Control!`);
+            setTimeout(async () => {
+                await client.say(process.env.CHANNEL!, `Welcome Raiders! Come in and get comfy, we're playing Dungeons and Dragons today with Crowd Control!`);
+
+                await CreatePoll(client, {title: "Raiders: What should happen next?", choices: [
+                        "Launch players",
+                        "Heal players",
+                        "Fake monster appears",
+                        "Give players hint"
+                    ]}, 2 * 60, false);
+            }, 1000 * 5)
             break;
         case "channel.ad_break.begin":
             await ProcessAds(client, req.body.event.duration_seconds);

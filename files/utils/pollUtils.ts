@@ -35,9 +35,9 @@ export async function CreatePoll(client: Client, poll: { title: string, choices:
         })
     }
 
-    let useBig = longestText >= 20;
-    await SetSceneItemEnabled("Poll", !useBig);
-    await SetSceneItemEnabled("PollBig", useBig);
+    let useBig = poll.choices.length > 2;
+    await SetSceneItemEnabled("Poll DnD", !useBig);
+    await SetSceneItemEnabled("PollBig DnD", useBig);
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
