@@ -122,7 +122,7 @@ export interface CommandDefinition {
 export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
     {
         Commands: ["cc", "crowdcontrol", "crowd"],
-        AdminCommand: true,
+        AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
             await client.say(process.env.CHANNEL!, `We're playing Dungeons and Dragons with Crowd Control which means you can cause things to happen in game! Claim your free coins and work together to cause effects, or buy coins here: https://interact.crowdcontrol.live/#/twitch/26580802/coins`);
@@ -130,7 +130,7 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
     },
     {
         Commands: ["players", "player", "character", "characters"],
-        AdminCommand: true,
+        AdminCommand: false,
 
         Action: async (client: Client, player: Player, command: string) => {
             let param = GetAllParameterTextAfter(command, 1).replace("@", "").toLowerCase();

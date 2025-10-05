@@ -674,57 +674,6 @@ async function CheckForPrestige(client: Client, player: Player, levelAddition: n
 }
 
 export async function GiveExp(client: Client, username: string, amount: number, affectedByModifiers: boolean = true) {
-    if (affectedByModifiers) {
-        if (DoesPlayerHaveStatusEffect(username, StatusEffect.DoubleExp) || AdsRunning) {
-            amount *= 2;
-        }
-
-        DoPlayerUpgrade(username, UpgradeType.MoreEXP, async (upgrades, strength, strengthPercentage) => {
-            amount += Math.floor(amount * strengthPercentage);
-        });
-    }
-
-    let player = LoadPlayer(username);
-    player.CurrentExp += Math.round(amount);
-    player.CurrentExp = Math.floor(player.CurrentExp);
-    SavePlayer(player);
-
-    if (!player.LevelUpAvailable) {
-        if (player.CurrentExp >= player.CurrentExpNeeded) {
-            player = LoadPlayer(username);
-
-            if (await CheckForPrestige(client, player, 1)) {
-                return;
-            }
-
-            player.LevelUpAvailable = true;
-            SavePlayer(player);
-
-            let classOptions = Object.keys(ClassType)
-                .filter(key => isNaN(Number(key)))
-                .map(x => `!${x.toLowerCase()}`);
-
-            let formattedOptions = classOptions.length > 1
-                ? classOptions.slice(0, -1).join(', ') + ', or ' + classOptions[classOptions.length - 1]
-                : classOptions[0];
-
-            let text = `@${username} has LEVELED UP! You may choose a class to level into. Use ${formattedOptions} to select a class.`;
-            if (player.Level == 0) {
-                text += ' Passive mode has now been disabled.';
-            }
-            await client.say(process.env.CHANNEL!, text);
-
-            setTimeout(async () => {
-                Broadcast(JSON.stringify({type: 'exp', displayName: username, display: `LEVEL UP!`,}));
-                await ChangePlayerHealth(client, username, Math.floor(CalculateMaxHealth(player) * 0.05), DamageType.None);
-            }, 700);
-        } else {
-            setTimeout(() => {
-                Broadcast(JSON.stringify({type: 'exp', displayName: username, display: `+${amount}EXP`,}));
-            }, 700);
-        }
-    }
-
 }
 
 async function LearnRandomMove(client: Client, player: Player, classType: ClassType) {
