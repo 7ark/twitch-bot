@@ -505,11 +505,7 @@ export async function TrickOrTreat(client: Client, username: string) {
                 ChangePlayerHealth(client, username, -scaledDamage, DamageType.Psychic, "A Halloween Trick");
             },
             async () => {
-                await client.say(process.env.CHANNEL!, `The fright meter increases...`);
-                await ChangeProgressBar(client, GetRandomIntI(2, 10));
-            },
-            async () => {
-                await client.say(process.env.CHANNEL!, `@${username}, you've angered The Pumpkin Lord with your trick...`);
+                await client.say(process.env.CHANNEL!, `@${username}, you've angered The Pumpkin Lord with your trick... his minions will deal with you.`);
                 await TriggerMonsterAttack(client);
             },
             async () => {

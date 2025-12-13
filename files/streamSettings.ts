@@ -13,6 +13,7 @@ interface StreamSettings {
     doesRandomChatChallenges: boolean;
     cooldownMultiplier: number;
     challengeType?: string;
+    CanMessWithMe: boolean;
 }
 
 //Playing alone, casually
@@ -26,7 +27,8 @@ const SOLO_SETTINGS: StreamSettings = {
         [AudioType.Ads, 1],
     ]),
     doesRandomChatChallenges: true,
-    cooldownMultiplier: 1
+    cooldownMultiplier: 1,
+    CanMessWithMe: true
 }
 //Playing alone, but I want chill vibes
 const SOLO_CHILL_SETTINGS: StreamSettings = {
@@ -39,7 +41,8 @@ const SOLO_CHILL_SETTINGS: StreamSettings = {
         [AudioType.Ads, 0.3],
     ]),
     doesRandomChatChallenges: true,
-    cooldownMultiplier: 3
+    cooldownMultiplier: 3,
+    CanMessWithMe: false
 }
 
 //Playing alone, but i wanna pay attention to story
@@ -53,7 +56,8 @@ const SOLO_STORY_SETTINGS: StreamSettings = {
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
-    cooldownMultiplier: 5
+    cooldownMultiplier: 5,
+    CanMessWithMe: true
 }
 
 //Playing with others
@@ -67,7 +71,8 @@ const COLLAB_SETTINGS: StreamSettings = {
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: true,
-    cooldownMultiplier: 2
+    cooldownMultiplier: 2,
+    CanMessWithMe: true
 }
 
 //Playing with others, story game
@@ -81,7 +86,8 @@ const COLLAB_STORY_SETTINGS: StreamSettings = {
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
-    cooldownMultiplier: 3
+    cooldownMultiplier: 3,
+    CanMessWithMe: true
 }
 
 //Stuff like Among Us
@@ -95,7 +101,8 @@ const COLLAB_SOCIAL_SETTINGS: StreamSettings = {
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
-    cooldownMultiplier: 3
+    cooldownMultiplier: 3,
+    CanMessWithMe: true
 }
 
 //Playing alone, casually
@@ -110,7 +117,8 @@ const GTA_CHALLENGE_NEEDRIDE: StreamSettings = {
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3,
-    challengeType: "gta_needride"
+    challengeType: "gta_needride",
+    CanMessWithMe: true
 }
 
 const COOK_CHALLENGE: StreamSettings = {
@@ -124,7 +132,8 @@ const COOK_CHALLENGE: StreamSettings = {
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 3,
-    challengeType: "cook"
+    challengeType: "cook",
+    CanMessWithMe: true
 }
 
 const ANGELDEVIL_CHALLENGE: StreamSettings = {
@@ -138,7 +147,8 @@ const ANGELDEVIL_CHALLENGE: StreamSettings = {
     ]),
     doesRandomChatChallenges: true,
     cooldownMultiplier: 2,
-    challengeType: "angeldevil"
+    challengeType: "angeldevil",
+    CanMessWithMe: true
 }
 
 //Playing alone, casually
@@ -153,7 +163,8 @@ const MINECRAFTBEES_CHALLENGE: StreamSettings = {
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 2,
-    challengeType: "bees"
+    challengeType: "bees",
+    CanMessWithMe: true
 }
 
 const PURE_SILENCE: StreamSettings = {
@@ -166,8 +177,9 @@ const PURE_SILENCE: StreamSettings = {
         [AudioType.Ads, 0],
     ]),
     doesRandomChatChallenges: false,
-    cooldownMultiplier: 1
+    cooldownMultiplier: 1,
+    CanMessWithMe: true
 }
 
 //I SET MY SETTINGS HERE
-export const CurrentStreamSettings: StreamSettings = SOLO_SETTINGS;
+export const CurrentStreamSettings: StreamSettings = SOLO_CHILL_SETTINGS;

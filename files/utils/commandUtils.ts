@@ -76,7 +76,7 @@ import {
     ShowShop
 } from "./minigameUtils";
 import {DoesPlayerHaveQuest, GetQuestText} from "./questUtils";
-import {AudioType} from "../streamSettings";
+import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {WhisperUser} from "./twitchUtils";
 import {GetUserMinigameCount} from "../actionqueue";
@@ -493,6 +493,10 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                     }
                     break;
                 case MoveType.ChangeMonitorRotation:
+                    if(!CurrentStreamSettings.CanMessWithMe) {
+                        await client.say(process.env.CHANNEL!, `@${displayName}, effects that would mess with me are disabled for this stream, sorry!`);
+                        return;
+                    }
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
                         PlaySound(moveAttempted.SoundFile!, AudioType.UserGameActions);
                     }
@@ -503,6 +507,10 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                     }
                     break;
                 case MoveType.DarkenMonitor:
+                    if(!CurrentStreamSettings.CanMessWithMe) {
+                        await client.say(process.env.CHANNEL!, `@${displayName}, effects that would mess with me are disabled for this stream, sorry!`);
+                        return;
+                    }
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
                         PlaySound(moveAttempted.SoundFile!, AudioType.UserGameActions);
                     }
@@ -513,7 +521,7 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                     }
                     break;
                 case MoveType.SayAllChat:
-                    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', displayName));
+                    await client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', displayName));
                     if(moveAttempted.SoundFile !== undefined && moveAttempted.SoundFile !== '') {
                         PlaySound(moveAttempted.SoundFile!, AudioType.UserGameActions);
                     }
@@ -537,7 +545,7 @@ async function HandleMoves(client: Client, displayName: string, command: string)
                     HandleTimeout(command);
                     break;
                 case MoveType.Silence:
-                    client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', displayName));
+                    await client.say(process.env.CHANNEL!, GetRandomItem(moveAttempted.SuccessText)!.replace('{name}', displayName));
                     PlaySound(GetRandomItem([
                         "SilentMusic1",
                         "SilentMusic2",

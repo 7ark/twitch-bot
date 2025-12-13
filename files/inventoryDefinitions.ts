@@ -3210,7 +3210,7 @@ export const AllInventoryObjects: Array<InventoryObject> = [
             }
         },
         Consumable: true,
-        Rarity: 0 //0 rarity, no candy when its not halloween
+        Rarity: 20 //0 rarity, no candy when its not halloween
     },
 
 

@@ -280,7 +280,7 @@ const regularMessages: Array<string> = [
     `Chat is interactive! Use '!help options' to see all subjects to learn about`,
     `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot! You can also use !auto to automatically play these minigames for 30 minutes.`,
     `Use !forage or !hunt to go out looking for food or goodies! Hunting is more dangerous.`,
-    `Check out my latest Youtube video: https://youtu.be/1rBPm-C7OHM`
+    `Check out my latest Youtube video: https://youtu.be/5Nj6n9OlzUI`
 ];
 
 // if(CurrentStreamSettings.challengeType != undefined && CurrentStreamSettings.challengeType.length > 1) {
