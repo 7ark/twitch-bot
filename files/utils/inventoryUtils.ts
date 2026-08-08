@@ -10,7 +10,7 @@ export function GetInventoryObjectsBySource(source: ObjectRetrievalType) {
 export function GetRecipesItemUsedIn(object: InventoryObject): string {
     let objs = [];
     for (let i = 0; i < AllInventoryObjects.length; i++) {
-        if(AllInventoryObjects[i].CraftingRecipe !== undefined && AllInventoryObjects[i].CraftingRecipe.Recipe.some(x => x.Resource == object.ObjectName)) {
+        if(AllInventoryObjects[i].CraftingRecipe !== undefined && AllInventoryObjects[i].CraftingRecipe?.Recipe.some(x => x.Resource == object.ObjectName)) {
             objs.push(`${AllInventoryObjects[i].ObjectName}`);
         }
     }

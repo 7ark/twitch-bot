@@ -228,6 +228,7 @@ export async function SubscribeToEventSub() {
     const eventSubscriptions = [
         {
             "type": "channel.channel_points_custom_reward_redemption.add",
+            "version": "1",
             "condition": {
                 "broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -235,6 +236,7 @@ export async function SubscribeToEventSub() {
         },
         {
             "type": "channel.subscribe",
+            "version": "1",
             "condition": {
                 "broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -243,6 +245,7 @@ export async function SubscribeToEventSub() {
         },
         {
             "type": "channel.subscription.message",
+            "version": "1",
             "condition": {
                 "broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -251,6 +254,7 @@ export async function SubscribeToEventSub() {
         },
         {
             "type": "channel.raid",
+            "version": "1",
             "condition": {
                 "to_broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -258,6 +262,7 @@ export async function SubscribeToEventSub() {
         },
         {
             "type": "channel.cheer",
+            "version": "1",
             "condition": {
                 "broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -266,6 +271,7 @@ export async function SubscribeToEventSub() {
         },
         {
             "type": "channel.ad_break.begin",
+            "version": "1",
             "condition": {
                 "broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -274,6 +280,7 @@ export async function SubscribeToEventSub() {
         },
         {
             "type": "channel.hype_train.begin",
+            "version": "2",
             "condition": {
                 "broadcaster_user_id": process.env.CHANNEL_ID
             },
@@ -293,7 +300,7 @@ export async function SubscribeToEventSub() {
     for(const eventSub of eventSubscriptions) {
         const subscriptionBody = {
             "type": eventSub.type,
-            "version": "1",
+            "version": eventSub.version,
             "condition": eventSub.condition,
             "transport": {
                 "method": "webhook",

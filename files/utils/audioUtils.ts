@@ -8,13 +8,45 @@ import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {Player} from "../valueDefinitions";
 import fs from "fs";
 import prism from 'prism-media';
-import Speaker from "speaker";
-import play, {AudioPlayHandle} from "audio-play";
-const naudiodon = require('naudiodon');
-const getDevices = naudiodon.getDevices;
 
+const { RtAudio, RtAudioFormat, RtAudioApi } = require("audify");
 const load = require('audio-loader');
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
+
+// Global RtAudio instance and VB-Audio device ID
+let rtAudioInstance: any = null;
+let vbAudioDeviceId: number = -1;
+
+// Initialize audify and find VB-Audio device
+function initializeAudio() {
+    if (rtAudioInstance === null) {
+        // Use WASAPI on Windows to see all audio devices (not just ASIO)
+        rtAudioInstance = new RtAudio(RtAudioApi.WINDOWS_WASAPI);
+        const devices = rtAudioInstance.getDevices();
+
+        console.log('Available audio devices:');
+        devices.forEach((device: any, index: number) => {
+            console.log(`${index}: ${device.name} (${device.outputChannels} outputs, ${device.inputChannels} inputs)`);
+
+            // Look for VB-Audio Virtual Cable - try multiple variations
+            const deviceNameLower = device.name.toLowerCase();
+            if ((deviceNameLower.includes('cable') ||
+                 deviceNameLower.includes('vb-audio') ||
+                 deviceNameLower.includes('vb audio')) &&
+                device.outputChannels > 0) {
+                vbAudioDeviceId = index;
+                console.log(`Found VB-Audio device at ID ${index}: ${device.name}`);
+            }
+        });
+
+        if (vbAudioDeviceId === -1) {
+            console.warn('VB-Audio Virtual Cable not found in device list above, will use default device');
+            console.warn('Make sure VB-Audio Virtual Cable is installed and enabled');
+            vbAudioDeviceId = rtAudioInstance.getDefaultOutputDevice();
+        }
+    }
+    return vbAudioDeviceId;
+}
 
 let audioPaused = false;
 
@@ -71,51 +103,109 @@ export function PlaySound(soundName: string, type: AudioType, extension: string 
         return;
     }
 
-    const channelCount = 2;
-    const sampleFormat = naudiodon.SampleFormat16Bit; // use constant, not raw number
+    // Initialize audio and get VB-Audio device
+    const deviceId = initializeAudio();
 
-    let volume = CurrentStreamSettings.volume.get(type);
+    const channelCount = 2;
+    const sampleRate = 48000;
+    const frameSize = 1920; // 40ms at 48kHz
+    const bytesPerFrame = frameSize * channelCount * 2; // 2 bytes per sample (SINT16)
+
+    let volume = CurrentStreamSettings.volume.get(type) ?? 1.0;
     const volumeTransform = new prism.VolumeTransformer({ type: 's16le', volume });
 
-    let device = getDevices().find(x => x.name == "Speakers (VB-Audio Point)");
-    if(device == undefined) {
-        console.error(`Could not find speakers`);
-        return;
-    }
-    let deviceId = device.id; //The VB-audio cable (Speakers VB Point)
-    let sampleRate = 48000;//device.sampleRate;
-
+    // Decode audio with ffmpeg
     const decoder = new prism.FFmpeg({
         args: [
             '-analyzeduration', '0',
             '-loglevel', 'quiet',
-            '-re', // realtime encoding, ensures FFmpeg pushes audio at realtime speed
             '-i', filepath,
             '-f', 's16le',
             '-ar', `${sampleRate}`,
             '-ac', `${channelCount}`,
-            '-af', 'apad=pad_dur=0.5',
         ],
     });
 
-    // Let speaker handle it
-    const speaker = new Speaker({
-        channels: 2,
-        bitDepth: 16,
-        sampleRate: 48000,
-        signed: true,
-        float: false
-    });
+    // Collect all audio data first, then play it
+    let allAudioData = Buffer.alloc(0);
 
-    speaker.on("close", () => {
+    decoder.pipe(volumeTransform).on('data', (chunk: Buffer) => {
+        allAudioData = Buffer.concat([allAudioData, chunk]);
+    }).on('end', () => {
+        // Now we have all the audio data, play it
+        const rtAudio = new RtAudio(RtAudioApi.WINDOWS_WASAPI);
+
+        try {
+            // Open audio stream to VB-Audio Virtual Cable
+            rtAudio.openStream(
+                {
+                    deviceId: deviceId,
+                    nChannels: channelCount,
+                    firstChannel: 0
+                },
+                null, // No input
+                RtAudioFormat.RTAUDIO_SINT16,
+                sampleRate,
+                frameSize,
+                `PlaySound_${soundName}`
+            );
+
+            rtAudio.start();
+
+            // Write frames in chunks to keep buffer full and prevent crackling
+            let offset = 0;
+            const framesPerWrite = 10; // Write 10 frames at a time (400ms of audio)
+
+            const writeNextChunk = () => {
+                if (offset < allAudioData.length) {
+                    // Write multiple frames at once to keep the buffer full
+                    for (let i = 0; i < framesPerWrite && offset < allAudioData.length; i++) {
+                        const remainingBytes = allAudioData.length - offset;
+                        let frame: Buffer;
+
+                        if (remainingBytes >= bytesPerFrame) {
+                            frame = allAudioData.slice(offset, offset + bytesPerFrame);
+                        } else {
+                            // Pad the last frame with zeros
+                            frame = Buffer.alloc(bytesPerFrame);
+                            allAudioData.copy(frame, 0, offset);
+                        }
+
+                        if (rtAudio.isStreamOpen() && rtAudio.isStreamRunning()) {
+                            rtAudio.write(frame);
+                        }
+
+                        offset += bytesPerFrame;
+                    }
+
+                    // Schedule next chunk write (write every 300ms to keep buffer ahead)
+                    setTimeout(writeNextChunk, 300);
+                } else {
+                    // All data written, now stop and close
+                    setTimeout(() => {
+                        if (rtAudio.isStreamRunning()) {
+                            rtAudio.stop();
+                        }
+                        setTimeout(() => {
+                            if (rtAudio.isStreamOpen()) {
+                                rtAudio.closeStream();
+                            }
+                            callback?.();
+                        }, 500);
+                    }, 100);
+                }
+            };
+
+            writeNextChunk();
+
+        } catch (error) {
+            console.error('Failed to open audio stream:', error);
+            callback?.();
+        }
+    }).on('error', (err: Error) => {
+        console.error('Audio decode error:', err);
         callback?.();
     });
-    speaker.on("error", err => {
-        console.error("Speaker error:", err);
-        callback?.();
-    });
-
-    decoder.pipe(volumeTransform).pipe(speaker);
 
     // try {
     //     let fileLoc = `files/extras/${soundName}.${extension}`;
@@ -208,50 +298,50 @@ const okayVoices: Array<Voice> = [
 ]
 
 export async function TryToSetVoice(client: Client, displayName: string, voice: string) {
-    if(voice === "" || voice === "rng" || voice === "random") {
-        let player = LoadPlayer(displayName);
-
-        player.Voice = "";
-
-        SavePlayer(player);
-        await client.say(process.env.CHANNEL!, `@${displayName}, set voice to be random each time`);
-        return;
-    }
-
-    const subscriptionKey = process.env.AZURE_KEY;
-    const serviceRegion = process.env.AZURE_REGION;
-
-    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-    let synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
-    let voices = await synthesizer.getVoicesAsync("en-US");
-
-    // console.log(voices.privVoices)
-
-    if(!voice.includes("en-us-")) {
-        voice = "en-us-" + voice;
-    }
-
-    if(!voice.includes("Neural")) {
-        voice = voice + "Neural";
-    }
-
-    let foundVoice = voices.voices.find(x => {
-        console.log(x.shortName.toLowerCase() + " vs " + voice.toLowerCase())
-        return x.shortName.toLowerCase() === voice.toLowerCase()
-    });
-
-    if(foundVoice === undefined) {
-        await client.say(process.env.CHANNEL!, `@${displayName}, could not find a voice by that name`);
-    }
-    else {
-        await client.say(process.env.CHANNEL!, `@${displayName}, set voice to ${foundVoice.shortName}`);
-
-        let player = LoadPlayer(displayName);
-
-        player.Voice = foundVoice.shortName;
-
-        SavePlayer(player);
-    }
+    // if(voice === "" || voice === "rng" || voice === "random") {
+    //     let player = LoadPlayer(displayName);
+    //
+    //     player.Voice = "";
+    //
+    //     SavePlayer(player);
+    //     await client.say(process.env.CHANNEL!, `@${displayName}, set voice to be random each time`);
+    //     return;
+    // }
+    //
+    // const subscriptionKey = process.env.AZURE_KEY;
+    // const serviceRegion = process.env.AZURE_REGION;
+    //
+    // const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+    // let synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
+    // let voices = await synthesizer.getVoicesAsync("en-US");
+    //
+    // // console.log(voices.privVoices)
+    //
+    // if(!voice.includes("en-us-")) {
+    //     voice = "en-us-" + voice;
+    // }
+    //
+    // if(!voice.includes("Neural")) {
+    //     voice = voice + "Neural";
+    // }
+    //
+    // let foundVoice = voices.voices.find(x => {
+    //     console.log(x.shortName.toLowerCase() + " vs " + voice.toLowerCase())
+    //     return x.shortName.toLowerCase() === voice.toLowerCase()
+    // });
+    //
+    // if(foundVoice === undefined) {
+    //     await client.say(process.env.CHANNEL!, `@${displayName}, could not find a voice by that name`);
+    // }
+    // else {
+    //     await client.say(process.env.CHANNEL!, `@${displayName}, set voice to ${foundVoice.shortName}`);
+    //
+    //     let player = LoadPlayer(displayName);
+    //
+    //     player.Voice = foundVoice.shortName;
+    //
+    //     SavePlayer(player);
+    // }
 }
 
 export function TryGetPlayerVoice(player: Player) {
@@ -301,7 +391,7 @@ function ParseEmotionalText(text: string) {
         // Process each match and the text between matches
         matches.forEach(match => {
             // If there's text before this style marker, add it as unstyled
-            if (match.index > lastIndex) {
+            if (match.index! > lastIndex) {
                 const unsetyled = text.substring(lastIndex, match.index).trim();
                 if (unsetyled) {
                     voiceStyles.push({
@@ -318,7 +408,7 @@ function ParseEmotionalText(text: string) {
                 style: style
             });
 
-            lastIndex = match.index + match[0].length;
+            lastIndex = match.index! + match[0].length;
         });
 
         // Check for any remaining text after the last style marker
@@ -393,32 +483,7 @@ export function PlayTextToSpeech(text: string, audioType: AudioType, voiceToUse:
 
     let synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
 
-    // const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>
-    //             <voice name='${voice}'>
-    //                 <prosody rate='${voiceInfo.rate}'>${text}</prosody>
-    //             </voice>
-    //          </speak>`;
-
-
-//     const ssml = `<speak version="1.0"
-//     xmlns:mstts="https://www.w3.org/2001/mstts"
-//     xml:lang="en-US">
-//     <voice name="${voice}">
-//         <mstts:express-as style="cheerful" styledegree="2">
-//             That'd be just amazing!
-//         </mstts:express-as>
-//         <mstts:express-as style="angry" styledegree="2">
-//             That'd be just amazing!
-//         </mstts:express-as>
-//         <mstts:express-as style="assistant" styledegree="0.01">
-//             What's next?
-//         </mstts:express-as>
-//     </voice>
-// </speak>`;
-
     const ssml = ParseEmotionalText(text).generateSSML(voice);
-
-    // let voices = await synthesizer.getVoicesAsync("en-US");
 
     synthesizer.speakSsmlAsync(
         ssml,
