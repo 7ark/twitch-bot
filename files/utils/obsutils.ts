@@ -1,6 +1,7 @@
 import OBSWebSocket from "obs-websocket-js";
 
 const obs = new OBSWebSocket();
+export { obs };
 export const SCENE_WIDTH = 1920;
 export const SCENE_HEIGHT = 1080;
 

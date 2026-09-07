@@ -7,6 +7,8 @@ import * as http from "http";
 import {
     ConnectToObs,
     DisconnectFromObs,
+    GetSceneItemEnabled,
+    obs,
     PauseVideo,
     SetSceneItemEnabled,
     SetVideoToStart,
@@ -114,10 +116,29 @@ wss.on('connection', async (ws) => {
     ws.send(JSON.stringify({ type: 'init' }));
 });
 
+let gearsOverlayActive = false;
+
 server.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
 
     await ConnectToObs();
+
+    // Listen for scene changes to handle GearOverlay autoplay
+    obs.on('CurrentProgramSceneChanged', async (data) => {
+        try {
+            const currentGearsActive = await GetSceneItemEnabled("GearOverlay");
+
+            if (!gearsOverlayActive && currentGearsActive) {
+                // Gears just became visible - pause and reset
+                await PauseVideo("GearOverlay");
+                await SetVideoToStart("GearOverlay");
+            }
+
+            gearsOverlayActive = currentGearsActive;
+        } catch (error) {
+            // GearOverlay might not exist in this scene, that's okay
+        }
+    });
 
     await InitializeBot(); // Call to initialize and connect your Twitch bot
 
