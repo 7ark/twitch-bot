@@ -20,8 +20,8 @@ let vbAudioDeviceId: number = -1;
 // Initialize audify and find VB-Audio device
 function initializeAudio() {
     if (rtAudioInstance === null) {
-        // Use WASAPI on Windows to see all audio devices (not just ASIO)
-        rtAudioInstance = new RtAudio(RtAudioApi.WINDOWS_WASAPI);
+        // Use DirectSound on Windows - less aggressive than WASAPI, won't interfere with other audio
+        rtAudioInstance = new RtAudio(RtAudioApi.WINDOWS_DS);
         const devices = rtAudioInstance.getDevices();
 
         console.log('Available audio devices:');
@@ -133,7 +133,7 @@ export function PlaySound(soundName: string, type: AudioType, extension: string 
         allAudioData = Buffer.concat([allAudioData, chunk]);
     }).on('end', () => {
         // Now we have all the audio data, play it
-        const rtAudio = new RtAudio(RtAudioApi.WINDOWS_WASAPI);
+        const rtAudio = new RtAudio(RtAudioApi.WINDOWS_DS);
 
         try {
             // Open audio stream to VB-Audio Virtual Cable

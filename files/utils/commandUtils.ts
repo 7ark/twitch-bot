@@ -1,107 +1,57 @@
 import {Client} from "tmi.js";
 import {
-    AddStatusEffectToPlayer, CalculateMaxHealth,
+    AddStatusEffectToPlayer,
+    CalculateMaxHealth,
     ChangePlayerHealth,
     DoesPlayerHaveStatusEffect,
     DoPlayerUpgrade,
     GetCommandCooldownTimeLeftInSeconds,
     GetObjectFromInputText,
-    GetPlayerStatsDisplay,
-    GetUpgradeOptions,
     GiveExp,
-    GivePlayerObject,
     IsCommandOnCooldown,
-    LevelUpPlayer,
-    LoadAllPlayers,
     LoadPlayer,
     SavePlayer,
-    SelectPlayerUpgrade,
     TakeObjectFromPlayer,
     TriggerCommandCooldownOnPlayer,
     TryLoadPlayer
 } from "./playerGameUtils";
 import {Broadcast} from "../bot";
-import {
-    AddSpacesBeforeCapitals, DisplayAsList,
-    GetNumberWithOrdinal,
-    GetRandomInt,
-    GetRandomIntI,
-    GetRandomItem,
-    GetRandomNumber,
-    GetSecondsBetweenDates,
-    IsCommand
-} from "./utils";
+import {DisplayAsList, GetRandomIntI, GetRandomItem, GetRandomNumber, GetSecondsBetweenDates, IsCommand} from "./utils";
 import fs from "fs";
-import {GetMove, MoveDefinitions} from "../movesDefinitions";
+import {MoveDefinitions} from "../movesDefinitions";
 import {AllInventoryObjects, DoesPlayerHaveObject, InventoryObject} from "../inventoryDefinitions";
 import {
     DoesSceneContainItem,
     GetObsSourcePosition,
     GetObsSourceScale,
     GetOpenScene,
-    GetSceneItemEnabled,
     SCENE_HEIGHT,
     SCENE_WIDTH,
     SetAudioMute,
     SetFilterEnabled,
     SetObsSourcePosition,
-    SetObsSourceScale,
-    SetSceneItemEnabled,
-    SetTextValue
+    SetObsSourceScale
 } from "./obsutils";
-import {CurrentGTARider, IsMonsterActive, SayAllChat} from "../globals";
-import {
-    GetStringifiedSessionData,
-    LoadPlayerSession,
-    PlayerSessionData,
-    SavePlayerSession
-} from "./playerSessionUtils";
+import {IsMonsterActive, SayAllChat} from "../globals";
+import {LoadPlayerSession, PlayerSessionData, SavePlayerSession} from "./playerSessionUtils";
 import {
     DoDamageToMonster,
-    GetAdjustedDamage,
-    GetDamageTypeText, IsMonsterImmune, IsMonsterResistant, IsMonsterVulnerable,
+    IsMonsterImmune,
+    IsMonsterResistant,
+    IsMonsterVulnerable,
     LoadMonsterData,
     ReduceMonsterHits,
     StunMonster
 } from "./monsterUtils";
-import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice, TryToSetVoice} from "./audioUtils";
+import {PlaySound, PlayTextToSpeech, TryGetPlayerVoice} from "./audioUtils";
 import {SetMonitorBrightnessContrastTemporarily, SetMonitorRotationTemporarily} from "./displayUtils";
-import {DrunkifyText, GetLastParameterFromCommand} from "./messageUtils";
-import {
-    HandleMinigames,
-    IsCommandMinigame,
-    MinigameType,
-    ResetLeaderboard,
-    ShowLeaderboard,
-    ShowShop
-} from "./minigameUtils";
-import {DoesPlayerHaveQuest, GetQuestText} from "./questUtils";
+import {GetLastParameterFromCommand} from "./messageUtils";
+import {HandleMinigames, IsCommandMinigame} from "./minigameUtils";
 import {AudioType, CurrentStreamSettings} from "../streamSettings";
 import {FadeOutLights, MakeRainbowLights, SetLightBrightness, SetLightColor} from "./lightsUtils";
 import {WhisperUser} from "./twitchUtils";
 import {GetUserMinigameCount} from "../actionqueue";
-import {
-    Affliction,
-    ClassMove,
-    ClassType,
-    DamageType,
-    MoveType,
-    Player,
-    StatusEffect,
-    UpgradeType
-} from "../valueDefinitions";
-import {PlayHypeTrainAlert} from "./chatGamesUtils";
-import {isNaN} from "@tensorflow/tfjs-node";
-import {UpgradeDefinitions} from "../upgradeDefinitions";
-import {
-    ExchangeCoinsForGems,
-    ExchangeGemsForCoins,
-    GetBankStatusText,
-    GetExchangeRateText,
-    LoadBankData,
-    SaveBankData,
-    UpdateExchangeRate
-} from "./bankUtils";
+import {ClassMove, ClassType, DamageType, MoveType, Player, StatusEffect, UpgradeType} from "../valueDefinitions";
 import {COMMAND_DEFINITIONS, CommandDefinition} from "../commandDefinitions";
 
 interface CooldownInfo {
@@ -788,7 +738,11 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
 
         if(rollToHit === 1) {
             if(moveAttempted.Damage === undefined) {
-                await ChangePlayerHealth(client, username, -Math.round(GetRandomIntI(25, 50)), GetRandomItem(moveAttempted.DamageTypes!)!);
+                let hitSelfDamageType = GetRandomItem(moveAttempted.DamageTypes!)!;
+                if(hitSelfDamageType === undefined) {
+                    hitSelfDamageType = DamageType.Bludgeoning;
+                }
+                await ChangePlayerHealth(client, username, -Math.round(GetRandomIntI(25, 50)), hitSelfDamageType);
             }
             else {
                 await ChangePlayerHealth(client, username, -Math.round(GetRandomIntI(moveAttempted.Damage?.min!, moveAttempted.Damage?.max!) / 2), GetRandomItem(moveAttempted.DamageTypes!)!);
@@ -1036,7 +990,7 @@ async function HandleMoveAttack(client: Client, moveAttempted: ClassMove, player
             finalSuccessText += ` He took an extra ${poisonDamage} poison damage.`;
         }
 
-        if(isUsingObject && extraObjectDamageInfo !== undefined) {
+        if(isUsingObject && extraObjectDamageInfo !== undefined && objectDamage > 0) {
             finalSuccessText += ` Your attack with ${extraObjectName} did an extra ${objectDamage} ${DamageType[extraObjectDamageInfo.damageType].toLowerCase()} damage!`;
         }
 

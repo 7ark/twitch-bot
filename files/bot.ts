@@ -4,7 +4,14 @@ import * as WebSocket from 'ws';
 import express from "express";
 import path from 'path';
 import * as http from "http";
-import {ConnectToObs, DisconnectFromObs, SetSceneItemEnabled, ToggleObject} from "./utils/obsutils";
+import {
+    ConnectToObs,
+    DisconnectFromObs,
+    PauseVideo,
+    SetSceneItemEnabled,
+    SetVideoToStart,
+    ToggleObject
+} from "./utils/obsutils";
 import {OnMessage, PostNewRegularMessage} from "./utils/messageUtils";
 import {
     CheckNewFollowers,
@@ -88,6 +95,9 @@ app.get('/progressBar', (req, res) => {
 app.get('/poll', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'files', 'html', 'pollDisplay.html'));
 });
+app.get('/floatingchat', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'files', 'html', 'floatingchat.html'));
+});
 
 // Setup WebSocket Server
 const server = http.createServer(app);
@@ -155,8 +165,11 @@ async function InitializeBot() {
                 await ToggleObject("Minigames")
                 await ToggleObject("Progress Bar")
                 await ToggleObject("ProgressBar")
+                await ToggleObject("ChatOverlay")
                 await SetSceneItemEnabled("Poll", false);
                 await SetSceneItemEnabled("PollBig", false);
+                await PauseVideo("GearOverlay")
+                await SetVideoToStart("GearOverlay")
                 // await ToggleObject("Chat")
 
                 //Broadcast delay

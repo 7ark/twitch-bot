@@ -62,7 +62,13 @@ import {
     UpdateStarVisuals,
     VEHICLE_OPTIONS
 } from "./utils/gtaUtils";
-import {DoesSceneContainItem, GetOpenScene, SetSceneItemEnabled} from "./utils/obsutils";
+import {
+    DoesSceneContainItem,
+    GetOpenScene,
+    PlayPausedVideo,
+    PlayVideo,
+    SetSceneItemEnabled
+} from "./utils/obsutils";
 import {
     BankReceiveFromSpend, DoesBankHaveEnoughCoinsForGemTransaction,
     ExchangeCoinsForGems,
@@ -1428,6 +1434,14 @@ export let COMMAND_DEFINITIONS: Array<CommandDefinition> = [
             let txt = GetItemsAsPages("commands", displayableCommands.map(x => `!${x.Commands[0]} - ${x.Description}`), page);
 
             await WhisperUser(client, player.Username, `Commands: ${txt}`);
+        }
+    },
+    {
+        Commands: ["rotate"],
+        AdminCommand: false,
+
+        Action: async (client: Client, player: Player, command: string) => {
+            await PlayPausedVideo("GearOverlay");
         }
     },
 

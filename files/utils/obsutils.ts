@@ -262,3 +262,83 @@ export async function SetAudioMute(name: string, muted: boolean) {
         inputMuted: muted
     });
 }
+
+export async function PlayVideo(name: string, hideOnEnd: boolean = false) {
+    let sceneName = await CheckSceneForSource(name);
+    if(sceneName == ``) {
+        return;
+    }
+
+    const sceneItemId = await GetSceneItemIdByName(name, sceneName);
+
+    await obs.call('SetSceneItemEnabled', {
+        sceneName: sceneName,
+        sceneItemId: sceneItemId,
+        sceneItemEnabled: true
+    });
+
+    // noinspection TypeScriptValidateTypes
+    await obs.call('TriggerMediaInputAction', {
+        inputName: name,
+        mediaAction: 'OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART'
+    });
+
+    if(hideOnEnd) {
+        const onEnd = async (data: { inputName: string }) => {
+            if(data.inputName !== name) {
+                return;
+            }
+            obs.off('MediaInputPlaybackEnded', onEnd);
+            await obs.call('SetSceneItemEnabled', {
+                sceneName: sceneName,
+                sceneItemId: sceneItemId,
+                sceneItemEnabled: false
+            });
+        };
+        obs.on('MediaInputPlaybackEnded', onEnd);
+    }
+}
+
+export async function PauseVideo(name: string) {
+    // noinspection TypeScriptValidateTypes
+    await obs.call('TriggerMediaInputAction', {
+        inputName: name,
+        mediaAction: 'OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE'
+    });
+}
+
+export async function ResumeVideo(name: string) {
+    // noinspection TypeScriptValidateTypes
+    await obs.call('TriggerMediaInputAction', {
+        inputName: name,
+        mediaAction: 'OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY'
+    });
+}
+
+export async function PlayPausedVideo(name: string, times: number = 1) {
+    if(times <= 0) {
+        return;
+    }
+
+    const status = await obs.call('GetMediaInputStatus', {
+        inputName: name
+    });
+
+    const duration = <number>status.mediaDuration;
+    if(!duration) {
+        return;
+    }
+
+    await ResumeVideo(name);
+
+    await new Promise(resolve => setTimeout(resolve, duration * times));
+
+    await PauseVideo(name);
+}
+
+export async function SetVideoToStart(name: string) {
+    await obs.call('SetMediaInputCursor', {
+        inputName: name,
+        mediaCursor: 0
+    });
+}

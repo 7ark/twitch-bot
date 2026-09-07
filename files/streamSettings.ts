@@ -38,9 +38,9 @@ const SOLO_CHILL_SETTINGS: StreamSettings = {
         [AudioType.GameAlerts, 0.2],
         [AudioType.StreamInfrastructure, 0.8],
         [AudioType.ImportantStreamEffects, 1],
-        [AudioType.Ads, 0.3],
+        [AudioType.Ads, 0],
     ]),
-    doesRandomChatChallenges: true,
+    doesRandomChatChallenges: false,
     cooldownMultiplier: 3,
     CanMessWithMe: false
 }
@@ -178,7 +178,7 @@ const PURE_SILENCE: StreamSettings = {
     ]),
     doesRandomChatChallenges: false,
     cooldownMultiplier: 1,
-    CanMessWithMe: true
+    CanMessWithMe: false
 }
 
 //I SET MY SETTINGS HERE

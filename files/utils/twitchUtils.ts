@@ -11,6 +11,7 @@ import {ProcessAds} from "./adUtils";
 import {OnWhisper} from "./messageUtils";
 import {GetAllPlayerSessions} from "./playerSessionUtils";
 import {PlayHypeTrainAlert} from "./chatGamesUtils";
+import {PlayPausedVideo} from "./obsutils";
 // const ngrok = require('ngrok');
 
 let ngrokUrl: string = '';
@@ -373,15 +374,21 @@ export async function HandleEventSubResponse(client: Client, req: any) {
         case "channel.channel_points_custom_reward_redemption.add":
             await ProcessRedemptions(client, req.body.event.user_name, req.body.event.reward.id, req.body.id, req.body.event.user_input);
             break;
+        case "channel.follow":
+            await PlayPausedVideo("GearOverlay");
+            break;
         case "channel.subscribe":
         case "channel.subscription.message":
             await MakeRainbowLights(10);
+            await PlayPausedVideo("GearOverlay", 2);
             break;
         case "channel.raid":
             await MakeRainbowLights(15);
+            await PlayPausedVideo("GearOverlay", 5);
             break;
         case "channel.cheer":
             await ProcessBits(client, req.body.event.user_name, req.body.event.message, req.body.event.bits);
+            await PlayPausedVideo("GearOverlay");
             break;
         case "channel.ad_break.begin":
             await ProcessAds(client, req.body.event.duration_seconds);
@@ -391,6 +398,7 @@ export async function HandleEventSubResponse(client: Client, req: any) {
             break;
         case "channel.hype_train.begin":
             await PlayHypeTrainAlert();
+            await PlayPausedVideo("GearOverlay", 5);
             break;
     }
 

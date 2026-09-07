@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Floating Chat</title>
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        #chatContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-bubble {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            padding: 25px 35px;
+            background: linear-gradient(135deg, rgba(30, 30, 40, 0.95), rgba(45, 45, 60, 0.95)) !important;
+            border: 3px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7),
+                        0 0 0 2px rgba(255, 255, 255, 0.15) inset !important;
+            pointer-events: none;
+            opacity: 0;
+            transform-origin: center center;
+            backdrop-filter: blur(8px);
+            min-width: 300px;
+            max-width: 700px;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+
+        .chat-bubble-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-bubble-badges {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .chat-bubble-badge {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .chat-bubble-username {
+            font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
+            font-weight: bold;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .twitch-icon {
+            width: 32px;
+            height: 32px;
+            opacity: 0.8;
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.6));
+        }
+
+        .chat-bubble-message {
+            font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
+            font-size: 32px;
+            color: #ffffff;
+            line-height: 1.5;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            word-break: break-word;
+        }
+
+        .chat-bubble-message img.emote {
+            height: 42px;
+            vertical-align: middle;
+            margin: 0 3px;
+        }
+
+        /* Animation keyframes */
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.8);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            85% {
+                opacity: 1;
+                transform: translateY(-40px) scale(1);
+            }
+            92% {
+                opacity: 0.8;
+                transform: translateY(-50px) scale(1.15);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(1.2);
+            }
+        }
+
+        .chat-bubble.animate {
+            animation: floatIn ease-out forwards;
+        }
+
+        /* Pop effect at the end */
+        @keyframes popOut {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+    <script>
+        // ============ CONFIGURATION OPTIONS ============
+        // Optimized for 1920x1080 resolution
+        const CONFIG = {
+            maxBubbles: 5,              // Maximum chat bubbles visible at once
+            wrapCharacterLimit: 25,      // Character limit before wrapping to new line
+            baseDuration: 5000,          // Base display time in milliseconds
+            durationPerChar: 50,         // Additional milliseconds per character
+            maxDuration: 15000,          // Maximum display time in milliseconds
+            bubbleMinWidth: 300,         // Minimum bubble width in pixels
+            bubbleMaxWidth: 700,         // Maximum bubble width in pixels
+            fontSize: 32,                // Font size in pixels
+            marginTop: 100,              // Minimum distance from top edge (pixels)
+            marginBottom: 200,           // Minimum distance from bottom edge (pixels)
+            marginLeft: 100,             // Minimum distance from left edge (pixels)
+            marginRight: 100,            // Minimum distance from right edge (pixels)
+        };
+    </script>
+</head>
+<body>
+<div id="chatContainer"></div>
+<script src="html/floatingchat.js"></script>
+</body>
+</html>

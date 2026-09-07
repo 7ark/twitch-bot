@@ -81,6 +81,19 @@ export async function OnMessage(client: Client, userState: ChatUserstate, messag
     let col = userState.color;
     Broadcast(JSON.stringify({ type: 'message', displayName, message, color: col }));
 
+    // Broadcast to floating chat with full data (only if not a command and not from bot accounts)
+    if((message[0] != '!' || message.includes("!yell")) &&
+       displayName.toLowerCase() !== "7arksgamemanager") {
+        Broadcast(JSON.stringify({
+            type: 'floatingchat',
+            displayName,
+            message: message.includes("!yell") ? message.replace("!yell", "").trim() : message,
+            color: col || '#FFFFFF',
+            badges: userState.badges,
+            emotes: userState.emotes
+        }));
+    }
+
     let player = LoadPlayer(userState['display-name']!);
     let doesTTS = true;
 
@@ -280,7 +293,7 @@ const regularMessages: Array<string> = [
     `Chat is interactive! Use '!help options' to see all subjects to learn about`,
     `You can use${minigameKeys.map(x => ` !${x.toLowerCase()}`)} to earn gems and compete for a leaderboard spot! You can also use !auto to automatically play these minigames for 30 minutes.`,
     `Use !forage or !hunt to go out looking for food or goodies! Hunting is more dangerous.`,
-    `Check out my latest Youtube video: https://youtu.be/5Nj6n9OlzUI`
+    `Check out my latest Youtube video: https://latestyoutu.be/@7ark`
 ];
 
 // if(CurrentStreamSettings.challengeType != undefined && CurrentStreamSettings.challengeType.length > 1) {
