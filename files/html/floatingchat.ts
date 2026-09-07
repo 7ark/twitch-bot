@@ -1,5 +1,19 @@
-// @ts-ignore - CONFIG is defined in HTML
-const config = CONFIG;
+// ============ CONFIGURATION OPTIONS ============
+// Optimized for 1920x1080 resolution
+const config = {
+    maxBubbles: 5,              // Maximum chat bubbles visible at once
+    wrapCharacterLimit: 25,      // Character limit before wrapping to new line
+    baseDuration: 5000,          // Base display time in milliseconds
+    durationPerChar: 50,         // Additional milliseconds per character
+    maxDuration: 15000,          // Maximum display time in milliseconds
+    bubbleMinWidth: 300,         // Minimum bubble width in pixels
+    bubbleMaxWidth: 700,         // Maximum bubble width in pixels
+    fontSize: 32,                // Font size in pixels
+    marginTop: 100,              // Minimum distance from top edge (pixels)
+    marginBottom: 200,           // Minimum distance from bottom edge (pixels)
+    marginLeft: 100,             // Minimum distance from left edge (pixels)
+    marginRight: 100,            // Minimum distance from right edge (pixels)
+};
 
 interface ChatBubbleData {
     displayName: string;
@@ -77,7 +91,7 @@ function createChatBubble(data: ChatBubbleData) {
     username.style.color = data.color || '#FFFFFF';
     headerLeft.appendChild(username);
 
-    // Add Twitch icon on the right (using data URI for inline SVG)
+    // Add Twitch icon on the right
     const twitchIcon = document.createElement('img');
     twitchIcon.className = 'twitch-icon';
     // Twitch Glitch logo as inline SVG data URI
@@ -145,6 +159,9 @@ function parseMessageWithEmotes(message: string, emotes?: { [key: string]: strin
         }
     }
 
+    // Check if message contains only a single emote (gigantify condition)
+    const isSingleEmoteOnly = emotePositions.length === 1 && isMessageOnlyEmote(message, emotePositions[0]);
+
     // Sort by position (descending) to replace from end to start
     emotePositions.sort((a, b) => b.start - a.start);
 
@@ -152,11 +169,23 @@ function parseMessageWithEmotes(message: string, emotes?: { [key: string]: strin
 
     for (const emote of emotePositions) {
         const emoteText = message.substring(emote.start, emote.end + 1);
-        const emoteImg = `<img class="emote" src="https://static-cdn.jtvnw.net/emoticons/v2/${emote.id}/default/dark/2.0" alt="${escapeHtml(emoteText)}" title="${escapeHtml(emoteText)}">`;
+        // Use large size (3.0 = 112px) and emote-large class for single emote messages
+        const emoteClass = isSingleEmoteOnly ? 'emote-large' : 'emote';
+        const emoteSize = isSingleEmoteOnly ? '3.0' : '2.0';
+        const emoteImg = `<img class="${emoteClass}" src="https://static-cdn.jtvnw.net/emoticons/v2/${emote.id}/default/dark/${emoteSize}" alt="${escapeHtml(emoteText)}" title="${escapeHtml(emoteText)}">`;
         result = result.substring(0, emote.start) + emoteImg + result.substring(emote.end + 1);
     }
 
     return result;
+}
+
+function isMessageOnlyEmote(message: string, emotePos: { start: number; end: number }): boolean {
+    // Check if text before emote is only whitespace
+    const beforeEmote = message.substring(0, emotePos.start).trim();
+    // Check if text after emote is only whitespace
+    const afterEmote = message.substring(emotePos.end + 1).trim();
+
+    return beforeEmote === '' && afterEmote === '';
 }
 
 function wrapText(element: HTMLElement) {
